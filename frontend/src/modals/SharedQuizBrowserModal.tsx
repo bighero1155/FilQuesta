@@ -1,0 +1,145 @@
+import React, { useEffect, useState } from "react";
+import { getSharedSessions, deleteSharedSession, SharedQuizSession } from "../services/quizService";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext"; 
+import SharedQuizBrowserModalCSS from "../styles/SharedQuizBrowserModalCSS";
+
+interface Props {
+  show: boolean;
+  onClose: () => void;
+}
+
+const SharedQuizBrowserModal: React.FC<Props> = ({ show, onClose }) => {
+  const [sessions, setSessions] = useState<SharedQuizSession[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null); 
+  const navigate = useNavigate();
+  const { user } = useAuth(); 
+
+  const fetchSessions = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getSharedSessions();
+      setSessions(data);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load quizzes");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (show) {
+      fetchSessions();
+    }
+  }, [show]);
+
+  if (!show) return null;
+
+  const handleJoinQuiz = (code: string) => {
+    navigate(`/sharedquiz/${code}/lobby`);
+    onClose();
+  };
+
+  // ← ADD THIS DELETE HANDLER
+  const handleDeleteQuiz = async (sessionId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!window.confirm("Are you sure you want to delete this quiz session?")) {
+      return;
+    }
+
+    setDeletingId(sessionId);
+    try {
+      await deleteSharedSession(sessionId);
+      await fetchSessions(); // Refresh the list
+    } catch (err: any) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to delete quiz session");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const isTeacher = user?.role === "teacher"; // ← ADD THIS
+
+  return (
+    <>
+      <SharedQuizBrowserModalCSS /> 
+
+      <div className="qm-overlay" onClick={onClose}>
+        <div className="qm-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="qm-header">
+            <h2 className="qm-title">AVAILABLE QUIZZES</h2>
+            <button className="qm-close" onClick={onClose}>×</button>
+          </div>
+
+          <div className="qm-body">
+            {loading ? (
+              <div className="qm-loading">
+                <div className="qm-spinner"></div>
+                <div className="qm-loading-text">Loading...</div>
+              </div>
+            ) : error ? (
+              <div className="qm-error">{error}</div>
+            ) : sessions.length === 0 ? (
+              <div className="qm-empty">
+                <div className="qm-empty-icon">📚</div>
+                <div className="qm-empty-text">No Active Quizzes</div>
+              </div>
+            ) : (
+              <div className="qm-list">
+                {sessions.map((s) => {
+                  // ← ADD THIS OWNERSHIP CHECK
+                  const isOwner = isTeacher && s.teacher_id === user?.user_id;
+                  
+                  // ← DEBUG: Add this console.log temporarily
+                  console.log('Session:', s.quiz?.title, {
+                    isTeacher,
+                    sessionTeacherId: s.teacher_id,
+                    userId: user?.user_id,
+                    isOwner
+                  });
+                  
+                  return (
+                    <div key={s.session_id} className="qm-card">
+                      <div className="qm-info">
+                        <div className="qm-quiz-title">
+                          {s.quiz?.title ?? "Untitled Quiz"}
+                        </div>
+                        <span className="qm-code">{s.code}</span>
+                      </div>
+                      {/* ← REPLACE SINGLE BUTTON WITH ACTIONS DIV */}
+                      <div className="qm-actions">
+                        <button
+                          className="qm-join"
+                          onClick={() => handleJoinQuiz(s.code)}
+                        >
+                          JOIN
+                        </button>
+                        {isOwner && (
+                          <button
+                            className="qm-delete"
+                            onClick={(e) => handleDeleteQuiz(s.session_id, e)}
+                            disabled={deletingId === s.session_id}
+                          >
+                            {deletingId === s.session_id ? "..." : "🗑️"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default SharedQuizBrowserModal;

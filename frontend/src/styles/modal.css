@@ -1,0 +1,150 @@
+.pixel-font {
+    font-family: 'Press Start 2P', cursive;
+}
+
+.pixel-title {
+    color: #feca57;
+    font-size: 24px;
+    text-shadow: 1px 1px #000;
+}
+
+.pixel-subtitle {
+    color: #2da9adff;
+    font-size: 16px;
+}
+
+.pixel-button {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 14px;
+    padding: 10px 20px;
+    border: 2px solid black;
+    box-shadow: 2px 2px #333;
+}
+
+.pixel-input {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    border: 2px solid #333;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1050;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pixel-modal {
+    background: #222;
+    padding: 30px;
+    border-radius: 8px;
+    border: 3px solid #fff;
+    width: 90%;
+    max-width: 500px;
+}
+.landing-theme {
+    background: linear-gradient(to bottom right, #d0e7ff, #a3cfff);
+    color: #002244;
+    font-family: 'Press Start 2P', cursive;
+    padding: 2rem;
+    transition: all 0.4s ease;
+}
+
+.pixel-button {
+    border-radius: 10px;
+    font-family: 'Press Start 2P', cursive;
+    padding: 12px 24px;
+    box-shadow: 0 4px 0 #004080;
+}
+
+.pixel-title {
+    font-family: 'Press Start 2P', cursive;
+}
+
+.pixel-subtitle {
+    font-size: 1.25rem;
+    font-family: 'Press Start 2P', cursive;
+}
+/* modal.css */
+
+.custom-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(50, 100, 200, 0.25);
+    /* Faded blue background */
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-modal-content {
+    background-color: #1c1f2b;
+    border: 3px solid #ffc107;
+    border-radius: 16px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-family: 'Press Start 2P', cursive;
+    /* Optional pixel font */
+}
+
+.pixel-font {
+    font-family: 'Press Start 2P', cursive;
+}
+
+.pixel-title {
+    text-align: center;
+    font-size: 1.25rem;
+    color: #ffc107;
+    text-shadow: 1px 1px 0 #000;
+}
+
+input.form-control {
+    background-color: #2e3440;
+    color: #fff;
+    border: 2px solid #555;
+}
+
+input.form-control::placeholder {
+    color: #aaa;
+    font-style: italic;
+}
+
+input.form-control:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 5px #ffc107;
+}
+
+.invalid-feedback {
+    font-size: 0.75rem;
+    color: #f66;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border: none;
+    font-weight: bold;
+}
+
+.btn-dark {
+    background-color: #343a40;
+    border: none;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

@@ -1,0 +1,47 @@
+.pixel-font {
+    font-family: 'Press Start 2P', cursive;
+}
+
+.pixel-btn {
+    background-color: #00ccff;
+    border: 2px solid #005577;
+    color: white;
+    font-family: 'Press Start 2P', cursive;
+    padding: 10px 20px;
+}
+
+.pixel-btn-danger {
+    background-color: #ff3333;
+    border: 2px solid #990000;
+    color: white;
+    font-family: 'Press Start 2P', cursive;
+    padding: 10px 20px;
+}
+
+.pixel-btn-lg {
+    font-size: 1rem;
+    padding: 12px 30px;
+    font-family: 'Press Start 2P', cursive;
+    background-color: #44cc44;
+    border: 2px solid #227722;
+}
+
+.pixel-bg {
+    background: url('/pixel-background.png') no-repeat center center;
+    background-size: cover;
+}
+
+.pixel-border {
+    border: 6px solid #222;
+    border-radius: 8px;
+    box-shadow: 0 0 20px #000;
+}
+
+.pixel-input {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-family: 'Press Start 2P', cursive;
+    border: 2px solid #333;
+}

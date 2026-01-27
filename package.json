@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "bootstrap": "^5.3.6",
+    "docx": "^9.5.1",
+    "file-saver": "^2.0.5"
+  },
+  "devDependencies": {
+    "@types/file-saver": "^2.0.7"
+  }
+}
