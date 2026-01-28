@@ -30,7 +30,6 @@ export default class HumanBodyScene extends Phaser.Scene {
   private bodyParts: BodyPart[] = [];
   private scoreText!: Phaser.GameObjects.Text;
   private timerText!: Phaser.GameObjects.Text;
-  private _levelInfoText!: Phaser.GameObjects.Text; // ⭐ NEW (underscore indicates display-only)
   private buttonManager!: HumanSceneButtons;
   private backButton!: Phaser.GameObjects.Text;
   private backCircle!: Phaser.GameObjects.Graphics;
@@ -72,7 +71,7 @@ export default class HumanBodyScene extends Phaser.Scene {
     return this.scale.width < 768;
   }
 
-  // ⭐ NEW: Get category display name with emoji
+  // Get category display name with emoji
   private getCategoryDisplayName(): string {
     const categoryEmojis: Record<string, string> = {
       BASIC: "🟢 BASIC",
@@ -251,12 +250,12 @@ export default class HumanBodyScene extends Phaser.Scene {
       padding: scorePadding,
     });
 
-    // ⭐ NEW: Level info text (placed under timer)
+    // Level info text (placed under timer)
     const levelInfoFontSize = isMobile ? "16px" : "22px";
     const levelInfoY = isMobile ? 55 : 18; // Position below timer
     const levelInfoX = isMobile ? this.cameras.main.width - 130 : this.cameras.main.width - 350;
     
-    this._levelInfoText = this.add.text(
+    this.add.text(
       levelInfoX, 
       levelInfoY, 
       `${this.getCategoryDisplayName()}\nLevel ${this.currentLevelInCategory}`, 
@@ -600,7 +599,7 @@ export default class HumanBodyScene extends Phaser.Scene {
     // Mobile vs Desktop organ scale
     const organScale = isMobile ? scale * 0.7 : scale;
     
-    // ⭐ NEW: Create glowing circle behind the image
+    // Create glowing circle behind the image
     const glowCircle = this.add.graphics();
     glowCircle.setPosition(x, y);
     glowCircle.setDepth(-1);
@@ -614,7 +613,7 @@ export default class HumanBodyScene extends Phaser.Scene {
     glowCircle.fillStyle(0xffffff, 0.4);
     glowCircle.fillCircle(0, 0, glowRadius - 10);
     
-    // ⭐ Pulsing glow animation
+    // Pulsing glow animation
     this.tweens.add({
       targets: glowCircle,
       alpha: 0.6,
@@ -701,7 +700,7 @@ export default class HumanBodyScene extends Phaser.Scene {
       (image.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
       this.tweens.add({ targets: image, scale: organScale * 1.05, duration: 100, yoyo: true });
       
-      // ⭐ Hide glow when dragging starts
+      // Hide glow when dragging starts
       glowCircle.setVisible(false);
       
       // Show color circle, name AND description when dragging on mobile
@@ -717,7 +716,7 @@ export default class HumanBodyScene extends Phaser.Scene {
       image.setPosition(dragX, dragY);
       (image.body as Phaser.Physics.Arcade.Body).setVelocity(0, 0);
 
-      // ⭐ Move glow circle with the dragged item (keep it hidden)
+      // Move glow circle with the dragged item (keep it hidden)
       glowCircle.setPosition(dragX, dragY);
 
       // Mobile vs Desktop label offset when dragging
@@ -758,7 +757,7 @@ export default class HumanBodyScene extends Phaser.Scene {
         part.targetCircle.fillStyle(part.color, 0.9);
         part.targetCircle.fillCircle(part.correctX, part.correctY, 30);
 
-        // ⭐ Destroy glow when placed correctly
+        // Destroy glow when placed correctly
         glowCircle.destroy();
 
         // Hide labels when placed correctly
@@ -775,7 +774,7 @@ export default class HumanBodyScene extends Phaser.Scene {
         (image.body as Phaser.Physics.Arcade.Body).setVelocity(velocityX, velocityY);
         (image.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
 
-        // ⭐ Show glow again when item is not placed correctly
+        // Show glow again when item is not placed correctly
         glowCircle.setVisible(true);
         glowCircle.setPosition(x, y);
 

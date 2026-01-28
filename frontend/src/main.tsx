@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { AuthProvider } from "./context/AuthContext.tsx";
-import { loadRuntimeConfig } from "./config/runtimeConfig";
+
 
 const rootElement = document.getElementById("root");
 
@@ -12,8 +12,13 @@ if (!rootElement) {
 }
 
 (async () => {
-  // Load backend runtime config BEFORE React renders
-  await loadRuntimeConfig();
+  // Load backend runtime config BEFORE React renders(async () => {
+  // try {
+  //   await loadRuntimeConfig();
+  // } catch (err) {
+  //   console.error("Runtime config failed, using defaults", err);
+  // }
+
 
   createRoot(rootElement).render(
     <StrictMode>

@@ -265,7 +265,7 @@ export default class IntroductionScene extends Phaser.Scene {
 
   /* ================= DYNAMIC INSTRUCTION GENERATOR ================= */
   private getInstructionsByOperation(
-    operation: 'addition' | 'subtraction' | 'multiplication' | 'division',
+    operation: 'addition' | 'subtraction' | 'multiplication' | 'division' | 'fixed' | 'mixed',
     fruitMultiplier: number
   ): string[] {
     const banana = 2 * fruitMultiplier;
@@ -278,6 +278,8 @@ export default class IntroductionScene extends Phaser.Scene {
       subtraction: "Subtract to reach the answer!",
       multiplication: "Multiply and collect fruits!",
       division: "Divide and catch the result!",
+      fixed: "Collect fruits to reach the goal!",
+      mixed: "Mixed operations challenge!",
     };
 
     if (this.isMobile) {
