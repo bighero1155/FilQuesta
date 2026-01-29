@@ -1,11 +1,14 @@
 <?php
 
 return [
+
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'], 
+    'allowed_origins' => [
+        'https://fil-questa.vercel.app',
+    ],
 
     'allowed_origins_patterns' => [],
 
@@ -15,5 +18,5 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true, 
+    'supports_credentials' => true,
 ];
