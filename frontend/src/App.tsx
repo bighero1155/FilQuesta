@@ -123,12 +123,10 @@ const router = createBrowserRouter([
   {
     path: "/landing",
     element: (
-      <ProtectedRoute allowedRoles={["student", "teacher", "admin"]}>
         <>
           <LandingPage />
           <RecommendationWidget /> 
         </>
-      </ProtectedRoute>
     ),
   },
   {
