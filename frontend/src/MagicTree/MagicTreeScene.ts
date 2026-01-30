@@ -862,6 +862,8 @@ export default class MagicTree extends Phaser.Scene {
     console.log("   nextLevelToUnlock:", nextLevelToUnlock);
     console.log("   currentLevel (global):", this.currentLevel);
     console.log("");
+    console.log("🔧 FORCED VALUE: Will forcefully send 2 instead of calculated value");
+    console.log("");
 
     try {
       // Step 0: Check current progress BEFORE saving
@@ -875,14 +877,13 @@ export default class MagicTree extends Phaser.Scene {
       console.log("");
 
       // Step 1: Calculate what to save
-      const valueToSave = Math.max(currentUnlockedBefore, nextLevelToUnlock);
+      const valueToSave = 2; // 🔧 FORCED VALUE - Always send 2
       console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
       console.log("📝 STEP 1: Calculate value to save");
       console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
       console.log("   currentUnlockedBefore:", currentUnlockedBefore);
       console.log("   nextLevelToUnlock:", nextLevelToUnlock);
-      console.log("   valueToSave:", valueToSave);
-      console.log("   (using Math.max to never go backwards)");
+      console.log("   🔧 FORCED valueToSave: 2 (ignoring calculation)");
       console.log("");
 
       // Step 2: Save to backend
