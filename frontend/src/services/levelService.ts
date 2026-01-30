@@ -1,6 +1,7 @@
 import axios from "../auth/axiosInstance";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api`;
+// ✅ Don't add /api here - axios interceptor already adds it
+const API_URL = import.meta.env.VITE_API_URL;
 
 export interface Level {
   id: number;
