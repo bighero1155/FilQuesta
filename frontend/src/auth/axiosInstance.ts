@@ -3,7 +3,6 @@ import axios, {
   InternalAxiosRequestConfig,
   AxiosHeaders,
 } from "axios";
-import { getRuntimeConfig } from "../config/runtimeConfig";
 
 let activeRequests = 0;
 
@@ -14,11 +13,15 @@ const dispatchLoading = (isLoading: boolean) => {
   );
 };
 
-// Create axios instance WITHOUT baseURL
-const AxiosInstance = axios.create();
+// 🔒 HARD-LOCKED AXIOS INSTANCE
+// 🚨 This guarantees `/api` is ALWAYS used
+const AxiosInstance = axios.create({
+  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+  withCredentials: true,
+});
 
 // -----------------------------
-// REQUEST INTERCEPTOR (Axios v1 safe)
+// REQUEST INTERCEPTOR
 // -----------------------------
 AxiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig & { skipLoading?: boolean }) => {
@@ -31,38 +34,23 @@ AxiosInstance.interceptors.request.use(
       }
     }
 
-    // ✅ Ensure headers object exists (Axios v1 way)
+    // Ensure headers object exists (Axios v1 safe)
     config.headers =
       config.headers instanceof AxiosHeaders
         ? config.headers
         : new AxiosHeaders(config.headers);
 
-    // 🔑 Inject token
+    // Inject auth token
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.set("Authorization", `Bearer ${token}`);
     }
 
-    // 🧠 Content-Type handling
+    // Content-Type handling
     if (config.data instanceof FormData) {
       config.headers.set("Content-Type", "multipart/form-data");
     } else {
       config.headers.set("Content-Type", "application/json");
-    }
-
-    // 🌍 HYBRID baseURL resolution (runtime → env → fallback)
-    if (!config.baseURL) {
-      let runtimeBaseUrl: string | undefined;
-
-      try {
-        runtimeBaseUrl = getRuntimeConfig().apiBaseUrl;
-      } catch {
-        runtimeBaseUrl = undefined;
-      }
-
-      config.baseURL =
-      runtimeBaseUrl ||
-      import.meta.env.VITE_API_URL + "/api";
     }
 
     return config;
@@ -107,7 +95,7 @@ AxiosInstance.interceptors.response.use(
       }
     }
 
-    // 🔒 Auto logout on auth failure
+    // Auto logout on auth failure
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
