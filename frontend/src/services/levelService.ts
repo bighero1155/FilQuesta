@@ -1,8 +1,5 @@
 import axios from "../auth/axiosInstance";
 
-// ✅ Don't add /api here - axios interceptor already adds it
-const API_URL = import.meta.env.VITE_API_URL;
-
 export interface Level {
   id: number;
   user_id: number;
@@ -12,14 +9,14 @@ export interface Level {
   updated_at: string;
 }
 
-// ======================================== 
+// ========================================
 // CORE FUNCTIONS (Used by ALL games)
 // ========================================
 
 // Get all levels of a user
 export async function getUserLevels(userId: number): Promise<Level[]> {
   if (!userId) throw new Error("User ID is undefined");
-  const response = await axios.get(`${API_URL}/users/${userId}/levels`, {
+  const response = await axios.get(`/users/${userId}/levels`, {
     withCredentials: true,
   });
   return response.data;
@@ -37,7 +34,7 @@ export async function saveLevel(
   console.log(`💾 Saving: User ${userId}, Game: ${gameName}, Level: ${unlockedLevels}`);
   
   const response = await axios.post(
-    `${API_URL}/users/${userId}/levels`,
+    `/users/${userId}/levels`,
     { game_name: gameName, unlocked_levels: unlockedLevels },
     { withCredentials: true }
   );
@@ -59,7 +56,7 @@ export async function unlockNextLevel(
 
   try {
     const response = await axios.post(
-      `${API_URL}/users/${userId}/levels`,
+      `/users/${userId}/levels`,
       {
         game_name: gameName,
         completed_level: completedLevel, // ✅ Send completed_level, backend unlocks next
@@ -159,7 +156,7 @@ export async function resetAllCategoryLevels(
   
   for (const category of categories) {
     try {
-      await axios.delete(`${API_URL}/users/${userId}/levels`, {
+      await axios.delete(`/users/${userId}/levels`, {
         data: { game_name: `${gameBaseName}_${category}` },
         withCredentials: true,
       });
@@ -185,7 +182,7 @@ export async function getMagicTreeCategoryProgress(
 export async function getAllMagicTreeProgress(userId: number): Promise<Record<string, number>> {
   try {
     // ✅ Use the optimized endpoint that returns formatted progress
-    const response = await axios.get(`${API_URL}/users/${userId}/levels`, {
+    const response = await axios.get(`/users/${userId}/levels`, {
       withCredentials: true,
     });
     
@@ -221,7 +218,7 @@ export async function resetAllMagicTreeLevels(userId: number): Promise<void> {
 
 export async function resetUserLevels(userId: number): Promise<void> {
   if (!userId) throw new Error("User ID is undefined");
-  await axios.delete(`${API_URL}/users/${userId}/levels`, {
+  await axios.delete(`/users/${userId}/levels`, {
     data: { game_name: "HumanBodyScene" },
     withCredentials: true, 
   });
@@ -229,7 +226,7 @@ export async function resetUserLevels(userId: number): Promise<void> {
 
 export async function resetUserLevels2(userId: number): Promise<void> {
   if (!userId) throw new Error("User ID is undefined");
-  await axios.delete(`${API_URL}/users/${userId}/levels`, {
+  await axios.delete(`/users/${userId}/levels`, {
     data: { game_name: "WordWizardScene" },
     withCredentials: true, 
   });
@@ -237,7 +234,7 @@ export async function resetUserLevels2(userId: number): Promise<void> {
 
 export async function resetUserLevels3(userId: number): Promise<void> {
   if (!userId) throw new Error("User ID is undefined");
-  await axios.delete(`${API_URL}/users/${userId}/levels`, {
+  await axios.delete(`/users/${userId}/levels`, {
     data: { game_name: "MathFruitScene" },
     withCredentials: true, 
   });
@@ -245,7 +242,7 @@ export async function resetUserLevels3(userId: number): Promise<void> {
 
 export async function resetUserLevels4(userId: number): Promise<void> {
   if (!userId) throw new Error("User ID is undefined");
-  await axios.delete(`${API_URL}/users/${userId}/levels`, {
+  await axios.delete(`/users/${userId}/levels`, {
     data: { game_name: "HistoryPortalScene" },
     withCredentials: true, 
   });
