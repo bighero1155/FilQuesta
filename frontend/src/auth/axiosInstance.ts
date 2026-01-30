@@ -51,20 +51,19 @@ AxiosInstance.interceptors.request.use(
     }
 
     // 🌍 HYBRID baseURL resolution (runtime → env → fallback)
-    // ⚠️ FIX: ALWAYS set baseURL, don't check if it exists
-    let runtimeBaseUrl: string | undefined;
+    if (!config.baseURL) {
+      let runtimeBaseUrl: string | undefined;
 
-    try {
-      runtimeBaseUrl = getRuntimeConfig().apiBaseUrl;
-    } catch {
-      runtimeBaseUrl = undefined;
+      try {
+        runtimeBaseUrl = getRuntimeConfig().apiBaseUrl;
+      } catch {
+        runtimeBaseUrl = undefined;
+      }
+
+      config.baseURL =
+      runtimeBaseUrl ||
+      import.meta.env.VITE_API_URL + "/api";
     }
-
-    // ✅ ALWAYS set baseURL with /api suffix
-    const baseUrl = runtimeBaseUrl || import.meta.env.VITE_API_URL || "https://filquesta-production.up.railway.app";
-    
-    // Add /api if it's not already there
-    config.baseURL = baseUrl.endsWith("/api") ? baseUrl : `${baseUrl}/api`;
 
     return config;
   },
