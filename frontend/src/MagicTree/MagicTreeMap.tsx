@@ -83,12 +83,10 @@ const MagicTreeMap: React.FC = () => {
       try {
         // Fetch category progress
         const progress = await getAllMagicTreeProgress(userId);
-        console.log("📊 Fetched category progress:", progress);
         setCategoryProgress(progress);
 
         // Check if any Level 1 is completed
         const completedLevel1 = await hasMagicTreeCompletedAnyLevelOne(userId);
-        console.log("✅ Has completed any Level 1:", completedLevel1);
         setHasCompletedLevel1(completedLevel1);
 
         // Fetch user profile for game score
@@ -108,30 +106,26 @@ const MagicTreeMap: React.FC = () => {
 
   // Listen for unlock updates
   useEffect(() => {
-    const handler = async () => {
-      if (!userId) return;
+  const handler = async () => {
+    if (!userId) return;
+    
+    // Refresh category progress when levels are updated
+    try {
+      const progress = await getAllMagicTreeProgress(userId);
+      setCategoryProgress(progress);
       
-      console.log("🔄 Levels updated event received, refreshing progress...");
-      
-      // Refresh category progress when levels are updated
-      try {
-        const progress = await getAllMagicTreeProgress(userId);
-        console.log("📊 Refreshed category progress:", progress);
-        setCategoryProgress(progress);
-        
-        const completedLevel1 = await hasMagicTreeCompletedAnyLevelOne(userId);
-        console.log("✅ Refreshed Level 1 completion status:", completedLevel1);
-        setHasCompletedLevel1(completedLevel1);
-      } catch (err) {
-        console.error("Failed to refresh MagicTree progress", err);
-      }
-    };
+      const completedLevel1 = await hasMagicTreeCompletedAnyLevelOne(userId);
+      setHasCompletedLevel1(completedLevel1);
+    } catch (err) {
+      console.error("Failed to refresh MagicTree progress", err);
+    }
+  };
 
-    window.addEventListener("levels:updated", handler);
-    return () => {
-      window.removeEventListener("levels:updated", handler);
-    };
-  }, [userId]);
+  window.addEventListener("levels:updated", handler);
+  return () => {
+    window.removeEventListener("levels:updated", handler);
+  };
+}, [userId]);
 
   if (!userId) {
     return (
@@ -283,26 +277,22 @@ const MagicTreeMap: React.FC = () => {
           const unlockedInCategory = categoryProgress[section.categoryId] || 0;
           const sectionProgress = Math.round((unlockedInCategory / LEVELS_PER_CATEGORY) * 100);
 
-          console.log(`🎮 ${section.categoryId}: unlocked_levels = ${unlockedInCategory}`);
-
           // Generate level buttons for this category
           const levelButtons = Array.from({ length: LEVELS_PER_CATEGORY }, (_, i) => {
             const levelNumber = i + 1;
             
-            // ✅ FIXED UNLOCK LOGIC:
-            // unlocked_levels in DB = highest playable level
-            // Example: unlocked_levels = 2 means levels 1 and 2 are playable
+            // Unlock logic:
+            // 1. Level 1: Unlocked if ANY Level 1 is completed OR if this is the first category
+            // 2. Other levels: Unlocked if previous level in THIS category is completed
             let isUnlocked = false;
             
             if (levelNumber === 1) {
-              // Level 1: Always unlocked if ANY category has progress OR if no progress (first time)
+              // Level 1: Unlock if any Level 1 is done, OR if no progress yet (allow first play)
               isUnlocked = hasCompletedLevel1 || totalLevelsUnlocked === 0;
             } else {
-              // Levels 2-15: Unlocked if levelNumber <= unlocked_levels for THIS category
+              // Levels 2-10: Unlock if previous level in THIS category is completed
               isUnlocked = levelNumber <= unlockedInCategory;
             }
-
-            console.log(`  Level ${levelNumber}: unlocked = ${isUnlocked} (unlockedInCategory = ${unlockedInCategory})`);
 
             return {
               levelNumber,
@@ -346,7 +336,7 @@ const MagicTreeMap: React.FC = () => {
                   opacity: 0.9,
                 }}
               >
-                {unlockedInCategory} / {LEVELS_PER_CATEGORY} unlocked ({sectionProgress}%)
+                {unlockedInCategory} / {LEVELS_PER_CATEGORY} completed ({sectionProgress}%)
               </div>
 
               {/* Level Buttons */}

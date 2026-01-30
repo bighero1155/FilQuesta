@@ -50,38 +50,20 @@ AxiosInstance.interceptors.request.use(
       config.headers.set("Content-Type", "application/json");
     }
 
-    // 🌍 FIXED: Correct baseURL resolution
+    // 🌍 HYBRID baseURL resolution (runtime → env → fallback)
     if (!config.baseURL) {
-      let baseUrl: string;
+      let runtimeBaseUrl: string | undefined;
 
       try {
-        // Try to get runtime config
-        const runtimeConfig = getRuntimeConfig();
-        baseUrl = runtimeConfig.apiBaseUrl;
-        
-        // ✅ FIX: Ensure /api is present
-        if (!baseUrl.endsWith('/api')) {
-          baseUrl = baseUrl + '/api';
-        }
-        
-        console.log('📡 Using runtime baseURL:', baseUrl);
+        runtimeBaseUrl = getRuntimeConfig().apiBaseUrl;
       } catch {
-        // Fallback to env variable
-        baseUrl = import.meta.env.VITE_API_URL;
-        
-        // ✅ FIX: Ensure /api is present
-        if (!baseUrl.endsWith('/api')) {
-          baseUrl = baseUrl + '/api';
-        }
-        
-        console.log('📡 Using env baseURL:', baseUrl);
+        runtimeBaseUrl = undefined;
       }
 
-      config.baseURL = baseUrl;
+      config.baseURL =
+      runtimeBaseUrl ||
+      import.meta.env.VITE_API_URL + "/api";
     }
-
-    // Debug log the full URL
-    console.log('🔗 Full URL:', config.baseURL + config.url);
 
     return config;
   },
@@ -127,7 +109,6 @@ AxiosInstance.interceptors.response.use(
 
     // 🔒 Auto logout on auth failure
     if (error.response?.status === 401) {
-      console.error('🔒 Unauthorized! Logging out...');
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/login";
