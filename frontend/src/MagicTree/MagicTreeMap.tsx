@@ -20,11 +20,11 @@ const MagicTreeMap: React.FC = () => {
   const [gameScore, setGameScore] = useState(0);
 
   const [categoryProgress, setCategoryProgress] = useState<Record<string, number>>({
-    BASIC: 0,
-    NORMAL: 0,
-    HARD: 0,
-    ADVANCED: 0,
-    EXPERT: 0,
+    BASIC: 1,
+    NORMAL: 1,
+    HARD: 1,
+    ADVANCED: 1,
+    EXPERT: 1,
   });
 
   // ---------------------------
@@ -90,16 +90,21 @@ const MagicTreeMap: React.FC = () => {
   if (!userId) return <div>Please log in</div>;
   if (loading) return <div>Loading…</div>;
 
-  const totalUnlocked = Object.values(categoryProgress).reduce((a, b) => a + b, 0);
+  // ✅ FIX #3 — total completed levels (NOT unlocked)
+  const totalCompleted = Object.values(categoryProgress).reduce(
+    (sum, v) => sum + Math.max(0, v - 1),
+    0
+  );
+
   const totalLevels = LEVEL_SECTIONS.length * LEVELS_PER_CATEGORY;
-  const progressPercent = Math.round((totalUnlocked / totalLevels) * 100);
+  const progressPercent = Math.round((totalCompleted / totalLevels) * 100);
 
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(#003366,#0077cc)", padding: 20 }}>
       <h1 style={{ color: "#fff", textAlign: "center" }}>🌳 Magic Tree Map</h1>
 
       <p style={{ color: "#fff", textAlign: "center" }}>
-        Progress: {totalUnlocked}/{totalLevels} ({progressPercent}%)
+        Progress: {totalCompleted}/{totalLevels} ({progressPercent}%)
       </p>
 
       <div style={{ textAlign: "center", color: "#fff", marginBottom: 20 }}>
@@ -108,7 +113,8 @@ const MagicTreeMap: React.FC = () => {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 24 }}>
         {LEVEL_SECTIONS.map((section, sectionIndex) => {
-          const completed = categoryProgress[section.categoryId] || 0;
+          const maxUnlocked = categoryProgress[section.categoryId] ?? 1;
+          const completed = Math.max(0, maxUnlocked - 1);
 
           return (
             <div key={section.categoryId} style={{ background: "rgba(255,255,255,0.1)", borderRadius: 16, padding: 16 }}>
@@ -116,6 +122,7 @@ const MagicTreeMap: React.FC = () => {
                 {section.name}
               </div>
 
+              {/* ✅ FIX #2 — honest completed text */}
               <p style={{ color: "#fff", margin: "8px 0" }}>
                 {completed} / {LEVELS_PER_CATEGORY} completed
               </p>
@@ -124,8 +131,8 @@ const MagicTreeMap: React.FC = () => {
                 {Array.from({ length: LEVELS_PER_CATEGORY }, (_, i) => {
                   const levelNumber = i + 1;
 
-                  // 🔑 OPTION B UNLOCK RULE
-                  const isUnlocked = levelNumber <= completed + 1;
+                  // ✅ FIX #1 — ONLY rule for unlock
+                  const isUnlocked = levelNumber <= maxUnlocked;
 
                   const globalLevel =
                     sectionIndex * LEVELS_PER_CATEGORY + levelNumber;
