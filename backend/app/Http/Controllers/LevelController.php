@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\Validator;
 
 class LevelController extends Controller
 {
-    // List levels for a user
+    /**
+     * Get all progress records for a user
+     */
     public function userLevels($user_id)
     {
         $user = User::find($user_id);
@@ -18,16 +20,20 @@ class LevelController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
 
-        $levels = Level::where('user_id', $user_id)->get();
-        return response()->json($levels);
+        return response()->json(
+            Level::where('user_id', $user_id)->get()
+        );
     }
 
-    // Create or update levels for a user/game
+    /**
+     * Save or update progress for a game
+     * unlocked_levels = MAX unlocked level
+     */
     public function storeOrUpdate(Request $request, $user_id)
     {
         $validator = Validator::make($request->all(), [
-            'game_name'        => 'required|string|max:100',
-            'unlocked_levels'  => 'required|integer|min:0',
+            'game_name'       => 'required|string|max:100',
+            'unlocked_levels' => 'required|integer|min:1',
         ]);
 
         if ($validator->fails()) {
@@ -39,15 +45,36 @@ class LevelController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
 
+        // Fetch existing progress (if any)
+        $existing = Level::where('user_id', $user_id)
+            ->where('game_name', $request->game_name)
+            ->first();
+
+        // 🔒 CRITICAL RULE:
+        // Progress must NEVER go backward
+        $maxUnlocked = $existing
+            ? max($existing->unlocked_levels, $request->unlocked_levels)
+            : $request->unlocked_levels;
+
         $level = Level::updateOrCreate(
-            ['user_id' => $user_id, 'game_name' => $request->game_name],
-            ['unlocked_levels' => $request->unlocked_levels]
+            [
+                'user_id'   => $user_id,
+                'game_name' => $request->game_name,
+            ],
+            [
+                'unlocked_levels' => $maxUnlocked,
+            ]
         );
 
-        return response()->json(['message' => 'Level saved', 'level' => $level], 201);
+        return response()->json([
+            'message' => 'Progress saved successfully',
+            'level'   => $level,
+        ], 200);
     }
 
-    // Delete a level record
+    /**
+     * Delete a single level record (admin/debug use)
+     */
     public function destroy($user_id, $id)
     {
         $level = Level::where('id', $id)
@@ -60,42 +87,42 @@ class LevelController extends Controller
 
         $level->delete();
 
-        return response()->json(['message' => 'Level record deleted']);
+        return response()->json(['message' => 'Level deleted']);
     }
 
-    // List all users' levels for a game
+    /**
+     * Leaderboard-style list for a game
+     */
     public function gameLevels($game_name)
     {
-        $levels = Level::where('game_name', $game_name)
-            ->with('user')
-            ->get()
-            ->map(function ($l) {
-                return [
-                    'id' => $l->id,
-                    'user_id' => $l->user_id,
-                    'username' => $l->user->username ?? null,
+        return response()->json(
+            Level::where('game_name', $game_name)
+                ->with('user:user_id,username')
+                ->get()
+                ->map(fn ($l) => [
+                    'user_id'         => $l->user_id,
+                    'username'        => $l->user->username ?? null,
                     'unlocked_levels' => $l->unlocked_levels,
-                    'updated_at' => $l->updated_at,
-                ];
-            });
-
-        return response()->json($levels);
+                    'updated_at'      => $l->updated_at,
+                ])
+        );
     }
 
+    /**
+     * Delete progress for a user & game
+     */
     public function destroyByUserAndGame($user_id, Request $request)
     {
-        $gameName = $request->input('game_name');
-
-        if (!$gameName) {
-            return response()->json(['error' => 'game_name is required'], 400);
-        }
+        $request->validate([
+            'game_name' => 'required|string|max:100',
+        ]);
 
         Level::where('user_id', $user_id)
-            ->where('game_name', $gameName)
+            ->where('game_name', $request->game_name)
             ->delete();
 
         return response()->json([
-            'message' => "Progress for game '{$gameName}' deleted for user {$user_id}"
-        ], 200);
+            'message' => 'Progress deleted',
+        ]);
     }
 }

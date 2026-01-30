@@ -15,7 +15,8 @@ class User extends Authenticatable
     protected $primaryKey = 'user_id';
 
     protected $hidden = [
-        'password',
+    'password',
+    'remember_token',
     ];
 
     protected $fillable = [
@@ -29,7 +30,7 @@ class User extends Authenticatable
         'section',
         'email',
         'password',
-        'role',
+        'role', 
         'coins',
         'total_score',
         'avatar', 
