@@ -106,4 +106,4 @@ AxiosInstance.interceptors.response.use(
   }
 );
 
-export default AxiosInstance;
+export default AxiosInstance; 
