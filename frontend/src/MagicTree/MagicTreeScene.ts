@@ -863,4 +863,4 @@ if (nextLevelInCategory > currentUnlocked) {
   }
 }
 }
-}
+} 
