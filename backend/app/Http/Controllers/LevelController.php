@@ -7,11 +7,15 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class LevelController extends Controller
 {
     /**
-     * Get all progress records for a user
+     * Get all MagicTree progress for a user
+     * GET /users/{user_id}/levels
+     * 
+     * Returns: { "BASIC": 1, "NORMAL": 0, "HARD": 0, "ADVANCED": 0, "EXPERT": 0 }
      */
     public function userLevels($user_id)
     {
@@ -20,20 +24,54 @@ class LevelController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
 
-        return response()->json(
-            Level::where('user_id', $user_id)->get()
-        );
+        // Fetch all MagicTree levels for this user
+        $levels = Level::where('user_id', $user_id)
+            ->whereIn('game_name', [
+                'MagicTree_BASIC',
+                'MagicTree_NORMAL',
+                'MagicTree_HARD',
+                'MagicTree_ADVANCED',
+                'MagicTree_EXPERT'
+            ])
+            ->get();
+
+        // Transform to category => unlocked_levels format
+        $progress = [
+            'BASIC' => 0,
+            'NORMAL' => 0,
+            'HARD' => 0,
+            'ADVANCED' => 0,
+            'EXPERT' => 0,
+        ];
+
+        foreach ($levels as $level) {
+            $category = str_replace('MagicTree_', '', $level->game_name);
+            if (isset($progress[$category])) {
+                $progress[$category] = $level->unlocked_levels;
+            }
+        }
+
+        return response()->json($progress);
     }
 
     /**
      * Save or update progress for a game
-     * unlocked_levels = MAX unlocked level
+     * POST /users/{user_id}/levels
+     * 
+     * Request body:
+     * {
+     *   "game_name": "MagicTree_BASIC",
+     *   "completed_level": 1
+     * }
+     * 
+     * This will unlock completed_level + 1
      */
     public function storeOrUpdate(Request $request, $user_id)
     {
+        // Validate input
         $validator = Validator::make($request->all(), [
-            'game_name'       => 'required|string|max:100',
-            'unlocked_levels' => 'required|integer|min:1',
+            'game_name' => 'required|string|max:100',
+            'completed_level' => 'required|integer|min:1|max:15',
         ]);
 
         if ($validator->fails()) {
@@ -45,30 +83,38 @@ class LevelController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
 
+        $gameName = $request->game_name;
+        $completedLevel = $request->completed_level;
+        $nextLevel = $completedLevel + 1;
+
         // Fetch existing progress (if any)
         $existing = Level::where('user_id', $user_id)
-            ->where('game_name', $request->game_name)
+            ->where('game_name', $gameName)
             ->first();
 
-        // 🔒 CRITICAL RULE:
-        // Progress must NEVER go backward
-        $maxUnlocked = $existing
-            ? max($existing->unlocked_levels, $request->unlocked_levels)
-            : $request->unlocked_levels;
+        // 🔒 CRITICAL RULE: Progress must NEVER go backward
+        // If user already unlocked level 5, completing level 2 should NOT downgrade to level 3
+        $finalUnlockedLevel = $existing 
+            ? max($existing->unlocked_levels, $nextLevel)
+            : $nextLevel;
 
+        // Save to database
         $level = Level::updateOrCreate(
             [
                 'user_id'   => $user_id,
-                'game_name' => $request->game_name,
+                'game_name' => $gameName,
             ],
             [
-                'unlocked_levels' => $maxUnlocked,
+                'unlocked_levels' => $finalUnlockedLevel,
             ]
         );
 
+        Log::info("✅ Level saved: User {$user_id}, Game {$gameName}, Completed Level {$completedLevel}, Unlocked Level {$finalUnlockedLevel}");
+
         return response()->json([
-            'message' => 'Progress saved successfully',
-            'level'   => $level,
+            'success' => true,
+            'message' => "Level {$completedLevel} completed, level {$nextLevel} unlocked",
+            'unlocked_levels' => $finalUnlockedLevel,
         ], 200);
     }
 
