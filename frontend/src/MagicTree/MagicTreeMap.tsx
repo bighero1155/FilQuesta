@@ -27,9 +27,7 @@ const MagicTreeMap: React.FC = () => {
     EXPERT: 1,
   });
 
-  // ---------------------------
   // Resolve user
-  // ---------------------------
   useEffect(() => {
     if (user?.id) {
       setUserId(user.id);
@@ -45,9 +43,7 @@ const MagicTreeMap: React.FC = () => {
     } catch { /* empty */ }
   }, [user]);
 
-  // ---------------------------
   // Fetch progress
-  // ---------------------------
   useEffect(() => {
     if (!userId) {
       setLoading(false);
@@ -57,6 +53,7 @@ const MagicTreeMap: React.FC = () => {
     const load = async () => {
       try {
         const progress = await getAllMagicTreeProgress(userId);
+        console.log("🗺️ Map loaded progress from backend:", progress);
         setCategoryProgress(progress);
 
         const userRes = await axios.get(`/users/${userId}`);
@@ -71,19 +68,27 @@ const MagicTreeMap: React.FC = () => {
     load();
   }, [userId]);
 
-  // ---------------------------
-  // 🔍 DEBUG: confirm map reads backend
-  // ---------------------------
+  // Listen for level updates from the game
   useEffect(() => {
-    console.log("📊 MagicTreeMap categoryProgress from backend:", categoryProgress);
-  }, [categoryProgress]);
+    const handleUpdate = async () => {
+      if (!userId) return;
+      
+      console.log("🔄 Reloading progress after level completion...");
+      const progress = await getAllMagicTreeProgress(userId);
+      console.log("📊 Updated progress:", progress);
+      setCategoryProgress(progress);
+    };
+
+    window.addEventListener("levels:updated", handleUpdate);
+    return () => window.removeEventListener("levels:updated", handleUpdate);
+  }, [userId]);
 
   if (!userId) return <div>Please log in</div>;
   if (loading) return <div>Loading…</div>;
 
-  // TEMP FIX: treat backend value as completed level
+  // ✅ Calculate total completed levels (where value > 1 means completed)
   const totalCompleted = Object.values(categoryProgress).reduce(
-    (sum, v) => sum + Math.max(0, v),
+    (sum, maxUnlocked) => sum + Math.max(0, maxUnlocked - 1),
     0
   );
 
@@ -104,10 +109,10 @@ const MagicTreeMap: React.FC = () => {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 24 }}>
         {LEVEL_SECTIONS.map((section, sectionIndex) => {
-          const raw = categoryProgress[section.categoryId] ?? 1;
+          const maxUnlocked = categoryProgress[section.categoryId] ?? 1;
+          const completed = Math.max(0, maxUnlocked - 1);
 
-          // 🚑 TEMP FORCE: always allow next level
-          const maxUnlocked = Math.min(raw + 1, LEVELS_PER_CATEGORY);
+          console.log(`🗺️ ${section.categoryId}: maxUnlocked=${maxUnlocked}, completed=${completed}`);
 
           return (
             <div
@@ -119,7 +124,7 @@ const MagicTreeMap: React.FC = () => {
               </div>
 
               <p style={{ color: "#fff", margin: "8px 0" }}>
-                {Math.max(0, maxUnlocked - 1)} / {LEVELS_PER_CATEGORY} completed
+                {completed} / {LEVELS_PER_CATEGORY} completed
               </p>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10 }}>
