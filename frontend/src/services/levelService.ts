@@ -1,7 +1,6 @@
-import axios from "axios";
-import axiosInstance from "../auth/axiosInstance";
+import axios from "../auth/axiosInstance";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api`;
+const API_URL = "";
 
 export interface Level {
   id: number;
@@ -19,23 +18,10 @@ export interface Level {
 // Get all levels of a user
 export async function getUserLevels(userId: number): Promise<Level[]> {
   if (!userId) throw new Error("User ID is undefined");
-  
-  console.log("🔍 getUserLevels START");
-  console.log(`   📤 GET ${API_URL}/users/${userId}/levels`);
-  
-  try {
-    const response = await axiosInstance.get(`${API_URL}/users/${userId}/levels`, {
-      withCredentials: true,
-    });
-    
-    console.log("   📥 Response:", JSON.stringify(response.data, null, 2));
-    console.log("🔍 getUserLevels END\n");
-    
-    return response.data;
-  } catch (error) {
-    console.error("❌ getUserLevels FAILED:", error);
-    throw error;
-  }
+  const response = await axios.get(`${API_URL}/users/${userId}/levels`, {
+    withCredentials: true,
+  });
+  return response.data;
 }
 
 // Save or update levels for a game and user
@@ -47,39 +33,16 @@ export async function saveLevel(
 ): Promise<Level> {
   if (!userId) throw new Error("User ID is undefined");
   
-  const requestData = { 
-    game_name: gameName, 
-    unlocked_levels: unlockedLevels 
-  };
+  console.log(`💾 Saving: User ${userId}, Game: ${gameName}, Level: ${unlockedLevels}`);
   
-  console.log("💾 saveLevel START");
-  console.log("   📤 REQUEST:");
-  console.log(`      URL: ${API_URL}/users/${userId}/levels`);
-  console.log("      Method: POST");
-  console.log("      Body:", JSON.stringify(requestData, null, 2));
+  const response = await axios.post(
+    `${API_URL}/users/${userId}/levels`,
+    { game_name: gameName, unlocked_levels: unlockedLevels },
+    { withCredentials: true }
+  );
   
-  try {
-    const response = await axiosInstance.post(
-      `${API_URL}/users/${userId}/levels`,
-      requestData,
-      { withCredentials: true }
-    );
-    
-    console.log("   📥 RESPONSE:");
-    console.log("      Status:", response.status);
-    console.log("      Data:", JSON.stringify(response.data, null, 2));
-    console.log("💾 saveLevel END\n");
-    
-    return response.data;
-  } catch (error) {
-    console.error("❌ saveLevel FAILED");
-    console.error("   Error:", error);
-    if (axios.isAxiosError(error)) {
-      console.error("   Response status:", error.response?.status);
-      console.error("   Response data:", error.response?.data);
-    }
-    throw error;
-  }
+  console.log('✅ Saved successfully:', response.data);
+  return response.data;
 }
 
 // ✅ FIXED: Unlock next level based on completed level
@@ -103,8 +66,8 @@ export async function unlockNextLevel(
     );
 
     return await saveLevel(userId, gameName, nextUnlocked);
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error) && error.response?.status === 404) {
+  } catch (error: any) {
+    if (error.response && error.response.status === 404) {
       // First time playing - unlock level after the completed one
       const nextUnlocked = completedLevel + 1;
       console.log(`📝 No existing progress, unlocking level ${nextUnlocked} for ${gameName}`);
@@ -141,46 +104,29 @@ export async function getAllCategoryProgress(
   gameBaseName: string,
   categories: string[]
 ): Promise<Record<string, number>> {
-  console.log("📋 getAllCategoryProgress START");
-  console.log("   userId:", userId);
-  console.log("   gameBaseName:", gameBaseName);
-  console.log("   categories:", categories);
-  
   try {
     const allLevels = await getUserLevels(userId);
-    console.log("   📥 Fetched levels from backend:", JSON.stringify(allLevels, null, 2));
 
-    // ✅ Initialize with 1 (Level 1 is always playable)
+    // ✅ IMPORTANT: default to 1 (Level 1 playable)
     const progress: Record<string, number> = {};
-    categories.forEach(cat => {
-      progress[cat] = 1;
-      console.log(`   🔓 Default: ${cat} = 1`);
-    });
+    categories.forEach(cat => (progress[cat] = 1));
 
-    // Update with actual backend values
     allLevels
       .filter(l => l.game_name.startsWith(`${gameBaseName}_`))
       .forEach(level => {
         const category = level.game_name.replace(`${gameBaseName}_`, "");
         if (category in progress) {
-          const oldValue = progress[category];
+          // ✅ never allow less than 1
           progress[category] = Math.max(1, level.unlocked_levels);
-          console.log(`   📝 Update: ${category} = ${oldValue} → ${progress[category]} (from backend: ${level.unlocked_levels})`);
         }
       });
 
-    console.log("📋 getAllCategoryProgress END");
-    console.log("   Final result:", JSON.stringify(progress, null, 2));
-    console.log("");
-    
     return progress;
   } catch (error) {
-    console.error("❌ getAllCategoryProgress FAILED:", error);
+    console.error(`Error fetching ${gameBaseName} progress:`, error);
 
-    // Safe fallback
-    const fallback = Object.fromEntries(categories.map(cat => [cat, 1]));
-    console.log("   🔙 Returning fallback:", JSON.stringify(fallback, null, 2));
-    return fallback;
+    // ✅ safe fallback: all categories start at level 1
+    return Object.fromEntries(categories.map(cat => [cat, 1]));
   }
 }
 
@@ -220,7 +166,7 @@ export async function resetAllCategoryLevels(
   
   for (const category of categories) {
     try {
-      await axiosInstance.delete(`${API_URL}/users/${userId}/levels`, {
+      await axios.delete(`${API_URL}/users/${userId}/levels`, {
         data: { game_name: `${gameBaseName}_${category}` },
         withCredentials: true,
       });
@@ -244,21 +190,7 @@ export async function getMagicTreeCategoryProgress(
 }
 
 export async function getAllMagicTreeProgress(userId: number): Promise<Record<string, number>> {
-  console.log("📊 getAllMagicTreeProgress START");
-  console.log("   userId:", userId);
-  
-  try {
-    const result = await getAllCategoryProgress(userId, "MagicTree", MAGICTREE_CATEGORIES);
-    
-    console.log("📊 getAllMagicTreeProgress END");
-    console.log("   Result:", JSON.stringify(result, null, 2));
-    console.log("");
-    
-    return result;
-  } catch (error) {
-    console.error("❌ getAllMagicTreeProgress FAILED:", error);
-    return { BASIC: 1, NORMAL: 1, HARD: 1, ADVANCED: 1, EXPERT: 1 };
-  }
+  return getAllCategoryProgress(userId, "MagicTree", MAGICTREE_CATEGORIES);
 }
 
 export async function saveMagicTreeLevel(
@@ -266,24 +198,7 @@ export async function saveMagicTreeLevel(
   categoryId: string,
   levelNumber: number
 ): Promise<Level> {
-  const gameName = `MagicTree_${categoryId}`;
-  
-  console.log("🌳 saveMagicTreeLevel START");
-  console.log("   Input:");
-  console.log("      userId:", userId);
-  console.log("      categoryId:", categoryId);
-  console.log("      levelNumber:", levelNumber);
-  console.log("   Computed:");
-  console.log("      gameName:", gameName);
-  console.log("   Calling saveLevel...\n");
-  
-  const result = await saveLevel(userId, gameName, levelNumber);
-  
-  console.log("🌳 saveMagicTreeLevel END");
-  console.log("   Result:", JSON.stringify(result, null, 2));
-  console.log("");
-  
-  return result;
+  return saveCategoryLevel(userId, "MagicTree", categoryId, levelNumber);
 }
 
 export async function hasMagicTreeCompletedAnyLevelOne(userId: number): Promise<boolean> {
@@ -300,7 +215,7 @@ export async function resetAllMagicTreeLevels(userId: number): Promise<void> {
 
 export async function resetUserLevels(userId: number): Promise<void> {
   if (!userId) throw new Error("User ID is undefined");
-  await axiosInstance.delete(`${API_URL}/users/${userId}/levels`, {
+  await axios.delete(`${API_URL}/users/${userId}/levels`, {
     data: { game_name: "HumanBodyScene" },
     withCredentials: true, 
   });
@@ -308,7 +223,7 @@ export async function resetUserLevels(userId: number): Promise<void> {
 
 export async function resetUserLevels2(userId: number): Promise<void> {
   if (!userId) throw new Error("User ID is undefined");
-  await axiosInstance.delete(`${API_URL}/users/${userId}/levels`, {
+  await axios.delete(`${API_URL}/users/${userId}/levels`, {
     data: { game_name: "WordWizardScene" },
     withCredentials: true, 
   });
@@ -316,7 +231,7 @@ export async function resetUserLevels2(userId: number): Promise<void> {
 
 export async function resetUserLevels3(userId: number): Promise<void> {
   if (!userId) throw new Error("User ID is undefined");
-  await axiosInstance.delete(`${API_URL}/users/${userId}/levels`, {
+  await axios.delete(`${API_URL}/users/${userId}/levels`, {
     data: { game_name: "MathFruitScene" },
     withCredentials: true, 
   });
@@ -324,7 +239,7 @@ export async function resetUserLevels3(userId: number): Promise<void> {
 
 export async function resetUserLevels4(userId: number): Promise<void> {
   if (!userId) throw new Error("User ID is undefined");
-  await axiosInstance.delete(`${API_URL}/users/${userId}/levels`, {
+  await axios.delete(`${API_URL}/users/${userId}/levels`, {
     data: { game_name: "HistoryPortalScene" },
     withCredentials: true, 
   });
