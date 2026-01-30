@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { saveMagicTreeLevel, getAllMagicTreeProgress } from "../services/levelService";
+import { unlockNextLevel, getAllMagicTreeProgress } from "../services/levelService";
 import { updateUserProgress, getUserProfile } from "../services/userService";
 import { getLevelConfig } from "../MagicTree/levels";
 import { bounce, createSparkle } from "../MagicTree/design";
@@ -757,7 +757,9 @@ export default class MagicTree extends Phaser.Scene {
       this.stopFruits();
       this.stopCountdown(); // ⏰ Stop timer on success
       await this.addScore(10);
-      await this.unlockNextLevel();
+      
+      // 🔥 CRITICAL FIX: Call unlockNextLevel with proper parameters
+      await this.saveAndUnlockNextLevel();
       
       // Determine if there's a next level
       const hasNextLevel = this.currentLevelInCategory < 15;
@@ -847,41 +849,33 @@ export default class MagicTree extends Phaser.Scene {
     }
   }
 
-  // ✅ FIXED: Now passes completedLevel to saveMagicTreeLevel
-  private async unlockNextLevel() {
-    if (!this.userId) return;
+  // 🔥 CRITICAL FIX: Use unlockNextLevel function with correct parameters
+  private async saveAndUnlockNextLevel() {
+    if (!this.userId) {
+      console.warn("⚠️ Cannot unlock next level: userId is null");
+      return;
+    }
 
-    // Only save if this unlocks a NEW level (not already unlocked)
-    const currentUnlocked = this.categoryProgress[this.currentCategoryId] || 0;
+    const gameName = `MagicTree_${this.currentCategoryId}`;
     const completedLevel = this.currentLevelInCategory;
 
-    if (completedLevel >= currentUnlocked) {
-      try {
-        // ✅ FIX: Pass the completed level, saveMagicTreeLevel will unlock completedLevel + 1
-        await saveMagicTreeLevel(
-          this.userId, 
-          this.currentCategoryId, 
-          completedLevel
-        );
-        
-        // Update local progress to reflect the newly unlocked level
-        this.categoryProgress[this.currentCategoryId] = completedLevel + 1;
-        
-        console.log(
-          `✅ Level ${completedLevel} completed in ${this.currentCategoryId}. ` +
-          `Level ${completedLevel + 1} is now unlocked.`
-        );
-        
-        // Dispatch event to update UI
-        window.dispatchEvent(new CustomEvent("levels:updated"));
-      } catch (e) {
-        console.error("Failed to save category progress:", e);
-      }
-    } else {
+    try {
+      // ✅ Call unlockNextLevel with userId, gameName, and completedLevel
+      await unlockNextLevel(this.userId, gameName, completedLevel);
+      
+      // Update local progress to reflect the newly unlocked level
+      this.categoryProgress[this.currentCategoryId] = completedLevel + 1;
+      
       console.log(
-        `ℹ️ Level ${completedLevel} already completed in ${this.currentCategoryId}. ` +
-        `No need to update.`
+        `✅ Level ${completedLevel} completed in ${this.currentCategoryId}. ` +
+        `Level ${completedLevel + 1} is now unlocked.`
       );
+      
+      // 🔔 CRITICAL: Dispatch event to notify the map to refresh
+      window.dispatchEvent(new Event("levels:updated"));
+      
+    } catch (error) {
+      console.error("❌ Failed to unlock next level:", error);
     }
   }
 }
