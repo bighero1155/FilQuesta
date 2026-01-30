@@ -45,11 +45,13 @@ class LevelController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
 
+        // Fetch existing progress (if any)
         $existing = Level::where('user_id', $user_id)
             ->where('game_name', $request->game_name)
             ->first();
 
-        // Never allow progress to go backward
+        // 🔒 CRITICAL RULE:
+        // Progress must NEVER go backward
         $maxUnlocked = $existing
             ? max($existing->unlocked_levels, $request->unlocked_levels)
             : $request->unlocked_levels;
@@ -65,13 +67,13 @@ class LevelController extends Controller
         );
 
         return response()->json([
-            'message' => 'Progress saved',
+            'message' => 'Progress saved successfully',
             'level'   => $level,
-        ]);
+        ], 200);
     }
 
     /**
-     * Delete a single level record
+     * Delete a single level record (admin/debug use)
      */
     public function destroy($user_id, $id)
     {
@@ -95,7 +97,7 @@ class LevelController extends Controller
     {
         return response()->json(
             Level::where('game_name', $game_name)
-                ->with('user:id,username')
+                ->with('user:user_id,username')
                 ->get()
                 ->map(fn ($l) => [
                     'user_id'         => $l->user_id,

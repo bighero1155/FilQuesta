@@ -41,11 +41,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/users/{id}/score', [UserController::class, 'updateScore']);
     Route::get('/leaderboard', [UserController::class, 'leaderboard']);
 
-     Route::get('/users/{user_id}/levels', [LevelController::class, 'userLevels']);
+    Route::get('/users/{user_id}/levels', [LevelController::class, 'userLevels']);
     Route::post('/users/{user_id}/levels', [LevelController::class, 'storeOrUpdate']);
     Route::delete('/users/{user_id}/levels/{id}', [LevelController::class, 'destroy']);
-    Route::delete('/users/{user_id}/levels', [LevelController::class, 'destroyByUserAndGame']);
     Route::get('/games/{game_name}/levels', [LevelController::class, 'gameLevels']);
+    Route::delete('/users/{user_id}/levels', [LevelController::class, 'destroyByUserAndGame']);
 
     Route::get('/dashboard-data', [DashboardController::class, 'getStats']);
     Route::post('/page-visits', [ActivityController::class, 'logPageVisit']);
