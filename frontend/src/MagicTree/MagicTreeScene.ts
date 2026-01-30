@@ -851,37 +851,30 @@ export default class MagicTree extends Phaser.Scene {
   private async unlockNextLevel() {
     if (!this.userId) return;
 
-    // Only save if this unlocks a NEW level (not already unlocked)
-    const currentUnlocked = this.categoryProgress[this.currentCategoryId] || 0;
     const completedLevel = this.currentLevelInCategory;
+    const currentUnlocked = this.categoryProgress[this.currentCategoryId] || 0;
 
-    if (completedLevel >= currentUnlocked) {
+    // Only save if this level was not yet completed
+    if (completedLevel > currentUnlocked) {
       try {
-        // ✅ FIX: Pass the completed level, saveMagicTreeLevel will unlock completedLevel + 1
+        // ✅ SAVE COMPLETED LEVEL (NOT +1)
         await saveMagicTreeLevel(
-          this.userId, 
-          this.currentCategoryId, 
+          this.userId,
+          this.currentCategoryId,
           completedLevel
         );
-        
-        // Update local progress to reflect the newly unlocked level
-        this.categoryProgress[this.currentCategoryId] = completedLevel + 1;
-        
+
+        // ✅ LOCAL STATE MATCHES DATABASE
+        this.categoryProgress[this.currentCategoryId] = completedLevel;
+
         console.log(
-          `✅ Level ${completedLevel} completed in ${this.currentCategoryId}. ` +
-          `Level ${completedLevel + 1} is now unlocked.`
+          `✅ Completed ${this.currentCategoryId} Level ${completedLevel}`
         );
-        
-        // Dispatch event to update UI
+
         window.dispatchEvent(new CustomEvent("levels:updated"));
       } catch (e) {
         console.error("Failed to save category progress:", e);
       }
-    } else {
-      console.log(
-        `ℹ️ Level ${completedLevel} already completed in ${this.currentCategoryId}. ` +
-        `No need to update.`
-      );
     }
   }
 }
