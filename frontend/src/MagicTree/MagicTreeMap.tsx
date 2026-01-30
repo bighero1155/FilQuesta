@@ -21,11 +21,11 @@ const MagicTreeMap: React.FC = () => {
 
   // unlocked_levels = COMPLETED levels
   const [categoryProgress, setCategoryProgress] = useState<Record<string, number>>({
-    BASIC: 0,
-    NORMAL: 0,
-    HARD: 0,
-    ADVANCED: 0,
-    EXPERT: 0,
+    BASIC: 1,
+    NORMAL: 1,
+    HARD: 1,
+    ADVANCED: 1,
+    EXPERT: 1,
   });
 
   // Resolve user
@@ -111,7 +111,7 @@ const MagicTreeMap: React.FC = () => {
           const completed = categoryProgress[section.categoryId] ?? 0;
 
           // 🔥 THIS IS THE FIX
-          const maxPlayable = Math.min(completed + 1, LEVELS_PER_CATEGORY);
+          const maxPlayable = Math.min(completed + 2, LEVELS_PER_CATEGORY);
 
           console.log(
             `🗺️ ${section.categoryId}: completed=${completed}, playable=${maxPlayable}`
@@ -132,7 +132,7 @@ const MagicTreeMap: React.FC = () => {
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10 }}>
                 {Array.from({ length: LEVELS_PER_CATEGORY }, (_, i) => {
-                  const levelNumber = i + 1;
+                  const levelNumber = i + 2;
                   const isUnlocked = levelNumber <= maxPlayable;
                   const globalLevel = sectionIndex * LEVELS_PER_CATEGORY + levelNumber;
 
@@ -152,7 +152,7 @@ const MagicTreeMap: React.FC = () => {
                         background: isUnlocked ? section.gradient : "#555",
                         color: "#fff",
                         fontWeight: "bold",
-                        opacity: isUnlocked ? 1 : 0.4,
+                        opacity: isUnlocked ? 2 : 0.4,
                         cursor: isUnlocked ? "pointer" : "not-allowed",
                       }}
                     >
