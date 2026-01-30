@@ -713,65 +713,65 @@ export default class MagicTree extends Phaser.Scene {
   }
 
   private async collectFruit(fruit: Phaser.Physics.Arcade.Sprite) {
-  const val = (fruit as any).fruitValue;
-  const { x, y } = fruit;
-  fruit.destroy();
-  createSparkle(this, x, y);
-  bounce(this, this.basket);
+    const val = (fruit as any).fruitValue;
+    const { x, y } = fruit;
+    fruit.destroy();
+    createSparkle(this, x, y);
+    bounce(this, this.basket);
 
-  this.currentSum += val;
-  this.ui.sumText.setText("Current: " + this.currentSum);
+    this.currentSum += val;
+    this.ui.sumText.setText("Current: " + this.currentSum);
 
-  if (this.currentSum === this.targetAnswer) {
-    console.log("\n🎯 LEVEL COMPLETED!");
-    console.log("═══════════════════════════════════════");
-    console.log("Level Info:");
-    console.log("  Category:", this.currentCategoryId);
-    console.log("  Level in Category:", this.currentLevelInCategory);
-    console.log("  Global Level:", this.currentLevel);
-    console.log("═══════════════════════════════════════\n");
+    if (this.currentSum === this.targetAnswer) {
+      console.log("\n🎯 LEVEL COMPLETED!");
+      console.log("═══════════════════════════════════════");
+      console.log("Level Info:");
+      console.log("  Category:", this.currentCategoryId);
+      console.log("  Level in Category:", this.currentLevelInCategory);
+      console.log("  Global Level:", this.currentLevel);
+      console.log("═══════════════════════════════════════\n");
 
-    this.stopFruits();
-    this.stopCountdown();
-    
-    await this.addScore(10);
-    await this.unlockNextLevel(); // This should be logged heavily above
-    
-    const hasNextLevel = this.currentLevelInCategory < 15;
-    
-    showNextLevelUI(
-      this,
-      this.ui,
-      this.currentLevelInCategory,
-      15,
-      () => {
-        if (hasNextLevel) {
-          const categoryIndex = ["BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"].indexOf(this.currentCategoryId);
-          const nextGlobalLevel = (categoryIndex * 15) + (this.currentLevelInCategory + 1);
-          
-          console.log("\n🔄 SCENE RESTART");
-          console.log("  Next Global Level:", nextGlobalLevel);
-          console.log("  Score:", this.score);
-          
-          this.scene.restart({ 
-            score: this.score, 
-            level: nextGlobalLevel 
-          });
-        } else {
-          console.log("\n🏁 Category complete! Returning to map...");
-          window.location.href = "/MagicTree";
+      this.stopFruits();
+      this.stopCountdown();
+      
+      await this.addScore(10);
+      await this.unlockNextLevel();
+      
+      const hasNextLevel = this.currentLevelInCategory < 15;
+      
+      showNextLevelUI(
+        this,
+        this.ui,
+        this.currentLevelInCategory,
+        15,
+        () => {
+          if (hasNextLevel) {
+            const categoryIndex = ["BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"].indexOf(this.currentCategoryId);
+            const nextGlobalLevel = (categoryIndex * 15) + (this.currentLevelInCategory + 1);
+            
+            console.log("\n🔄 SCENE RESTART");
+            console.log("  Next Global Level:", nextGlobalLevel);
+            console.log("  Score:", this.score);
+            
+            this.scene.restart({ 
+              score: this.score, 
+              level: nextGlobalLevel 
+            });
+          } else {
+            console.log("\n🏁 Category complete! Returning to map...");
+            window.location.href = "/MagicTree";
+          }
         }
-      }
-    );
-  } else if (this.currentSum > this.targetAnswer || this.currentSum < 0) {
-    console.log("\n❌ GAME OVER - Wrong answer");
-    this.stopFruits();
-    this.stopCountdown();
-    if (this.userId) await logGameOver(this.userId, SCENE_KEY);
-    await this.logSessionTime();
-    this.showRestart();
+      );
+    } else if (this.currentSum > this.targetAnswer || this.currentSum < 0) {
+      console.log("\n❌ GAME OVER - Wrong answer");
+      this.stopFruits();
+      this.stopCountdown();
+      if (this.userId) await logGameOver(this.userId, SCENE_KEY);
+      await this.logSessionTime();
+      this.showRestart();
+    }
   }
-}
 
   private stopFruits() {
     this.gameActive = false;
@@ -832,94 +832,153 @@ export default class MagicTree extends Phaser.Scene {
     }
   }
 
-  // ✅ FIXED: Properly unlock next level
+  // ✅ ENHANCED: Unlock next level with maximum debugging
   private async unlockNextLevel() {
-  if (!this.userId) {
-    console.error("❌ unlockNextLevel: No userId!");
-    return;
-  }
-
-  // 🔒 LOCK: Prevent multiple calls
-  if ((this as any)._unlocking) {
-    console.warn("⚠️ Already unlocking, skipping duplicate call");
-    return;
-  }
-  (this as any)._unlocking = true;
-
-  const completedLevel = this.currentLevelInCategory;
-  const nextLevelToUnlock = completedLevel + 1;
-
-  console.log("═══════════════════════════════════════");
-  console.log("🔓 UNLOCK NEXT LEVEL");
-  console.log("═══════════════════════════════════════");
-  console.log("📍 userId:", this.userId);
-  console.log("📍 currentCategoryId:", this.currentCategoryId);
-  console.log("📍 currentLevelInCategory:", this.currentLevelInCategory);
-  console.log("📍 completedLevel:", completedLevel);
-  console.log("📍 nextLevelToUnlock:", nextLevelToUnlock);
-  console.log("📍 currentLevel (global):", this.currentLevel);
-
-  try {
-    // Step 1: Save to backend
-    console.log("\n💾 Step 1: Saving to backend...");
-    console.log(`   Calling: saveMagicTreeLevel(${this.userId}, "${this.currentCategoryId}", ${nextLevelToUnlock})`);
-    
-    const saveResult = await saveMagicTreeLevel(
-      this.userId,
-      this.currentCategoryId,
-      nextLevelToUnlock
-    );
-
-    console.log("✅ Step 1 Complete - Backend response:", saveResult);
-
-    // Step 2: Wait a moment for DB to settle
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Step 3: Re-fetch to confirm
-    console.log("\n🔄 Step 2: Re-fetching progress...");
-    this.categoryProgress = await getAllMagicTreeProgress(this.userId);
-    console.log("📊 Step 2 Complete - Current progress:", this.categoryProgress);
-
-    // Step 4: Verify the save worked
-    const currentUnlocked = this.categoryProgress[this.currentCategoryId];
-    console.log("\n🔍 Step 3: Verification");
-    console.log(`   Expected: ${nextLevelToUnlock}`);
-    console.log(`   Actual: ${currentUnlocked}`);
-
-    if (currentUnlocked >= nextLevelToUnlock) {
-      console.log("✅ Verification PASSED");
-    } else {
-      console.error("❌ Verification FAILED - Value not saved correctly!");
-      console.error("   This indicates a backend issue.");
+    if (!this.userId) {
+      console.error("❌ unlockNextLevel: No userId!");
+      return;
     }
 
-    // Step 5: Notify map
-    console.log("\n📢 Step 4: Notifying map...");
-    window.dispatchEvent(new CustomEvent("levels:updated", {
-      detail: { 
-        category: this.currentCategoryId, 
-        level: nextLevelToUnlock 
+    // 🔒 LOCK: Prevent multiple calls
+    if ((this as any)._unlocking) {
+      console.warn("⚠️ Already unlocking, skipping duplicate call");
+      return;
+    }
+    (this as any)._unlocking = true;
+
+    const completedLevel = this.currentLevelInCategory;
+    const nextLevelToUnlock = completedLevel + 1;
+
+    console.log("\n\n");
+    console.log("╔═══════════════════════════════════════════════════════╗");
+    console.log("║              🔓 UNLOCK NEXT LEVEL - START             ║");
+    console.log("╚═══════════════════════════════════════════════════════╝");
+    console.log("");
+    console.log("📋 CURRENT STATE:");
+    console.log("   userId:", this.userId);
+    console.log("   currentCategoryId:", this.currentCategoryId);
+    console.log("   currentLevelInCategory:", this.currentLevelInCategory);
+    console.log("   completedLevel:", completedLevel);
+    console.log("   nextLevelToUnlock:", nextLevelToUnlock);
+    console.log("   currentLevel (global):", this.currentLevel);
+    console.log("");
+
+    try {
+      // Step 0: Check current progress BEFORE saving
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      console.log("📊 STEP 0: Get current progress (BEFORE save)");
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      const progressBefore = await getAllMagicTreeProgress(this.userId);
+      console.log("   Progress BEFORE save:", JSON.stringify(progressBefore, null, 2));
+      const currentUnlockedBefore = progressBefore[this.currentCategoryId] || 0;
+      console.log(`   Current unlocked for ${this.currentCategoryId} BEFORE: ${currentUnlockedBefore}`);
+      console.log("");
+
+      // Step 1: Calculate what to save
+      const valueToSave = Math.max(currentUnlockedBefore, nextLevelToUnlock);
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      console.log("📝 STEP 1: Calculate value to save");
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      console.log("   currentUnlockedBefore:", currentUnlockedBefore);
+      console.log("   nextLevelToUnlock:", nextLevelToUnlock);
+      console.log("   valueToSave:", valueToSave);
+      console.log("   (using Math.max to never go backwards)");
+      console.log("");
+
+      // Step 2: Save to backend
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      console.log("💾 STEP 2: Save to backend");
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      console.log(`   Calling: saveMagicTreeLevel(${this.userId}, "${this.currentCategoryId}", ${valueToSave})`);
+      console.log("   ⏳ Waiting for backend response...");
+      
+      const saveResult = await saveMagicTreeLevel(
+        this.userId,
+        this.currentCategoryId,
+        valueToSave
+      );
+
+      console.log("   ✅ Backend response received!");
+      console.log("   Response:", JSON.stringify(saveResult, null, 2));
+      console.log("");
+
+      // Step 3: Wait for DB to settle
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      console.log("⏳ STEP 3: Wait for database to settle");
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      console.log("   Waiting 1000ms...");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log("   ✅ Wait complete");
+      console.log("");
+
+      // Step 4: Re-fetch to confirm
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      console.log("🔄 STEP 4: Re-fetch progress (AFTER save)");
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      this.categoryProgress = await getAllMagicTreeProgress(this.userId);
+      console.log("   Progress AFTER save:", JSON.stringify(this.categoryProgress, null, 2));
+      console.log("");
+
+      // Step 5: Verify the save worked
+      const verifyUnlocked = this.categoryProgress[this.currentCategoryId];
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      console.log("🔍 STEP 5: Verification");
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      console.log(`   Expected value:  ${valueToSave}`);
+      console.log(`   Actual value:    ${verifyUnlocked}`);
+      console.log(`   Match: ${verifyUnlocked >= valueToSave ? '✅ YES' : '❌ NO'}`);
+      console.log("");
+
+      if (verifyUnlocked >= valueToSave) {
+        console.log("   🎉 Verification PASSED - Value saved correctly!");
+      } else {
+        console.error("   ⚠️ Verification FAILED - Value NOT saved correctly!");
+        console.error("   This indicates a BACKEND ISSUE.");
+        console.error("");
+        console.error("   🔄 ATTEMPTING RETRY...");
+        console.error("   Calling saveMagicTreeLevel again...");
+        
+        const retryResult = await saveMagicTreeLevel(this.userId, this.currentCategoryId, valueToSave);
+        console.error("   Retry response:", JSON.stringify(retryResult, null, 2));
+        
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        this.categoryProgress = await getAllMagicTreeProgress(this.userId);
+        console.error("   After retry:", JSON.stringify(this.categoryProgress, null, 2));
       }
-    }));
-    console.log("✅ Step 4 Complete");
+      console.log("");
 
-    console.log("═══════════════════════════════════════");
-    console.log("🎉 Unlock sequence complete!");
-    console.log("═══════════════════════════════════════\n");
+      // Step 6: Notify map
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      console.log("📢 STEP 6: Notify map");
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      window.dispatchEvent(new CustomEvent("levels:updated", {
+        detail: { 
+          category: this.currentCategoryId, 
+          level: valueToSave 
+        }
+      }));
+      console.log(`   ✅ Event dispatched: levels:updated with ${this.currentCategoryId} = ${valueToSave}`);
+      console.log("");
 
-  } catch (error) {
-    console.error("═══════════════════════════════════════");
-    console.error("❌ UNLOCK FAILED");
-    console.error("═══════════════════════════════════════");
-    console.error("Error:", error);
-    if (error instanceof Error) {
-      console.error("Message:", error.message);
-      console.error("Stack:", error.stack);
+      console.log("╔═══════════════════════════════════════════════════════╗");
+      console.log("║            🎉 UNLOCK SEQUENCE COMPLETE! ✨            ║");
+      console.log("╚═══════════════════════════════════════════════════════╝");
+      console.log("\n\n");
+
+    } catch (error) {
+      console.log("");
+      console.log("╔═══════════════════════════════════════════════════════╗");
+      console.log("║                ❌ UNLOCK FAILED!                      ║");
+      console.log("╚═══════════════════════════════════════════════════════╝");
+      console.error("Error:", error);
+      if (error instanceof Error) {
+        console.error("Message:", error.message);
+        console.error("Stack:", error.stack);
+      }
+      console.log("\n\n");
+    } finally {
+      // 🔓 UNLOCK: Allow future calls
+      (this as any)._unlocking = false;
     }
-    console.error("═══════════════════════════════════════\n");
-  } finally {
-    // 🔓 UNLOCK: Allow future calls
-    (this as any)._unlocking = false;
   }
-}
 }
