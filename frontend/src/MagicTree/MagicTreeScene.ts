@@ -120,7 +120,7 @@ export default class MagicTree extends Phaser.Scene {
       }
     } else {
       // Levels 2-10: Must have completed previous level in THIS category
-      if (this.currentLevelInCategory > unlockedInCategory) {
+      if (this.currentLevelInCategory > unlockedInCategory + 1) {
         alert(`🚫 Complete ${this.currentCategoryId} Level ${this.currentLevelInCategory - 1} first!`);
         window.location.href = "/MagicTree";
         return;
@@ -849,32 +849,30 @@ export default class MagicTree extends Phaser.Scene {
 
   // ✅ FIXED: Now passes completedLevel to saveMagicTreeLevel
   private async unlockNextLevel() {
-    if (!this.userId) return;
+  if (!this.userId) return;
 
-    const completedLevel = this.currentLevelInCategory;
-    const currentUnlocked = this.categoryProgress[this.currentCategoryId] || 0;
+  const completedLevel = this.currentLevelInCategory;
 
-    // Only save if this level was not yet completed
-    if (completedLevel > currentUnlocked) {
-      try {
-        // ✅ SAVE COMPLETED LEVEL (NOT +1)
-        await saveMagicTreeLevel(
-          this.userId,
-          this.currentCategoryId,
-          completedLevel
-        );
+  try {
+    // 1️⃣ Save completed level ONLY
+    await saveMagicTreeLevel(
+      this.userId,
+      this.currentCategoryId,
+      completedLevel
+    );
 
-        // ✅ LOCAL STATE MATCHES DATABASE
-        this.categoryProgress[this.currentCategoryId] = completedLevel;
+    // 2️⃣ Re-fetch from backend (single source of truth)
+    this.categoryProgress = await getAllMagicTreeProgress(this.userId);
 
-        console.log(
-          `✅ Completed ${this.currentCategoryId} Level ${completedLevel}`
-        );
+    console.log(
+      `✅ Completed ${this.currentCategoryId} Level ${completedLevel}`,
+      this.categoryProgress
+    );
 
-        window.dispatchEvent(new CustomEvent("levels:updated"));
-      } catch (e) {
-        console.error("Failed to save category progress:", e);
-      }
-    }
+    // 3️⃣ Notify map
+    window.dispatchEvent(new CustomEvent("levels:updated"));
+  } catch (e) {
+    console.error("Failed to save category progress:", e);
   }
+}
 }
