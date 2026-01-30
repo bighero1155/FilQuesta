@@ -291,7 +291,7 @@ const MagicTreeMap: React.FC = () => {
               isUnlocked = hasCompletedLevel1 || totalLevelsUnlocked === 0;
             } else {
               // Levels 2-10: Unlock if previous level in THIS category is completed
-              isUnlocked = levelNumber <= unlockedInCategory;
+              isUnlocked = levelNumber < unlockedInCategory;
             }
 
             return {
