@@ -27,12 +27,15 @@ const MagicTreeMap: React.FC = () => {
     EXPERT: 1,
   });
 
+  // ---------------------------
   // Resolve user
+  // ---------------------------
   useEffect(() => {
     if (user?.id) {
       setUserId(user.id);
       return;
     }
+
     try {
       const stored = localStorage.getItem("user");
       if (stored) {
@@ -42,7 +45,9 @@ const MagicTreeMap: React.FC = () => {
     } catch { /* empty */ }
   }, [user]);
 
+  // ---------------------------
   // Fetch progress
+  // ---------------------------
   useEffect(() => {
     if (!userId) {
       setLoading(false);
@@ -57,7 +62,7 @@ const MagicTreeMap: React.FC = () => {
         const userRes = await axios.get(`/users/${userId}`);
         setGameScore(userRes.data.total_score ?? 0);
       } catch (e) {
-        console.error(e);
+        console.error("❌ Failed loading MagicTree map:", e);
       } finally {
         setLoading(false);
       }
@@ -65,6 +70,13 @@ const MagicTreeMap: React.FC = () => {
 
     load();
   }, [userId]);
+
+  // ---------------------------
+  // 🔍 DEBUG: confirm map reads backend
+  // ---------------------------
+  useEffect(() => {
+    console.log("📊 MagicTreeMap categoryProgress from backend:", categoryProgress);
+  }, [categoryProgress]);
 
   if (!userId) return <div>Please log in</div>;
   if (loading) return <div>Loading…</div>;
@@ -98,7 +110,10 @@ const MagicTreeMap: React.FC = () => {
           const maxUnlocked = Math.min(raw + 1, LEVELS_PER_CATEGORY);
 
           return (
-            <div key={section.categoryId} style={{ background: "rgba(255,255,255,0.1)", borderRadius: 16, padding: 16 }}>
+            <div
+              key={section.categoryId}
+              style={{ background: "rgba(255,255,255,0.1)", borderRadius: 16, padding: 16 }}
+            >
               <div style={{ background: section.gradient, padding: 10, color: "#fff", borderRadius: 10 }}>
                 {section.name}
               </div>

@@ -101,27 +101,32 @@ export async function getCategoryProgress(
 // Get all category progress for a game
 export async function getAllCategoryProgress(
   userId: number,
-  gameBaseName: string,     // e.g., "MagicTree"
-  categories: string[]       // e.g., ["BASIC", "NORMAL", "HARD"]
+  gameBaseName: string,
+  categories: string[]
 ): Promise<Record<string, number>> {
   try {
     const allLevels = await getUserLevels(userId);
-    const gameLevels = allLevels.filter((l) => l.game_name.startsWith(`${gameBaseName}_`));
-    
-    const progress: Record<string, number> = {};
-    categories.forEach(cat => progress[cat] = 0);
 
-    gameLevels.forEach((level) => {
-      const category = level.game_name.replace(`${gameBaseName}_`, "");
-      if (category in progress) {
-        progress[category] = level.unlocked_levels;
-      }
-    });
+    // ✅ IMPORTANT: default to 1 (Level 1 playable)
+    const progress: Record<string, number> = {};
+    categories.forEach(cat => (progress[cat] = 1));
+
+    allLevels
+      .filter(l => l.game_name.startsWith(`${gameBaseName}_`))
+      .forEach(level => {
+        const category = level.game_name.replace(`${gameBaseName}_`, "");
+        if (category in progress) {
+          // ✅ never allow less than 1
+          progress[category] = Math.max(1, level.unlocked_levels);
+        }
+      });
 
     return progress;
   } catch (error) {
     console.error(`Error fetching ${gameBaseName} progress:`, error);
-    return Object.fromEntries(categories.map(cat => [cat, 0]));
+
+    // ✅ safe fallback: all categories start at level 1
+    return Object.fromEntries(categories.map(cat => [cat, 1]));
   }
 }
 
