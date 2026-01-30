@@ -106,25 +106,15 @@ export default class MagicTree extends Phaser.Scene {
       this.categoryProgress = { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
     }
 
-    // Check if level is unlocked
-    const unlockedInCategory = this.categoryProgress[this.currentCategoryId] || 0;
-    const hasCompletedAnyLevel1 = Object.values(this.categoryProgress).some(val => val >= 1);
-    
-    if (this.currentLevelInCategory === 1) {
-      // Level 1: Must have completed any Level 1, OR this is first play ever
-      const totalProgress = Object.values(this.categoryProgress).reduce((sum, val) => sum + val, 0);
-      if (!hasCompletedAnyLevel1 && totalProgress > 0) {
-        alert("🚫 Complete any Level 1 first to unlock all Level 1s!");
-        window.location.href = "/MagicTree";
-        return;
-      }
-    } else {
-      // Levels 2-10: Must have completed previous level in THIS category
-      if (this.currentLevelInCategory > unlockedInCategory + 1) {
-        alert(`🚫 Complete ${this.currentCategoryId} Level ${this.currentLevelInCategory - 1} first!`);
-        window.location.href = "/MagicTree";
-        return;
-      }
+    // 🚨 SINGLE RULE ONLY - If map allows entry, scene MUST allow entry
+    const unlockedInCategory = this.categoryProgress[this.currentCategoryId] ?? 1;
+
+    if (this.currentLevelInCategory > unlockedInCategory) {
+      alert(
+        `🚫 Level ${this.currentLevelInCategory} is locked. Complete previous levels first.`
+      );
+      window.location.href = "/MagicTree";
+      return;
     }
 
     this.startTime = Date.now();
@@ -769,8 +759,10 @@ export default class MagicTree extends Phaser.Scene {
         15, // Max levels per category
         () => {
           if (hasNextLevel) {
-            // Go to next level in same category
-            const nextGlobalLevel = this.currentLevel + 1;
+            // ✅ FIXED: Calculate next global level from category index + local level
+            const categoryIndex = ["BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"].indexOf(this.currentCategoryId);
+            const nextGlobalLevel = (categoryIndex * 15) + (this.currentLevelInCategory + 1);
+            
             this.scene.restart({ 
               score: this.score, 
               level: nextGlobalLevel 
