@@ -16,34 +16,23 @@ export interface Level {
 // Get all levels of a user
 export async function getUserLevels(userId: number): Promise<Level[]> {
   if (!userId) throw new Error("User ID is undefined");
-  const response = await axios.get(`/users/${userId}/levels`, {
-    withCredentials: true,
-  });
-  return response.data;
+  
+  console.log(`📥 Fetching levels for user ${userId}`);
+  
+  try {
+    const response = await axios.get(`/users/${userId}/levels`, {
+      withCredentials: true,
+    });
+    
+    console.log(`✅ Received levels for user ${userId}:`, response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error(`❌ Failed to fetch levels for user ${userId}:`, error.response?.data || error.message);
+    throw error;
+  }
 }
 
-// Save or update levels for a game and user
-// ⚠️ DEPRECATED: Use unlockNextLevel instead for proper progression
-export async function saveLevel(
-  userId: number,
-  gameName: string,
-  unlockedLevels: number
-): Promise<Level> {
-  if (!userId) throw new Error("User ID is undefined");
-  
-  console.log(`💾 Saving: User ${userId}, Game: ${gameName}, Level: ${unlockedLevels}`);
-  
-  const response = await axios.post(
-    `/users/${userId}/levels`,
-    { game_name: gameName, unlocked_levels: unlockedLevels },
-    { withCredentials: true }
-  );
-  
-  console.log('✅ Saved successfully:', response.data);
-  return response.data;
-}
-
-// ✅ FIXED: Unlock next level based on completed level
+// ✅ Unlock next level based on completed level
 // This is the CORRECT way to save progress
 export async function unlockNextLevel(
   userId: number,
@@ -52,21 +41,39 @@ export async function unlockNextLevel(
 ): Promise<void> {
   if (!userId) throw new Error("User ID is undefined");
 
-  console.log(`💾 Saving: User ${userId}, Game: ${gameName}, Level: ${completedLevel}`);
+  console.log(`📤 Unlocking next level...`);
+  console.log(`   User ID: ${userId}`);
+  console.log(`   Game: ${gameName}`);
+  console.log(`   Completed Level: ${completedLevel}`);
 
   try {
     const response = await axios.post(
       `/users/${userId}/levels`,
       {
         game_name: gameName,
-        completed_level: completedLevel, // ✅ Send completed_level, backend unlocks next
+        completed_level: completedLevel,
       },
       { withCredentials: true }
     );
 
-    console.log('✅ Level unlocked successfully:', response.data);
+    console.log('✅✅✅ Level unlocked successfully!');
+    console.log('   Response:', response.data);
+    
+    // Dispatch event to notify UI
+    window.dispatchEvent(new Event("levels:updated"));
+    console.log('🔔 Dispatched levels:updated event');
+    
   } catch (error: any) {
-    console.error('❌ Failed to unlock next level:', error);
+    console.error('❌ Failed to unlock next level!');
+    console.error('   Error:', error.response?.data || error.message);
+    console.error('   Status:', error.response?.status);
+    
+    if (error.response?.status === 404) {
+      console.error('   🚨 User not found! Check if userId is correct.');
+    } else if (error.response?.status === 422) {
+      console.error('   🚨 Validation error! Check request data.');
+    }
+    
     throw error;
   }
 }
@@ -82,12 +89,18 @@ export async function getCategoryProgress(
   categoryId: string     // e.g., "BASIC", "NOUNS", "SKELETAL"
 ): Promise<number> {
   try {
+    console.log(`📊 Fetching ${gameBaseName}_${categoryId} progress for user ${userId}`);
+    
     const allLevels = await getUserLevels(userId);
     const gameName = `${gameBaseName}_${categoryId}`;
     const record = allLevels.find((l) => l.game_name === gameName);
-    return record?.unlocked_levels || 0;
+    
+    const progress = record?.unlocked_levels || 0;
+    console.log(`   Progress: ${progress} levels unlocked`);
+    
+    return progress;
   } catch (error) {
-    console.error(`Error fetching ${gameBaseName} ${categoryId} progress:`, error);
+    console.error(`❌ Error fetching ${gameBaseName} ${categoryId} progress:`, error);
     return 0;
   }
 }
@@ -99,6 +112,8 @@ export async function getAllCategoryProgress(
   categories: string[]       // e.g., ["BASIC", "NORMAL", "HARD"]
 ): Promise<Record<string, number>> {
   try {
+    console.log(`📊 Fetching all ${gameBaseName} progress for user ${userId}`);
+    
     const allLevels = await getUserLevels(userId);
     const gameLevels = allLevels.filter((l) => l.game_name.startsWith(`${gameBaseName}_`));
     
@@ -109,26 +124,15 @@ export async function getAllCategoryProgress(
       const category = level.game_name.replace(`${gameBaseName}_`, "");
       if (category in progress) {
         progress[category] = level.unlocked_levels;
+        console.log(`   ${category}: ${level.unlocked_levels} levels unlocked`);
       }
     });
 
     return progress;
   } catch (error) {
-    console.error(`Error fetching ${gameBaseName} progress:`, error);
+    console.error(`❌ Error fetching ${gameBaseName} progress:`, error);
     return Object.fromEntries(categories.map(cat => [cat, 0]));
   }
-}
-
-// Save category progress for any game
-// ⚠️ DEPRECATED: Use unlockNextLevel instead
-export async function saveCategoryLevel(
-  userId: number,
-  gameBaseName: string,
-  categoryId: string,
-  levelNumber: number
-): Promise<Level> {
-  const gameName = `${gameBaseName}_${categoryId}`;
-  return await saveLevel(userId, gameName, levelNumber);
 }
 
 // Check if player has completed any Level 1 in any category
@@ -139,9 +143,12 @@ export async function hasCompletedAnyLevelOne(
 ): Promise<boolean> {
   try {
     const progress = await getAllCategoryProgress(userId, gameBaseName, categories);
-    return Object.values(progress).some((unlocked) => unlocked >= 1);
+    const hasCompleted = Object.values(progress).some((unlocked) => unlocked >= 1);
+    
+    console.log(`✅ Has completed any Level 1 in ${gameBaseName}: ${hasCompleted}`);
+    return hasCompleted;
   } catch (error) {
-    console.error(`Error checking Level 1 completion for ${gameBaseName}:`, error);
+    console.error(`❌ Error checking Level 1 completion for ${gameBaseName}:`, error);
     return false;
   }
 }
@@ -154,16 +161,21 @@ export async function resetAllCategoryLevels(
 ): Promise<void> {
   if (!userId) throw new Error("User ID is undefined");
   
+  console.log(`🔄 Resetting all ${gameBaseName} levels for user ${userId}`);
+  
   for (const category of categories) {
     try {
       await axios.delete(`/users/${userId}/levels`, {
         data: { game_name: `${gameBaseName}_${category}` },
         withCredentials: true,
       });
+      console.log(`   ✅ Reset ${gameBaseName}_${category}`);
     } catch (error) {
-      console.error(`Error resetting ${gameBaseName}_${category}:`, error);
+      console.error(`   ❌ Error resetting ${gameBaseName}_${category}:`, error);
     }
   }
+  
+  console.log(`✅ All ${gameBaseName} levels reset complete`);
 }
 
 // ========================================
@@ -181,26 +193,30 @@ export async function getMagicTreeCategoryProgress(
 
 export async function getAllMagicTreeProgress(userId: number): Promise<Record<string, number>> {
   try {
+    console.log(`📊 Fetching MagicTree progress for user ${userId}`);
+    
     // ✅ Use the optimized endpoint that returns formatted progress
     const response = await axios.get(`/users/${userId}/levels`, {
       withCredentials: true,
     });
     
+    console.log(`✅ MagicTree progress received:`, response.data);
+    
     // Backend now returns { "BASIC": 1, "NORMAL": 0, ... } directly
     return response.data;
-  } catch (error) {
-    console.error("Error fetching MagicTree progress:", error);
+  } catch (error: any) {
+    console.error("❌ Error fetching MagicTree progress:", error.response?.data || error.message);
     return { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
   }
 }
 
-// ⚠️ DEPRECATED: Use unlockNextLevel instead
 export async function saveMagicTreeLevel(
   userId: number,
   categoryId: string,
   completedLevel: number
 ): Promise<void> {
   const gameName = `MagicTree_${categoryId}`;
+  console.log(`💾 Saving MagicTree level: ${categoryId} Level ${completedLevel}`);
   return unlockNextLevel(userId, gameName, completedLevel);
 }
 
@@ -210,6 +226,43 @@ export async function hasMagicTreeCompletedAnyLevelOne(userId: number): Promise<
 
 export async function resetAllMagicTreeLevels(userId: number): Promise<void> {
   return resetAllCategoryLevels(userId, "MagicTree", MAGICTREE_CATEGORIES);
+}
+
+// ========================================
+// LEGACY FUNCTIONS (For backward compatibility)
+// ========================================
+
+// ⚠️ DEPRECATED: Use unlockNextLevel instead for proper progression
+export async function saveLevel(
+  userId: number,
+  gameName: string,
+  unlockedLevels: number
+): Promise<Level> {
+  if (!userId) throw new Error("User ID is undefined");
+  
+  console.warn(`⚠️ DEPRECATED: saveLevel() called. Use unlockNextLevel() instead!`);
+  console.log(`💾 Saving: User ${userId}, Game: ${gameName}, Level: ${unlockedLevels}`);
+  
+  const response = await axios.post(
+    `/users/${userId}/levels`,
+    { game_name: gameName, unlocked_levels: unlockedLevels },
+    { withCredentials: true }
+  );
+  
+  console.log('✅ Saved successfully:', response.data);
+  return response.data;
+}
+
+// ⚠️ DEPRECATED: Use unlockNextLevel instead
+export async function saveCategoryLevel(
+  userId: number,
+  gameBaseName: string,
+  categoryId: string,
+  levelNumber: number
+): Promise<Level> {
+  console.warn(`⚠️ DEPRECATED: saveCategoryLevel() called. Use unlockNextLevel() instead!`);
+  const gameName = `${gameBaseName}_${categoryId}`;
+  return await saveLevel(userId, gameName, levelNumber);
 }
 
 // ========================================

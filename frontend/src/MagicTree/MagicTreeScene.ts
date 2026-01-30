@@ -54,12 +54,17 @@ export default class MagicTree extends Phaser.Scene {
   }
 
   async init(data: any) {
+    console.log("🎮 MagicTree Scene Initializing...");
+    console.log("   Data received:", data);
+    
     this.score = data?.score ?? 0;
     
     // Get level from URL or data
     const urlParams = new URLSearchParams(window.location.search);
     const levelParam = urlParams.get("level");
     const categoryParam = urlParams.get("category");
+    
+    console.log("   URL params - level:", levelParam, "category:", categoryParam);
     
     let startLevel = data?.level ?? null;
     
@@ -81,6 +86,8 @@ export default class MagicTree extends Phaser.Scene {
       this.calculateCategoryFromGlobalLevel(this.currentLevel);
     }
     
+    console.log(`   📍 Playing: ${this.currentCategoryId} Level ${this.currentLevelInCategory} (Global Level ${this.currentLevel})`);
+    
     this.gameActive = true;
     this.currentSum = 0;
     
@@ -94,6 +101,8 @@ export default class MagicTree extends Phaser.Scene {
     }
 
     this.userId = this.getUserId();
+    console.log("   👤 User ID:", this.userId);
+    
     if (!this.userId) {
       alert("❌ User not found! Please log in again.");
       window.location.href = "/landing";
@@ -101,8 +110,11 @@ export default class MagicTree extends Phaser.Scene {
     }
 
     try {
+      console.log("   📊 Fetching category progress...");
       this.categoryProgress = await this.fetchCategoryProgress(this.userId);
-    } catch {
+      console.log("   ✅ Category progress loaded:", this.categoryProgress);
+    } catch (error) {
+      console.error("   ❌ Failed to load category progress:", error);
       this.categoryProgress = { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
     }
 
@@ -110,23 +122,29 @@ export default class MagicTree extends Phaser.Scene {
     const unlockedInCategory = this.categoryProgress[this.currentCategoryId] || 0;
     const hasCompletedAnyLevel1 = Object.values(this.categoryProgress).some(val => val >= 1);
     
+    console.log(`   🔓 Unlocked in ${this.currentCategoryId}:`, unlockedInCategory);
+    console.log(`   ✅ Has completed any Level 1:`, hasCompletedAnyLevel1);
+    
     if (this.currentLevelInCategory === 1) {
       // Level 1: Must have completed any Level 1, OR this is first play ever
       const totalProgress = Object.values(this.categoryProgress).reduce((sum, val) => sum + val, 0);
       if (!hasCompletedAnyLevel1 && totalProgress > 0) {
+        console.warn("   🚫 Level 1 locked - must complete any Level 1 first");
         alert("🚫 Complete any Level 1 first to unlock all Level 1s!");
         window.location.href = "/MagicTree";
         return;
       }
     } else {
-      // Levels 2-10: Must have completed previous level in THIS category
+      // Levels 2-15: Must have completed previous level in THIS category
       if (this.currentLevelInCategory > unlockedInCategory) {
+        console.warn(`   🚫 Level ${this.currentLevelInCategory} locked - must complete Level ${this.currentLevelInCategory - 1} first`);
         alert(`🚫 Complete ${this.currentCategoryId} Level ${this.currentLevelInCategory - 1} first!`);
         window.location.href = "/MagicTree";
         return;
       }
     }
 
+    console.log("   ✅ Level access granted!");
     this.startTime = Date.now();
   }
 
@@ -372,6 +390,7 @@ export default class MagicTree extends Phaser.Scene {
 
   // ⏰ HANDLE TIME OUT
   private async handleTimeOut() {
+    console.log("⏰ Time's up!");
     this.stopFruits();
     this.stopCountdown();
     
@@ -754,11 +773,14 @@ export default class MagicTree extends Phaser.Scene {
     this.ui.sumText.setText("Current: " + this.currentSum);
 
     if (this.currentSum === this.targetAnswer) {
+      console.log("🎉 Correct answer! Level complete!");
+      
       this.stopFruits();
       this.stopCountdown(); // ⏰ Stop timer on success
       await this.addScore(10);
       
-      // 🔥 CRITICAL FIX: Call unlockNextLevel with proper parameters
+      // 🔥 SAVE PROGRESS TO DATABASE
+      console.log("💾 Attempting to save progress...");
       await this.saveAndUnlockNextLevel();
       
       // Determine if there's a next level
@@ -771,6 +793,7 @@ export default class MagicTree extends Phaser.Scene {
         15, // Max levels per category
         () => {
           if (hasNextLevel) {
+            console.log("➡️ Moving to next level");
             // Go to next level in same category
             const nextGlobalLevel = this.currentLevel + 1;
             this.scene.restart({ 
@@ -778,12 +801,15 @@ export default class MagicTree extends Phaser.Scene {
               level: nextGlobalLevel 
             });
           } else {
+            console.log("🏁 All levels in category complete! Returning to map");
             // Completed all levels in category, return to map
             window.location.href = "/MagicTree";
           }
         }
       );
     } else if (this.currentSum > this.targetAnswer || this.currentSum < 0) {
+      console.log("❌ Wrong answer! Game over");
+      
       this.stopFruits();
       this.stopCountdown(); // ⏰ Stop timer on fail
       if (this.userId) await logGameOver(this.userId, SCENE_KEY);
@@ -849,15 +875,23 @@ export default class MagicTree extends Phaser.Scene {
     }
   }
 
-  // 🔥 CRITICAL FIX: Use unlockNextLevel function with correct parameters
+  // 🔥 SAVE PROGRESS AND UNLOCK NEXT LEVEL
   private async saveAndUnlockNextLevel() {
     if (!this.userId) {
-      console.warn("⚠️ Cannot unlock next level: userId is null");
+      console.error("⚠️ Cannot save progress: userId is null");
       return;
     }
 
     const gameName = `MagicTree_${this.currentCategoryId}`;
     const completedLevel = this.currentLevelInCategory;
+
+    console.log("╔════════════════════════════════════════╗");
+    console.log("║  💾 SAVING LEVEL PROGRESS              ║");
+    console.log("╚════════════════════════════════════════╝");
+    console.log(`   👤 User ID: ${this.userId}`);
+    console.log(`   🎮 Game: ${gameName}`);
+    console.log(`   🏁 Completed Level: ${completedLevel}`);
+    console.log(`   🔓 Next Level to Unlock: ${completedLevel + 1}`);
 
     try {
       // ✅ Call unlockNextLevel with userId, gameName, and completedLevel
@@ -866,16 +900,27 @@ export default class MagicTree extends Phaser.Scene {
       // Update local progress to reflect the newly unlocked level
       this.categoryProgress[this.currentCategoryId] = completedLevel + 1;
       
-      console.log(
-        `✅ Level ${completedLevel} completed in ${this.currentCategoryId}. ` +
-        `Level ${completedLevel + 1} is now unlocked.`
-      );
+      console.log("╔════════════════════════════════════════╗");
+      console.log("║  ✅ SAVE SUCCESSFUL!                   ║");
+      console.log("╚════════════════════════════════════════╝");
+      console.log(`   ${this.currentCategoryId} Level ${completedLevel} marked complete`);
+      console.log(`   ${this.currentCategoryId} Level ${completedLevel + 1} is now unlocked`);
+      console.log("   🔔 Dispatching levels:updated event...");
       
       // 🔔 CRITICAL: Dispatch event to notify the map to refresh
       window.dispatchEvent(new Event("levels:updated"));
+      console.log("   ✅ Event dispatched!");
       
-    } catch (error) {
-      console.error("❌ Failed to unlock next level:", error);
+    } catch (error: any) {
+      console.error("╔════════════════════════════════════════╗");
+      console.error("║  ❌ SAVE FAILED!                       ║");
+      console.error("╚════════════════════════════════════════╝");
+      console.error("   Error:", error);
+      console.error("   Response:", error.response?.data);
+      console.error("   Status:", error.response?.status);
+      
+      // Alert the user that progress couldn't be saved
+      alert("⚠️ Progress couldn't be saved. Please check your connection and try again.");
     }
   }
 }
