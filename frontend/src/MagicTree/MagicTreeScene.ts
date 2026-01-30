@@ -49,12 +49,18 @@ export default class MagicTree extends Phaser.Scene {
   private timerText!: Phaser.GameObjects.Text;
   private countdownTimer?: Phaser.Time.TimerEvent;
 
+  // ✅ FIX #2 - Guard flag to prevent duplicate saves
+  private levelSaved = false;
+
   constructor() {
     super(SCENE_KEY);
   }
 
   async init(data: any) {
     this.score = data?.score ?? 0;
+    
+    // ✅ FIX #2 - Reset guard flag
+    this.levelSaved = false;
     
     // Get level from URL or data
     const urlParams = new URLSearchParams(window.location.search);
@@ -743,6 +749,7 @@ export default class MagicTree extends Phaser.Scene {
     f.setVelocityX(horizontalDrift);
   }
 
+  // ✅ FIX #2 - Updated collectFruit with guard flag
   private async collectFruit(fruit: Phaser.Physics.Arcade.Sprite) {
     const val = (fruit as any).fruitValue;
     const { x, y } = fruit;
@@ -754,10 +761,15 @@ export default class MagicTree extends Phaser.Scene {
     this.ui.sumText.setText("Current: " + this.currentSum);
 
     if (this.currentSum === this.targetAnswer) {
+      // ✅ FIX #2 - Guard against duplicate saves
+      if (!this.levelSaved) {
+        this.levelSaved = true;
+        await this.unlockNextLevel();
+      }
+
       this.stopFruits();
       this.stopCountdown(); // ⏰ Stop timer on success
       await this.addScore(10);
-      await this.unlockNextLevel();
       
       // Determine if there's a next level
       const hasNextLevel = this.currentLevelInCategory < 15;
@@ -820,47 +832,54 @@ export default class MagicTree extends Phaser.Scene {
     if (!this.userId) return;
     const end = Date.now();
     const spent = Math.floor((end - this.startTime) / 1000);
-try {
-await logPageVisit(this.userId, SCENE_KEY, spent);
-} catch (err) {
-console.error("Error logging time:", err);
-}
-}
-private getUserId(): number | null {
-try {
-const id = localStorage.getItem("user_id");
-if (id) return Number(id);
-const u = localStorage.getItem("user");
-return u ? Number(JSON.parse(u).user_id || JSON.parse(u).id) : null;
-} catch {
-return null;
-}
-}
-private async fetchCategoryProgress(uid: number): Promise<Record<string, number>> {
-try {
-return await getAllMagicTreeProgress(uid);
-} catch (error) {
-console.error("Error fetching category progress:", error);
-return { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
-}
-}
-private async unlockNextLevel() {
-if (!this.userId) return;
-const nextLevelInCategory = this.currentLevelInCategory + 1;
-
-// Only save if this unlocks a NEW level (not already unlocked)
-const currentUnlocked = this.categoryProgress[this.currentCategoryId] || 0;
-
-if (nextLevelInCategory > currentUnlocked) {
-  try {
-    await saveMagicTreeLevel(this.userId, this.currentCategoryId, nextLevelInCategory);
-    this.categoryProgress[this.currentCategoryId] = nextLevelInCategory;
-    
-    // Dispatch event to update UI
-    window.dispatchEvent(new CustomEvent("levels:updated"));
-  } catch (e) {
-    console.error("Failed to save category progress:", e);
+    try {
+      await logPageVisit(this.userId, SCENE_KEY, spent);
+    } catch (err) {
+      console.error("Error logging time:", err);
+    }
   }
-}
-}
+
+  private getUserId(): number | null {
+    try {
+      const id = localStorage.getItem("user_id");
+      if (id) return Number(id);
+      const u = localStorage.getItem("user");
+      return u ? Number(JSON.parse(u).user_id || JSON.parse(u).id) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async fetchCategoryProgress(uid: number): Promise<Record<string, number>> {
+    try {
+      return await getAllMagicTreeProgress(uid);
+    } catch (error) {
+      console.error("Error fetching category progress:", error);
+      return { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
+    }
+  }
+
+  // ✅ FIX #3 - Hardened unlockNextLevel with correct logic
+  private async unlockNextLevel() {
+    if (!this.userId) return;
+
+    const unlocked = this.categoryProgress[this.currentCategoryId] || 0;
+    const newUnlocked = Math.max(unlocked, this.currentLevelInCategory);
+
+    // Only save if progress increases
+    if (newUnlocked > unlocked) {
+      try {
+        await saveMagicTreeLevel(
+          this.userId,
+          this.currentCategoryId,
+          newUnlocked
+        );
+
+        this.categoryProgress[this.currentCategoryId] = newUnlocked;
+        window.dispatchEvent(new CustomEvent("levels:updated"));
+      } catch (e) {
+        console.error("❌ Failed to save category progress:", e);
+      }
+    }
+  }
 }
