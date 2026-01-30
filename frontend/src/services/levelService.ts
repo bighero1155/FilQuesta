@@ -32,27 +32,46 @@ export async function saveLevel(
   unlockedLevels: number
 ): Promise<Level> {
   if (!userId) throw new Error("User ID is undefined");
+  
+  console.log(`💾 Saving: User ${userId}, Game: ${gameName}, Level: ${unlockedLevels}`);
+  
   const response = await axios.post(
     `${API_URL}/users/${userId}/levels`,
     { game_name: gameName, unlocked_levels: unlockedLevels },
     { withCredentials: true }
   );
+  
+  console.log('✅ Saved successfully:', response.data);
   return response.data;
 }
 
-// Increment unlocked_levels automatically
+// ✅ FIXED: Unlock next level based on completed level
+// This ensures unlocked_levels = highest playable level index
 export async function unlockNextLevel(
   userId: number,
-  gameName: string
+  gameName: string,
+  completedLevel: number
 ): Promise<Level> {
   try {
     const allLevels = await getUserLevels(userId);
     const current = allLevels.find((l) => l.game_name === gameName);
-    const nextValue = (current?.unlocked_levels || 0) + 1;
-    return await saveLevel(userId, gameName, nextValue);
+
+    const currentUnlocked = current?.unlocked_levels ?? 0;
+
+    // 🔒 Never go backwards - always unlock at least completedLevel + 1
+    const nextUnlocked = Math.max(currentUnlocked, completedLevel + 1);
+
+    console.log(
+      `🔓 Unlocking ${gameName}: completed=${completedLevel}, unlocked=${nextUnlocked}`
+    );
+
+    return await saveLevel(userId, gameName, nextUnlocked);
   } catch (error: any) {
     if (error.response && error.response.status === 404) {
-      return await saveLevel(userId, gameName, 1);
+      // First time playing - unlock level after the completed one
+      const nextUnlocked = completedLevel + 1;
+      console.log(`📝 No existing progress, unlocking level ${nextUnlocked} for ${gameName}`);
+      return await saveLevel(userId, gameName, nextUnlocked);
     }
     throw error;
   }
@@ -94,7 +113,6 @@ export async function getAllCategoryProgress(
 
     gameLevels.forEach((level) => {
       const category = level.game_name.replace(`${gameBaseName}_`, "");
-      // FIXED: Using 'in' operator instead of hasOwnProperty
       if (category in progress) {
         progress[category] = level.unlocked_levels;
       }
