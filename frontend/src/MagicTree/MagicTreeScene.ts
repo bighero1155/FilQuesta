@@ -856,10 +856,10 @@ export default class MagicTree extends Phaser.Scene {
   try {
     // 1️⃣ Save completed level ONLY
     await saveMagicTreeLevel(
-      this.userId,
-      this.currentCategoryId,
-      completedLevel
-    );
+    this.userId,
+    this.currentCategoryId,
+    completedLevel + 1
+  );
 
     // 2️⃣ Re-fetch from backend (single source of truth)
     this.categoryProgress = await getAllMagicTreeProgress(this.userId);
