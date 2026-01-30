@@ -19,7 +19,6 @@ const MagicTreeMap: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [gameScore, setGameScore] = useState(0);
 
-  // DEFAULT = 1 (backend says only level 1 is unlocked)
   const [categoryProgress, setCategoryProgress] = useState<Record<string, number>>({
     BASIC: 1,
     NORMAL: 1,
@@ -28,29 +27,22 @@ const MagicTreeMap: React.FC = () => {
     EXPERT: 1,
   });
 
-  // ---------------------------
-  // Resolve userId
-  // ---------------------------
+  // Resolve user
   useEffect(() => {
     if (user?.id) {
       setUserId(user.id);
       return;
     }
-
     try {
       const stored = localStorage.getItem("user");
       if (stored) {
         const parsed = JSON.parse(stored);
         setUserId(Number(parsed.user_id || parsed.id));
       }
-    } catch {
-      setUserId(null);
-    }
+    } catch { /* empty */ }
   }, [user]);
 
-  // ---------------------------
-  // Fetch progress + score
-  // ---------------------------
+  // Fetch progress
   useEffect(() => {
     if (!userId) {
       setLoading(false);
@@ -64,8 +56,8 @@ const MagicTreeMap: React.FC = () => {
 
         const userRes = await axios.get(`/users/${userId}`);
         setGameScore(userRes.data.total_score ?? 0);
-      } catch (err) {
-        console.error("Failed loading MagicTree map", err);
+      } catch (e) {
+        console.error(e);
       } finally {
         setLoading(false);
       }
@@ -74,31 +66,14 @@ const MagicTreeMap: React.FC = () => {
     load();
   }, [userId]);
 
-  // ---------------------------
-  // Listen for level updates
-  // ---------------------------
-  useEffect(() => {
-    const refresh = async () => {
-      if (!userId) return;
-      const progress = await getAllMagicTreeProgress(userId);
-      setCategoryProgress(progress);
-    };
-
-    window.addEventListener("levels:updated", refresh);
-    return () => window.removeEventListener("levels:updated", refresh);
-  }, [userId]);
-
   if (!userId) return <div>Please log in</div>;
   if (loading) return <div>Loading…</div>;
 
-  // ---------------------------
-  // ✅ TOTAL COMPLETED (MAP LOGIC)
-  // Railway stuck at 1 → treat as 1 completed
-  // ---------------------------
-  const totalCompleted = Object.values(categoryProgress).reduce((sum, raw) => {
-    const maxUnlocked = raw === 1 ? 2 : raw + 1;
-    return sum + Math.max(0, maxUnlocked - 2);
-  }, 0);
+  // TEMP FIX: treat backend value as completed level
+  const totalCompleted = Object.values(categoryProgress).reduce(
+    (sum, v) => sum + Math.max(0, v),
+    0
+  );
 
   const totalLevels = LEVEL_SECTIONS.length * LEVELS_PER_CATEGORY;
   const progressPercent = Math.round((totalCompleted / totalLevels) * 100);
@@ -117,45 +92,36 @@ const MagicTreeMap: React.FC = () => {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 24 }}>
         {LEVEL_SECTIONS.map((section, sectionIndex) => {
-          const rawUnlocked = categoryProgress[section.categoryId] ?? 1;
+          const raw = categoryProgress[section.categoryId] ?? 1;
 
-          // 🚨 TEMP MAP FIX:
-          // backend says 1 → open 1 & 2
-          // backend says 2 → open 1,2,3
-          const maxUnlocked = rawUnlocked === 1 ? 2 : rawUnlocked + 1;
-
-          const completed = Math.max(0, maxUnlocked - 2);
+          // 🚑 TEMP FORCE: always allow next level
+          const maxUnlocked = Math.min(raw + 1, LEVELS_PER_CATEGORY);
 
           return (
-            <div
-              key={section.categoryId}
-              style={{ background: "rgba(255,255,255,0.1)", borderRadius: 16, padding: 16 }}
-            >
+            <div key={section.categoryId} style={{ background: "rgba(255,255,255,0.1)", borderRadius: 16, padding: 16 }}>
               <div style={{ background: section.gradient, padding: 10, color: "#fff", borderRadius: 10 }}>
                 {section.name}
               </div>
 
               <p style={{ color: "#fff", margin: "8px 0" }}>
-                {completed} / {LEVELS_PER_CATEGORY} completed
+                {Math.max(0, maxUnlocked - 1)} / {LEVELS_PER_CATEGORY} completed
               </p>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10 }}>
                 {Array.from({ length: LEVELS_PER_CATEGORY }, (_, i) => {
                   const levelNumber = i + 1;
                   const isUnlocked = levelNumber <= maxUnlocked;
-
-                  const globalLevel =
-                    sectionIndex * LEVELS_PER_CATEGORY + levelNumber;
+                  const globalLevel = sectionIndex * LEVELS_PER_CATEGORY + levelNumber;
 
                   return (
                     <button
                       key={levelNumber}
                       disabled={!isUnlocked}
-                      onClick={() => {
-                        if (!isUnlocked) return;
-                        window.location.href =
-                          `/magictreescene?level=${globalLevel - 1}&category=${section.categoryId}`;
-                      }}
+                      onClick={() =>
+                        isUnlocked &&
+                        (window.location.href =
+                          `/magictreescene?level=${globalLevel - 1}&category=${section.categoryId}`)
+                      }
                       style={{
                         aspectRatio: "1",
                         borderRadius: "50%",
