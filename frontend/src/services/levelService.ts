@@ -21,11 +21,11 @@ export interface Level {
 export async function getUserLevels(userId: number): Promise<Level[]> {
   if (!userId) throw new Error("User ID is required");
 
-  const res = await axios.get(`users/${userId}/levels`);
+  const res = await axios.get(`/users/${userId}/levels`);
   return res.data;
 }
 
-// Save or update a level (never goes backward – backend enforces too)
+// Save or update a level
 export async function saveLevel(
   userId: number,
   gameName: string,
@@ -33,7 +33,7 @@ export async function saveLevel(
 ): Promise<Level> {
   if (!userId) throw new Error("User ID is required");
 
-  const res = await axios.post(`users/${userId}/levels`, {
+  const res = await axios.post(`/users/${userId}/levels`, {
     game_name: gameName,
     unlocked_levels: unlockedLevels,
   });
@@ -46,7 +46,7 @@ export async function deleteLevel(
   userId: number,
   levelId: number
 ): Promise<void> {
-  await axios.delete(`users/${userId}/levels/${levelId}`);
+  await axios.delete(`/users/${userId}/levels/${levelId}`);
 }
 
 // Delete progress for a specific game
@@ -54,7 +54,7 @@ export async function deleteGameProgress(
   userId: number,
   gameName: string
 ): Promise<void> {
-  await axios.delete(`users/${userId}/levels`, {
+  await axios.delete(`/users/${userId}/levels`, {
     data: { game_name: gameName },
   });
 }
