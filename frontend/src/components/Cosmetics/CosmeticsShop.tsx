@@ -31,7 +31,7 @@ const CosmeticsShop: React.FC = () => {
   const fetchCosmetics = useCallback(async () => {
     try {
       const data = await getCosmetics();
-      // ✅ Images are already transformed to full URLs by the service
+      console.log("Loaded cosmetics:", data); // Debug log
       setCosmetics(data);
     } catch (error) {
       console.error("Failed to load cosmetics:", error);
@@ -44,7 +44,7 @@ const CosmeticsShop: React.FC = () => {
     if (!user) return;
     try {
       const data = await getUserCosmetics(user.user_id);
-      // ✅ Images are already transformed to full URLs by the service
+      console.log("Loaded user cosmetics:", data); // Debug log
       setUserCosmetics(data);
     } catch (error) {
       console.error("Failed to load user cosmetics:", error);
@@ -73,7 +73,6 @@ const CosmeticsShop: React.FC = () => {
       const result = await buyCosmetic(cosmeticId);
       alert("Purchase successful!");
 
-      // Update user coins in localStorage
       const updatedUser = {
         ...user,
         coins: result.remaining_coins ?? user.coins ?? 0,
@@ -81,7 +80,6 @@ const CosmeticsShop: React.FC = () => {
 
       localStorage.setItem("user", JSON.stringify(updatedUser));
 
-      // Trigger storage event to update navbar coins
       window.dispatchEvent(
         new StorageEvent("storage", {
           key: "user",
@@ -89,7 +87,6 @@ const CosmeticsShop: React.FC = () => {
         })
       );
 
-      // Refresh user cosmetics to show new purchase
       await fetchUserCosmetics();
     } catch (error: any) {
       console.error("Purchase error:", error);
@@ -104,23 +101,18 @@ const CosmeticsShop: React.FC = () => {
     try {
       await equipCosmetic(cosmeticId);
 
-      // Refresh user cosmetics to update equipped status
       await fetchUserCosmetics();
 
       const equipped = cosmetics.find((c) => c.cosmetic_id === cosmeticId);
 
-      // ✅ CRITICAL: If it's an avatar, update localStorage with the FULL URL
-      // The backend controller stores the relative path in the database,
-      // but we need the full URL for the frontend to display it
       if (equipped?.type === "avatar" && typeof equipped.image === "string") {
         const updatedUser = { 
           ...user, 
-          avatar: equipped.image // ✅ This is already a full URL from getCosmetics()
+          avatar: equipped.image
         };
 
         localStorage.setItem("user", JSON.stringify(updatedUser));
         
-        // Trigger storage event to update avatar across the app
         window.dispatchEvent(
           new StorageEvent("storage", {
             key: "user",
@@ -129,7 +121,6 @@ const CosmeticsShop: React.FC = () => {
         );
       }
 
-      // Animation pulse effect
       const card = document.getElementById(`card-${cosmeticId}`);
       if (card) {
         card.classList.add("equip-pulse");
@@ -143,14 +134,10 @@ const CosmeticsShop: React.FC = () => {
     }
   };
 
-  /** Helper: Check if user owns cosmetic */
   const isOwned = (id: number) => userCosmetics.some((uc) => uc.cosmetic_id === id);
-  
-  /** Helper: Check if cosmetic is equipped */
   const isEquipped = (id: number) =>
     userCosmetics.some((uc) => uc.cosmetic_id === id && uc.is_equipped);
 
-  // Loading state
   if (loading) {
     return (
       <div 
@@ -165,7 +152,6 @@ const CosmeticsShop: React.FC = () => {
     );
   }
 
-  /** Filter cosmetics by active tab and search query */
   const filtered = cosmetics
     .filter((c) => c.type === activeTab)
     .filter((c) =>
@@ -185,10 +171,8 @@ const CosmeticsShop: React.FC = () => {
         position: "relative",
       }}
     >
-      {/* BackButton Component */}
       <BackButton />
 
-      {/* Dark overlay for better readability */}
       <div
         style={{
           position: "absolute",
@@ -200,7 +184,6 @@ const CosmeticsShop: React.FC = () => {
       />
 
       <div className="container text-white position-relative" style={{ zIndex: 2 }}>
-        {/* ==== STYLES ==== */}
         <style>{`
           .shop-title {
             font-family: 'Press Start 2P', cursive;
@@ -256,6 +239,7 @@ const CosmeticsShop: React.FC = () => {
             color: rgba(255,255,255,0.5);
           }
 
+          /* 🔥 FIXED: Cosmetic Card Container */
           .cosmetic-card {
             padding: 15px;
             border-radius: 14px;
@@ -265,6 +249,7 @@ const CosmeticsShop: React.FC = () => {
             height: 100%;
             display: flex;
             flex-direction: column;
+            overflow: hidden; /* 🔥 Prevent content overflow */
           }
           
           .cosmetic-card:hover {
@@ -273,27 +258,47 @@ const CosmeticsShop: React.FC = () => {
             border-color: rgba(0,255,255,0.5);
           }
 
+          /* 🔥 FIXED: Image Container with proper constraints */
           .glow-container {
             background: radial-gradient(circle, rgba(0,255,255,0.35), transparent 65%);
             border-radius: 12px;
             padding: 10px;
             margin-bottom: 10px;
-            min-height: 130px;
+            width: 100%; /* 🔥 Fixed width */
+            height: 150px; /* 🔥 Fixed height */
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden; /* 🔥 Prevent overflow */
+            position: relative; /* 🔥 For absolute positioning of image */
           }
           
+          /* 🔥 FIXED: Image with proper constraints */
           .cosmetic-image {
-            width: 100%;
-            height: 110px;
-            object-fit: contain;
+            max-width: 100%; /* 🔥 Never exceed container width */
+            max-height: 100%; /* 🔥 Never exceed container height */
+            width: auto; /* 🔥 Maintain aspect ratio */
+            height: auto; /* 🔥 Maintain aspect ratio */
+            object-fit: contain; /* 🔥 Scale to fit without distortion */
             border-radius: 10px;
             transition: transform 0.3s ease;
           }
           
           .cosmetic-card:hover .cosmetic-image {
-            transform: scale(1.1);
+            transform: scale(1.05); /* 🔥 Reduced from 1.1 to prevent overflow */
+          }
+
+          /* 🔥 FIXED: Image placeholder */
+          .image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: rgba(255,255,255,0.5);
+            font-size: 3rem; /* 🔥 Reduced from too large */
           }
 
           .cosmetic-name {
@@ -305,6 +310,8 @@ const CosmeticsShop: React.FC = () => {
             display: flex;
             align-items: center;
             justify-content: center;
+            text-align: center;
+            line-height: 1.2;
           }
           
           .cosmetic-description {
@@ -317,6 +324,7 @@ const CosmeticsShop: React.FC = () => {
             align-items: center;
             justify-content: center;
             text-align: center;
+            line-height: 1.3;
           }
           
           .cosmetic-price {
@@ -325,6 +333,7 @@ const CosmeticsShop: React.FC = () => {
             font-size: 1.1rem;
             margin-bottom: 12px;
             text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            text-align: center;
           }
 
           .glow-btn {
@@ -372,7 +381,6 @@ const CosmeticsShop: React.FC = () => {
             opacity: 0.7;
           }
 
-          /* Equip animation */
           .equip-pulse {
             animation: pulseGlow 0.3s ease-out;
           }
@@ -392,20 +400,6 @@ const CosmeticsShop: React.FC = () => {
             }
           }
           
-          /* Image loading placeholder */
-          .image-placeholder {
-            width: 100%;
-            height: 110px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            color: rgba(255,255,255,0.5);
-            font-size: 2rem;
-          }
-          
-          /* Responsive font sizes */
           @media (max-width: 768px) {
             .shop-title {
               font-size: 1.2rem;
@@ -414,6 +408,10 @@ const CosmeticsShop: React.FC = () => {
             .tab-btn {
               font-size: 0.6rem;
               padding: 8px 15px;
+            }
+            
+            .glow-container {
+              height: 120px; /* 🔥 Smaller on mobile */
             }
             
             .cosmetic-name {
@@ -428,10 +426,8 @@ const CosmeticsShop: React.FC = () => {
           }
         `}</style>
 
-        {/* ==== TITLE ==== */}
         <h1 className="text-center fw-bold mb-4 shop-title">🛒 Cosmetics Shop</h1>
 
-        {/* ==== SEARCH BAR ==== */}
         <input
           className="search-bar mb-4"
           placeholder="🔍 Search cosmetic..."
@@ -439,7 +435,6 @@ const CosmeticsShop: React.FC = () => {
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        {/* ==== TABS ==== */}
         <div className="mb-4 text-center">
           <button
             className={`tab-btn ${activeTab === "avatar" ? "active" : ""}`}
@@ -461,7 +456,6 @@ const CosmeticsShop: React.FC = () => {
           </button>
         </div>
 
-        {/* ==== COSMETICS GRID ==== */}
         {filtered.length === 0 ? (
           <div className="text-center py-5">
             <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>🔍</div>
@@ -481,16 +475,23 @@ const CosmeticsShop: React.FC = () => {
               return (
                 <div key={cosmeticId} className="col-lg-3 col-md-4 col-sm-6 col-12">
                   <div className="cosmetic-card text-center" id={`card-${cosmeticId}`}>
-                    {/* Image Container */}
+                    {/* 🔥 FIXED: Image Container */}
                     <div className="glow-container">
                       {item.image && typeof item.image === "string" ? (
                         <img
                           src={item.image}
                           alt={item.name}
                           className="cosmetic-image"
+                          loading="lazy"
+                          onLoad={() => {
+                            console.log(`Image loaded successfully: ${item.name}`, item.image);
+                          }}
                           onError={(e) => {
-                            console.error("Failed to load cosmetic image:", item.image);
-                            // Replace with placeholder
+                            console.error("Failed to load cosmetic image:", {
+                              name: item.name,
+                              url: item.image,
+                              type: item.type
+                            });
                             e.currentTarget.style.display = 'none';
                             const parent = e.currentTarget.parentElement;
                             if (parent && !parent.querySelector('.image-placeholder')) {
@@ -502,18 +503,18 @@ const CosmeticsShop: React.FC = () => {
                           }}
                         />
                       ) : (
-                        <div className="image-placeholder">🖼️</div>
+                        <div className="image-placeholder">
+                          {item.type === 'avatar' ? '👤' : item.type === 'badge' ? '🏆' : '🖼️'}
+                        </div>
                       )}
                     </div>
 
-                    {/* Cosmetic Info */}
                     <h6 className="cosmetic-name">{item.name}</h6>
                     <p className="cosmetic-description">
                       {item.description || "No description available"}
                     </p>
                     <p className="cosmetic-price">🪙 {item.price}</p>
 
-                    {/* Action Button */}
                     {!owned ? (
                       <button
                         className="glow-btn buy-btn"
