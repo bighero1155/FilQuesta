@@ -27,12 +27,14 @@ const CosmeticsShop: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"avatar" | "badge" | "nick_frame">("avatar");
   const [search, setSearch] = useState("");
 
-  /** Load shops */
+  /** Load shop cosmetics */
   const fetchCosmetics = useCallback(async () => {
     try {
       const data = await getCosmetics();
+      console.log("Loaded cosmetics:", data);
       setCosmetics(data);
-    } catch {
+    } catch (error) {
+      console.error("Failed to load cosmetics:", error);
       alert("Failed to load cosmetics.");
     }
   }, []);
@@ -42,19 +44,28 @@ const CosmeticsShop: React.FC = () => {
     if (!user) return;
     try {
       const data = await getUserCosmetics(user.user_id);
+      console.log("Loaded user cosmetics:", data);
       setUserCosmetics(data);
-    } catch {
+    } catch (error) {
+      console.error("Failed to load user cosmetics:", error);
       alert("Failed to load your owned cosmetics.");
     }
   }, [user]);
 
   useEffect(() => {
-    fetchCosmetics();
-    if (user) fetchUserCosmetics();
-    setLoading(false);
+    const loadData = async () => {
+      setLoading(true);
+      await fetchCosmetics();
+      if (user) {
+        await fetchUserCosmetics();
+      }
+      setLoading(false);
+    };
+    
+    loadData();
   }, [user, fetchCosmetics, fetchUserCosmetics]);
 
-  /** Buying cosmetic */
+  /** Buy cosmetic */
   const handleBuy = async (cosmeticId: number) => {
     if (!user) return alert("Please log in first.");
 
@@ -78,6 +89,7 @@ const CosmeticsShop: React.FC = () => {
 
       await fetchUserCosmetics();
     } catch (error: any) {
+      console.error("Purchase error:", error);
       alert(error?.response?.data?.message || "Purchase failed.");
     }
   };
@@ -94,10 +106,10 @@ const CosmeticsShop: React.FC = () => {
       const equipped = cosmetics.find((c) => c.cosmetic_id === cosmeticId);
 
       // If it's avatar, sync instantly
-      if (equipped?.type === "avatar") {
+      if (equipped?.type === "avatar" && typeof equipped.image === "string") {
         const updatedUser = { 
           ...user, 
-          avatar: typeof equipped.image === "string" ? equipped.image : undefined 
+          avatar: equipped.image
         };
 
         localStorage.setItem("user", JSON.stringify(updatedUser));
@@ -118,6 +130,7 @@ const CosmeticsShop: React.FC = () => {
 
       alert("Cosmetic equipped!");
     } catch (error: any) {
+      console.error("Equip error:", error);
       alert(error?.response?.data?.message || "Failed to equip cosmetic.");
     }
   };
@@ -127,10 +140,25 @@ const CosmeticsShop: React.FC = () => {
   const isEquipped = (id: number) =>
     userCosmetics.some((uc) => uc.cosmetic_id === id && uc.is_equipped);
 
+  // 🔥 Helper: Get image URL as string (type-safe)
+  const getImageUrl = (image: string | File | undefined): string | undefined => {
+    if (!image) return undefined;
+    if (typeof image === 'string') return image;
+    // If it's a File object (shouldn't happen from backend), return undefined
+    return undefined;
+  };
+
+  // Loading state
   if (loading) {
     return (
-      <div className="text-center my-5 text-white">
-        <div className="spinner-border text-info"></div>
+      <div 
+        className="d-flex justify-content-center align-items-center" 
+        style={{ minHeight: "100vh", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}
+      >
+        <div className="text-center text-white">
+          <div className="spinner-border text-info mb-3" style={{ width: "3rem", height: "3rem" }}></div>
+          <p className="fs-5">Loading Cosmetics Shop...</p>
+        </div>
       </div>
     );
   }
@@ -155,10 +183,8 @@ const CosmeticsShop: React.FC = () => {
         position: "relative",
       }}
     >
-      {/* BackButton Component */}
       <BackButton />
 
-      {/* Dark overlay */}
       <div
         style={{
           position: "absolute",
@@ -170,12 +196,12 @@ const CosmeticsShop: React.FC = () => {
       />
 
       <div className="container text-white position-relative" style={{ zIndex: 2 }}>
-        {/* ==== STYLE ==== */}
         <style>{`
           .shop-title {
-            font-family: 'Press Start 2P';
+            font-family: 'Press Start 2P', cursive;
             color: #00eaff;
             text-shadow: 0 0 10px #00eaff;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
           }
 
           .tab-btn {
@@ -188,8 +214,16 @@ const CosmeticsShop: React.FC = () => {
             cursor: pointer;
             transition: 0.25s ease;
             margin-right: 10px;
-            font-family: 'Press Start 2P';
+            margin-bottom: 10px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: clamp(0.6rem, 2vw, 0.8rem);
           }
+          
+          .tab-btn:hover {
+            background: rgba(0,255,255,0.2);
+            transform: translateY(-2px);
+          }
+          
           .tab-btn.active {
             background: rgba(0,255,255,0.3);
             box-shadow: 0 0 15px #00eaff;
@@ -202,6 +236,18 @@ const CosmeticsShop: React.FC = () => {
             color: #fff;
             padding: 10px 15px;
             width: 100%;
+            transition: all 0.3s ease;
+          }
+          
+          .search-bar:focus {
+            outline: none;
+            border-color: #00eaff;
+            box-shadow: 0 0 15px rgba(0, 234, 255, 0.3);
+            background: rgba(255,255,255,0.15);
+          }
+          
+          .search-bar::placeholder {
+            color: rgba(255,255,255,0.5);
           }
 
           .cosmetic-card {
@@ -209,8 +255,13 @@ const CosmeticsShop: React.FC = () => {
             border-radius: 14px;
             background: rgba(255,255,255,0.08);
             border: 2px solid rgba(0,255,255,0.2);
-            transition: 0.2s ease;
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
           }
+          
           .cosmetic-card:hover {
             transform: translateY(-6px);
             box-shadow: 0 0 20px rgba(0,255,255,0.35);
@@ -220,118 +271,257 @@ const CosmeticsShop: React.FC = () => {
             background: radial-gradient(circle, rgba(0,255,255,0.35), transparent 65%);
             border-radius: 12px;
             padding: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+          }
+          
+          .cosmetic-image {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+          }
+          
+          .cosmetic-card:hover .cosmetic-image {
+            transform: scale(1.05);
+          }
+          
+          .image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: rgba(255,255,255,0.5);
+            font-size: 3rem;
+          }
+          
+          .placeholder-text {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            opacity: 0.7;
+          }
+
+          .cosmetic-name {
+            font-weight: bold;
+            color: #00eaff;
+            margin-bottom: 8px;
+            font-size: 1rem;
+            min-height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+          }
+          
+          .cosmetic-description {
+            color: #fff;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            opacity: 0.8;
+            min-height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+          }
+          
+          .cosmetic-price {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
           }
 
           .glow-btn {
             border: none;
-            padding: 8px;
+            padding: 10px;
             border-radius: 8px;
             font-weight: bold;
             text-transform: uppercase;
-            transition: 0.25s ease;
+            transition: all 0.25s ease;
             width: 100%;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: auto;
+          }
+          
+          .glow-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            filter: brightness(1.2);
           }
 
-          .buy-btn { background:#28a745; box-shadow:0 0 10px #28a745; color:#fff; }
-          .equip-btn { background:#1e6ef6; box-shadow:0 0 10px #1e6ef6; color:#fff; }
-          .equipped-btn { background:#666; color:#fff; }
+          .buy-btn { 
+            background: linear-gradient(135deg, #28a745, #20c997);
+            box-shadow: 0 0 10px #28a745;
+            color: #fff;
+          }
+          
+          .equip-btn { 
+            background: linear-gradient(135deg, #1e6ef6, #00eaff);
+            box-shadow: 0 0 10px #1e6ef6;
+            color: #fff;
+          }
+          
+          .equipped-btn { 
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: #fff;
+            cursor: not-allowed;
+            opacity: 0.7;
+          }
 
-          /* Equip animation */
           .equip-pulse {
             animation: pulseGlow 0.3s ease-out;
           }
+          
           @keyframes pulseGlow {
-            from { box-shadow: 0 0 0px cyan; }
-            to { box-shadow: 0 0 20px cyan; }
+            0% { 
+              box-shadow: 0 0 0px cyan;
+            }
+            50% {
+              box-shadow: 0 0 30px cyan;
+            }
+            100% { 
+              box-shadow: 0 0 0px cyan;
+            }
+          }
+          
+          @media (max-width: 768px) {
+            .shop-title {
+              font-size: 1.2rem;
+            }
+            
+            .glow-container {
+              height: 120px;
+            }
           }
         `}</style>
 
-        {/* ==== TITLE ==== */}
         <h1 className="text-center fw-bold mb-4 shop-title">🛒 Cosmetics Shop</h1>
 
-        {/* ==== SEARCH ==== */}
         <input
           className="search-bar mb-4"
-          placeholder="Search cosmetic..."
+          placeholder="🔍 Search cosmetic..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        {/* ==== TABS ==== */}
-        <div className="mb-4">
+        <div className="mb-4 text-center">
           <button
             className={`tab-btn ${activeTab === "avatar" ? "active" : ""}`}
             onClick={() => setActiveTab("avatar")}
           >
-            Avatars
+            👤 Avatars
           </button>
           <button
             className={`tab-btn ${activeTab === "badge" ? "active" : ""}`}
             onClick={() => setActiveTab("badge")}
           >
-            Badges
+            🏆 Badges
           </button>
           <button
             className={`tab-btn ${activeTab === "nick_frame" ? "active" : ""}`}
             onClick={() => setActiveTab("nick_frame")}
           >
-            Nick Frames
+            🖼️ Nick Frames
           </button>
         </div>
 
-        {/* ==== GRID ==== */}
         {filtered.length === 0 ? (
-          <p className="text-muted">No cosmetics found.</p>
+          <div className="text-center py-5">
+            <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>🔍</div>
+            <p className="text-muted fs-5">
+              {search ? "No cosmetics match your search." : "No cosmetics available in this category."}
+            </p>
+          </div>
         ) : (
           <div className="row g-4">
             {filtered.map((item) => {
               if (!item.cosmetic_id) return null;
               
               const cosmeticId = item.cosmetic_id;
+              const owned = isOwned(cosmeticId);
+              const equipped = isEquipped(cosmeticId);
+              
+              // 🔥 Get image URL safely (type-safe)
+              const imageUrl = getImageUrl(item.image);
+              const hasValidImage = imageUrl && imageUrl.trim() !== "";
               
               return (
                 <div key={cosmeticId} className="col-lg-3 col-md-4 col-sm-6 col-12">
                   <div className="cosmetic-card text-center" id={`card-${cosmeticId}`}>
-                    {item.image && typeof item.image === "string" && (
-                      <div className="glow-container mb-2">
+                    {/* 🔥 Image or Placeholder */}
+                    <div className="glow-container">
+                      {hasValidImage ? (
                         <img
-                          src={item.image}
+                          src={imageUrl}
                           alt={item.name}
-                          style={{
-                            width: "100%",
-                            height: "110px",
-                            objectFit: "contain",
-                            borderRadius: "10px",
+                          className="cosmetic-image"
+                          loading="lazy"
+                          onLoad={() => {
+                            console.log(`✅ Image loaded: ${item.name}`);
                           }}
                           onError={(e) => {
-                            console.error("Failed to load image:", item.image);
-                            e.currentTarget.src = "/assets/placeholder.png";
+                            console.error(`❌ Failed to load image for ${item.name}:`, imageUrl);
+                            // Hide broken image and show placeholder
+                            e.currentTarget.style.display = 'none';
+                            const parent = e.currentTarget.parentElement;
+                            if (parent && !parent.querySelector('.image-placeholder')) {
+                              const placeholder = document.createElement('div');
+                              placeholder.className = 'image-placeholder';
+                              placeholder.innerHTML = `
+                                ${item.type === 'avatar' ? '👤' : item.type === 'badge' ? '🏆' : '🖼️'}
+                                <div class="placeholder-text">No Image</div>
+                              `;
+                              parent.appendChild(placeholder);
+                            }
                           }}
                         />
-                      </div>
-                    )}
+                      ) : (
+                        // 🔥 Show placeholder if no image from the start
+                        <div className="image-placeholder">
+                          {item.type === 'avatar' ? '👤' : item.type === 'badge' ? '🏆' : '🖼️'}
+                          <div className="placeholder-text">No Image</div>
+                        </div>
+                      )}
+                    </div>
 
-                    <h6 className="fw-bold">{item.name}</h6>
-                    <p className="text-info small">{item.description}</p>
-                    <p className="text-warning fw-bold mb-2">🪙 {item.price}</p>
+                    <h6 className="cosmetic-name">{item.name}</h6>
+                    <p className="cosmetic-description">
+                      {item.description || "No description available"}
+                    </p>
+                    <p className="cosmetic-price">🪙 {item.price}</p>
 
-                    {!isOwned(cosmeticId) ? (
+                    {!owned ? (
                       <button
                         className="glow-btn buy-btn"
                         onClick={() => handleBuy(cosmeticId)}
                       >
-                        Buy
+                        💰 Buy
                       </button>
-                    ) : isEquipped(cosmeticId) ? (
+                    ) : equipped ? (
                       <button className="glow-btn equipped-btn" disabled>
-                        Equipped
+                        ✓ Equipped
                       </button>
                     ) : (
                       <button
                         className="glow-btn equip-btn"
                         onClick={() => handleEquip(cosmeticId)}
                       >
-                        Equip
+                        ⚡ Equip
                       </button>
                     )}
                   </div>
