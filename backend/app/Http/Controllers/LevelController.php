@@ -103,7 +103,7 @@ class LevelController extends Controller
 
     public function destroyByUserAndGame($user_id, Request $request)
     {
-        $gameName = $request->input('game_name');
+        $gameName = $request->input('game_name'); 
 
         if (!$gameName) {
             return response()->json(['error' => 'game_name is required'], 400);
