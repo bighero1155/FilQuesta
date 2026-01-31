@@ -39,7 +39,7 @@ const MagicTreeMap: React.FC = () => {
       const stored = localStorage.getItem("user");
       if (stored) {
         const parsed = JSON.parse(stored);
-        setUserId(Number(parsed.user_id || parsed.id));
+        setUserId(Number(parsed.user_id || parsed.id)); 
       }
     } catch { /* empty */ }
   }, [user]);
