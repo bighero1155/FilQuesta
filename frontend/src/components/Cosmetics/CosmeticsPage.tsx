@@ -17,11 +17,13 @@ const CosmeticsPage: React.FC = () => {
     price: 0,
     image: undefined,   
   });
+  
+  // 🔥 NEW: Track existing image URL for preview during edit
+  const [existingImageUrl, setExistingImageUrl] = useState<string | undefined>(undefined);
 
   const fetchCosmetics = async () => {
     try { 
       const data = await getCosmetics();
-      // Images are already normalized by getCosmetics service
       setCosmetics(data);
     } catch (err) {
       console.error("Failed to fetch cosmetics:", err);
@@ -41,7 +43,16 @@ const CosmeticsPage: React.FC = () => {
       } else {
         await createCosmetic(form);
       }
-      setForm({ cosmetic_id: undefined, type: "avatar", name: "", description: "", price: 0, image: undefined });
+      // Reset form
+      setForm({ 
+        cosmetic_id: undefined, 
+        type: "avatar", 
+        name: "", 
+        description: "", 
+        price: 0, 
+        image: undefined 
+      });
+      setExistingImageUrl(undefined);
       fetchCosmetics();
     } catch (err) {
       console.error("Failed to save cosmetic:", err);
@@ -58,6 +69,40 @@ const CosmeticsPage: React.FC = () => {
       console.error("Failed to delete cosmetic:", err);
       alert("Failed to delete cosmetic.");
     }
+  };
+
+  // 🔥 NEW: Handle edit button click
+  const handleEdit = (cosmetic: Cosmetic) => {
+    setForm({
+      cosmetic_id: cosmetic.cosmetic_id,
+      type: cosmetic.type,
+      name: cosmetic.name,
+      description: cosmetic.description,
+      price: cosmetic.price,
+      image: undefined, // ✅ Don't include the URL in form.image
+    });
+    
+    // Store the existing image URL for preview
+    if (typeof cosmetic.image === 'string') {
+      setExistingImageUrl(cosmetic.image);
+    }
+  };
+
+  // 🔥 NEW: Handle file input change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setForm({ ...form, image: file });
+      setExistingImageUrl(undefined); // Clear existing preview when new file selected
+    }
+  };
+
+  // 🔥 NEW: Get preview image URL
+  const getPreviewUrl = (): string | undefined => {
+    if (form.image instanceof File) {
+      return URL.createObjectURL(form.image);
+    }
+    return existingImageUrl;
   };
 
   return (
@@ -146,19 +191,74 @@ const CosmeticsPage: React.FC = () => {
               </div>
 
               <div className="col-md-6 mb-3">
-                <label className="form-label">Image</label>
+                <label className="form-label">
+                  Image {form.cosmetic_id && "(Leave empty to keep current)"}
+                </label>
                 <input
                   type="file"
-                  onChange={(e) => setForm({ ...form, image: e.target.files?.[0] })}
+                  onChange={handleFileChange}
                   className="form-control styled-input"
                   accept="image/*"
                 />
               </div>
 
+              {/* 🔥 NEW: Image Preview */}
+              {getPreviewUrl() && (
+                <div className="col-12 mb-3">
+                  <div className="image-preview-wrapper">
+                    <label className="form-label">Preview</label>
+                    <div className="image-preview-container">
+                      <img
+                        src={getPreviewUrl()}
+                        alt="Preview"
+                        className="image-preview"
+                      />
+                      {form.image instanceof File && (
+                        <button
+                          type="button"
+                          className="btn-remove-preview"
+                          onClick={() => {
+                            setForm({ ...form, image: undefined });
+                            // Restore existing image if editing
+                            if (form.cosmetic_id) {
+                              const original = cosmetics.find(c => c.cosmetic_id === form.cosmetic_id);
+                              if (original && typeof original.image === 'string') {
+                                setExistingImageUrl(original.image);
+                              }
+                            }
+                          }}
+                        >
+                          ✕ Remove New Image
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="col-12 text-center mt-3">
                 <button type="submit" className="btn-submit">
                   {form.cosmetic_id ? "💾 Update Cosmetic" : "🎨 Create Cosmetic"}
                 </button>
+                {form.cosmetic_id && (
+                  <button
+                    type="button"
+                    className="btn-cancel ms-3"
+                    onClick={() => {
+                      setForm({
+                        cosmetic_id: undefined,
+                        type: "avatar",
+                        name: "",
+                        description: "",
+                        price: 0,
+                        image: undefined,
+                      });
+                      setExistingImageUrl(undefined);
+                    }}
+                  >
+                    ❌ Cancel Edit
+                  </button>
+                )}
               </div>
             </div>
           </form>
@@ -208,7 +308,7 @@ const CosmeticsPage: React.FC = () => {
                   <div className="cosmetic-actions">
                     <button 
                       className="btn-edit" 
-                      onClick={() => setForm(c)}
+                      onClick={() => handleEdit(c)} // 🔥 FIXED: Use handleEdit instead
                     >
                       ✏️ Edit
                     </button>
@@ -408,6 +508,49 @@ const CosmeticsPage: React.FC = () => {
           outline: none;
         }
 
+        /* 🔥 NEW: Image Preview Styles */
+        .image-preview-wrapper {
+          padding: 1rem;
+          background: rgba(240, 147, 251, 0.05);
+          border-radius: 15px;
+        }
+
+        .image-preview-container {
+          position: relative;
+          display: inline-block;
+        }
+
+        .image-preview {
+          max-width: 300px;
+          max-height: 200px;
+          object-fit: contain;
+          border-radius: 12px;
+          border: 3px solid #f093fb;
+          padding: 0.5rem;
+          background: white;
+        }
+
+        .btn-remove-preview {
+          position: absolute;
+          top: -10px;
+          right: -10px;
+          background: #f5576c;
+          color: white;
+          border: none;
+          border-radius: 50px;
+          padding: 0.5rem 1rem;
+          font-size: 0.85rem;
+          font-weight: bold;
+          cursor: pointer;
+          box-shadow: 0 3px 10px rgba(245, 87, 108, 0.4);
+          transition: all 0.3s ease;
+        }
+
+        .btn-remove-preview:hover {
+          background: #e74c3c;
+          transform: scale(1.05);
+        }
+
         .btn-submit {
           background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
           color: white;
@@ -424,6 +567,25 @@ const CosmeticsPage: React.FC = () => {
         .btn-submit:hover {
           transform: translateY(-3px);
           box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+        }
+
+        /* 🔥 NEW: Cancel Button */
+        .btn-cancel {
+          background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+          color: white;
+          border: none;
+          padding: 1rem 2rem;
+          border-radius: 50px;
+          font-size: 1rem;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 5px 20px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-cancel:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
         }
 
         /* Section Title */
@@ -594,6 +756,10 @@ const CosmeticsPage: React.FC = () => {
 
           .section-title {
             font-size: 1.5rem;
+          }
+
+          .image-preview {
+            max-width: 100%;
           }
         }
       `}</style>

@@ -14,11 +14,29 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 class CosmeticCrudController extends Controller
 {
     /**
+     * 🔥 NEW: Transform cosmetic image paths to full URLs
+     * (Same logic as quiz images)
+     */
+    private function transformCosmeticImage($cosmetic)
+    {
+        if ($cosmetic->image && !str_starts_with($cosmetic->image, 'http')) {
+            $cosmetic->image = asset('storage/' . $cosmetic->image);
+        }
+        return $cosmetic;
+    }
+
+    /**
      * Display all cosmetics (admin view or shop catalog).
      */
     public function index()
     {
         $cosmetics = Cosmetic::all();
+        
+        // 🔥 Transform all cosmetic images to full URLs
+        $cosmetics->transform(function ($cosmetic) {
+            return $this->transformCosmeticImage($cosmetic);
+        });
+        
         return response()->json($cosmetics, 200);
     }
 
@@ -40,6 +58,9 @@ class CosmeticCrudController extends Controller
         }
 
         $cosmetic = Cosmetic::create($validated);
+        
+        // 🔥 Transform image to full URL before returning
+        $this->transformCosmeticImage($cosmetic);
 
         return response()->json([
             'message' => 'Cosmetic created successfully.',
@@ -54,6 +75,10 @@ class CosmeticCrudController extends Controller
     {
         try {
             $cosmetic = Cosmetic::findOrFail($id);
+            
+            // 🔥 Transform image to full URL
+            $this->transformCosmeticImage($cosmetic);
+            
             return response()->json($cosmetic, 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Cosmetic not found.'], 404);
@@ -77,6 +102,7 @@ class CosmeticCrudController extends Controller
             ]);
 
             if ($request->hasFile('image')) {
+                // Delete old image if exists
                 if ($cosmetic->image && Storage::disk('public')->exists($cosmetic->image)) {
                     Storage::disk('public')->delete($cosmetic->image);
                 }
@@ -85,6 +111,9 @@ class CosmeticCrudController extends Controller
             }
 
             $cosmetic->update($validated);
+            
+            // 🔥 Transform image to full URL before returning
+            $this->transformCosmeticImage($cosmetic);
 
             return response()->json([
                 'message' => 'Cosmetic updated successfully.',
@@ -125,11 +154,16 @@ class CosmeticCrudController extends Controller
                 ->where('user_id', $user_id)
                 ->get()
                 ->map(function ($item) {
+                    // 🔥 Transform nested cosmetic image
+                    if ($item->cosmetic) {
+                        $this->transformCosmeticImage($item->cosmetic);
+                    }
+                    
                     return [
                         'cosmetic_id' => $item->cosmetic->cosmetic_id,
                         'type' => $item->cosmetic->type,
                         'name' => $item->cosmetic->name,
-                        'image' => $item->cosmetic->image,
+                        'image' => $item->cosmetic->image, // Now a full URL
                         'is_equipped' => $item->is_equipped,
                     ];
                 });
@@ -229,9 +263,13 @@ class CosmeticCrudController extends Controller
         // Equip the selected one
         $userCosmetic->update(['is_equipped' => true]);
 
-        // If it's an avatar, update user's avatar image path
+        // 🔥 CRITICAL: If it's an avatar, store the RELATIVE PATH (not full URL)
+        // The database should store: "cosmetics/avatar1.png"
+        // NOT: "https://backend.railway.app/storage/cosmetics/avatar1.png"
         if ($cosmetic->type === 'avatar') {
-            $user->avatar = $cosmetic->image ?? $user->avatar;
+            // Get the original relative path from the database
+            $originalCosmetic = Cosmetic::findOrFail($cosmetic->cosmetic_id);
+            $user->avatar = $originalCosmetic->getOriginal('image') ?? $user->avatar;
             $user->save();
         }
 
