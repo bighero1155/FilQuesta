@@ -822,11 +822,19 @@ export default class HumanBodyScene extends Phaser.Scene {
     await this.logVisitBeforeExit();
 
     if (success) {
-      // ✅ Update score first (same pattern as MagicTree)
-      await this.addScore(this.score);
-      
-      // ✅ Then unlock next level (same pattern as MagicTree)
       await this.unlockNextLevel();
+      
+      try {
+        if (this.userId) {
+          await updateUserProgress(this.userId, this.score);
+          const updatedUser = await getUserProfile(this.userId);
+          if (updatedUser?.total_score !== undefined) {
+            localStorage.setItem("totalScore", updatedUser.total_score.toString());
+          }
+        }
+      } catch (error) {
+        console.error("Failed to update progress:", error);
+      }
     } else {
       await this.logGameOverEvent();
     }
@@ -851,48 +859,23 @@ export default class HumanBodyScene extends Phaser.Scene {
     }
   }
 
-  // ✅ WORKING - Same pattern as MagicTree's addScore
-  private async addScore(points: number) {
-    if (!this.userId) return;
-    
-    try {
-      // Update score in backend
-      await updateUserProgress(this.userId, points);
-      
-      // Refresh local user data
-      const updated = await getUserProfile(this.userId);
-      if (updated?.total_score !== undefined) {
-        localStorage.setItem("totalScore", updated.total_score.toString());
-      }
-      
-      console.log("✅ Score updated successfully");
-    } catch (e) {
-      console.error("❌ Error updating score:", e);
-    }
-  }
-
-  // ✅ FIXED - Same exact pattern as MagicTree's unlockNextLevel
   private async unlockNextLevel() {
     if (!this.userId) return;
+    const nextLevelInCategory = this.currentLevelInCategory + 1;
 
-    const completedLevel = this.currentLevelInCategory;
-    const nextLevel = completedLevel + 1;
+    // Only save if this unlocks a NEW level (not already unlocked)
+    const currentUnlocked = this.categoryProgress[this.currentCategoryId] || 0;
 
-    console.log(`🔓 Unlocking Level ${nextLevel} in ${this.currentCategoryId}`);
-
-    try {
-      // Save to backend (same way score is saved)
-      await saveCategoryLevel(this.userId, "HumanBody", this.currentCategoryId, nextLevel);
-      
-      // Update local cache (same way score updates local)
-      this.categoryProgress[this.currentCategoryId] = nextLevel;
-      
-      // Notify map to refresh
-      window.dispatchEvent(new CustomEvent("levels:updated"));
-      
-      console.log(`✅ Level ${nextLevel} unlocked successfully`);
-    } catch (e) {
-      console.error("❌ Error unlocking level:", e);
+    if (nextLevelInCategory > currentUnlocked) {
+      try {
+        await saveCategoryLevel(this.userId, "HumanBody", this.currentCategoryId, nextLevelInCategory);
+        this.categoryProgress[this.currentCategoryId] = nextLevelInCategory;
+        
+        // Dispatch event to update UI
+        window.dispatchEvent(new CustomEvent("levels:updated"));
+      } catch (e) {
+        console.error("Failed to save category progress:", e);
+      }
     }
   }
 
