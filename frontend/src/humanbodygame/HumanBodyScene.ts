@@ -1,7 +1,7 @@
 // HumanBodyScene.ts
 import Phaser from "phaser";
 import { updateUserProgress, getUserProfile } from "../services/userService";
-import { saveCategoryLevel, getAllCategoryProgress, hasCompletedAnyLevelOne } from "../services/levelService";
+import { saveCategoryLevel, getAllCategoryProgress } from "../services/levelService";
 import { logPageVisit, logGameOver } from "../services/pageVisitService";
 import { LevelConfig, getLevelConfig } from "./HumanBodyLevels";
 import Congratulations from "./Congratulations"; 
@@ -172,25 +172,15 @@ export default class HumanBodyScene extends Phaser.Scene {
       this.categoryProgress = { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
     }
 
-    // Check if level is unlocked
+    // ✅ FIXED: Check if level is unlocked
     const unlockedInCategory = this.categoryProgress[this.currentCategoryId] || 0;
-    const hasCompletedAnyLevel1 = await hasCompletedAnyLevelOne(this.userId!, "HumanBody", HUMANBODY_CATEGORIES);
     
-    if (this.currentLevelInCategory === 1) {
-      // Level 1: Must have completed any Level 1, OR this is first play ever
-      const totalProgress = Object.values(this.categoryProgress).reduce((sum, val) => sum + val, 0);
-      if (!hasCompletedAnyLevel1 && totalProgress > 0) {
-        alert("🚫 Complete any Level 1 first to unlock all Level 1s!");
-        window.location.href = "/HumanBody";
-        return;
-      }
-    } else {
-      // Levels 2-15: Must have completed previous level in THIS category
-      if (this.currentLevelInCategory > unlockedInCategory) {
-        alert(`🚫 Complete ${this.currentCategoryId} Level ${this.currentLevelInCategory - 1} first!`);
-        window.location.href = "/HumanBody";
-        return;
-      }
+    // ✅ Level 1 is ALWAYS playable
+    // ✅ Levels 2-15: Must complete previous level in THIS category
+    if (this.currentLevelInCategory > 1 && this.currentLevelInCategory > unlockedInCategory) {
+      alert(`🚫 Complete ${this.currentCategoryId} Level ${this.currentLevelInCategory - 1} first!`);
+      window.location.href = "/HumanBody";
+      return;
     }
 
     // Now continue with game setup
@@ -822,19 +812,11 @@ export default class HumanBodyScene extends Phaser.Scene {
     await this.logVisitBeforeExit();
 
     if (success) {
-      await this.unlockNextLevel();
+      // ✅ Update score first (same pattern as MagicTree)
+      await this.addScore(this.score);
       
-      try {
-        if (this.userId) {
-          await updateUserProgress(this.userId, this.score);
-          const updatedUser = await getUserProfile(this.userId);
-          if (updatedUser?.total_score !== undefined) {
-            localStorage.setItem("totalScore", updatedUser.total_score.toString());
-          }
-        }
-      } catch (error) {
-        console.error("Failed to update progress:", error);
-      }
+      // ✅ Then unlock next level (same pattern as MagicTree)
+      await this.unlockNextLevel();
     } else {
       await this.logGameOverEvent();
     }
@@ -859,23 +841,48 @@ export default class HumanBodyScene extends Phaser.Scene {
     }
   }
 
+  // ✅ WORKING - Same pattern as MagicTree's addScore
+  private async addScore(points: number) {
+    if (!this.userId) return;
+    
+    try {
+      // Update score in backend
+      await updateUserProgress(this.userId, points);
+      
+      // Refresh local user data
+      const updated = await getUserProfile(this.userId);
+      if (updated?.total_score !== undefined) {
+        localStorage.setItem("totalScore", updated.total_score.toString());
+      }
+      
+      console.log("✅ Score updated successfully");
+    } catch (e) {
+      console.error("❌ Error updating score:", e);
+    }
+  }
+
+  // ✅ FIXED - Same exact pattern as MagicTree's unlockNextLevel
   private async unlockNextLevel() {
     if (!this.userId) return;
-    const nextLevelInCategory = this.currentLevelInCategory + 1;
 
-    // Only save if this unlocks a NEW level (not already unlocked)
-    const currentUnlocked = this.categoryProgress[this.currentCategoryId] || 0;
+    const completedLevel = this.currentLevelInCategory;
+    const nextLevel = completedLevel + 1;
 
-    if (nextLevelInCategory > currentUnlocked) {
-      try {
-        await saveCategoryLevel(this.userId, "HumanBody", this.currentCategoryId, nextLevelInCategory);
-        this.categoryProgress[this.currentCategoryId] = nextLevelInCategory;
-        
-        // Dispatch event to update UI
-        window.dispatchEvent(new CustomEvent("levels:updated"));
-      } catch (e) {
-        console.error("Failed to save category progress:", e);
-      }
+    console.log(`🔓 Unlocking Level ${nextLevel} in ${this.currentCategoryId}`);
+
+    try {
+      // Save to backend (same way score is saved)
+      await saveCategoryLevel(this.userId, "HumanBody", this.currentCategoryId, nextLevel);
+      
+      // Update local cache (same way score updates local)
+      this.categoryProgress[this.currentCategoryId] = nextLevel;
+      
+      // Notify map to refresh
+      window.dispatchEvent(new CustomEvent("levels:updated"));
+      
+      console.log(`✅ Level ${nextLevel} unlocked successfully`);
+    } catch (e) {
+      console.error("❌ Error unlocking level:", e);
     }
   }
 
