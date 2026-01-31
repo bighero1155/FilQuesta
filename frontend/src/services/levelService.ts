@@ -1,6 +1,6 @@
 import axios from "../auth/axiosInstance";
 
-const API_URL = import.meta.env.VITE_API_URL || "";  ///////
+const API_URL = "";
 
 export interface Level {
   id: number;
@@ -45,24 +45,34 @@ export async function saveLevel(
   return response.data;
 }
 
-// ✅ SIMPLE UNLOCK LOGIC
-// When player completes a level, unlock the NEXT level
-// Example: Complete Level 1 → Save unlocked_levels = 2 (Level 2 becomes playable)
+// ✅ FIXED: Unlock next level based on completed level
+// This ensures unlocked_levels = highest playable level index
 export async function unlockNextLevel(
   userId: number,
   gameName: string,
   completedLevel: number
 ): Promise<Level> {
-  const nextLevel = completedLevel + 1;
-  
-  console.log(`🔓 Player completed Level ${completedLevel}. Unlocking Level ${nextLevel}...`);
-  
   try {
-    const result = await saveLevel(userId, gameName, nextLevel);
-    console.log(`✅ SUCCESS! Level ${nextLevel} is now unlocked`);
-    return result;
+    const allLevels = await getUserLevels(userId);
+    const current = allLevels.find((l) => l.game_name === gameName);
+
+    const currentUnlocked = current?.unlocked_levels ?? 0;
+
+    // 🔒 Never go backwards - always unlock at least completedLevel + 1
+    const nextUnlocked = Math.max(currentUnlocked, completedLevel + 1);
+
+    console.log(
+      `🔓 Unlocking ${gameName}: completed=${completedLevel}, unlocked=${nextUnlocked}`
+    );
+
+    return await saveLevel(userId, gameName, nextUnlocked);
   } catch (error: any) {
-    console.error(`❌ Failed to unlock Level ${nextLevel}:`, error);
+    if (error.response && error.response.status === 404) {
+      // First time playing - unlock level after the completed one
+      const nextUnlocked = completedLevel + 1;
+      console.log(`📝 No existing progress, unlocking level ${nextUnlocked} for ${gameName}`);
+      return await saveLevel(userId, gameName, nextUnlocked);
+    }
     throw error;
   }
 }
@@ -81,10 +91,10 @@ export async function getCategoryProgress(
     const allLevels = await getUserLevels(userId);
     const gameName = `${gameBaseName}_${categoryId}`;
     const record = allLevels.find((l) => l.game_name === gameName);
-    return record?.unlocked_levels || 1; // ✅ Default to 1 (Level 1 always playable)
+    return record?.unlocked_levels || 0;
   } catch (error) {
     console.error(`Error fetching ${gameBaseName} ${categoryId} progress:`, error);
-    return 1;
+    return 0;
   }
 }
 
@@ -121,19 +131,14 @@ export async function getAllCategoryProgress(
 }
 
 // Save category progress for any game
-// ✅ UPDATED: Now saves completedLevel + 1 directly
 export async function saveCategoryLevel(
   userId: number,
   gameBaseName: string,
   categoryId: string,
-  completedLevel: number
+  levelNumber: number
 ): Promise<Level> {
   const gameName = `${gameBaseName}_${categoryId}`;
-  const nextLevel = completedLevel + 1;
-  
-  console.log(`🎯 ${gameBaseName} ${categoryId}: Completed Level ${completedLevel}, unlocking Level ${nextLevel}`);
-  
-  return await saveLevel(userId, gameName, nextLevel);
+  return await saveLevel(userId, gameName, levelNumber);
 }
 
 // Check if player has completed any Level 1 in any category
@@ -144,8 +149,7 @@ export async function hasCompletedAnyLevelOne(
 ): Promise<boolean> {
   try {
     const progress = await getAllCategoryProgress(userId, gameBaseName, categories);
-    // ✅ Check if any category has unlocked level 2 or higher (meaning Level 1 was completed)
-    return Object.values(progress).some((unlocked) => unlocked >= 2);
+    return Object.values(progress).some((unlocked) => unlocked >= 1);
   } catch (error) {
     console.error(`Error checking Level 1 completion for ${gameBaseName}:`, error);
     return false;
@@ -189,13 +193,12 @@ export async function getAllMagicTreeProgress(userId: number): Promise<Record<st
   return getAllCategoryProgress(userId, "MagicTree", MAGICTREE_CATEGORIES);
 }
 
-// ✅ UPDATED: Now expects completedLevel and saves completedLevel + 1
 export async function saveMagicTreeLevel(
   userId: number,
   categoryId: string,
-  completedLevel: number
+  levelNumber: number
 ): Promise<Level> {
-  return saveCategoryLevel(userId, "MagicTree", categoryId, completedLevel);
+  return saveCategoryLevel(userId, "MagicTree", categoryId, levelNumber);
 }
 
 export async function hasMagicTreeCompletedAnyLevelOne(userId: number): Promise<boolean> {
