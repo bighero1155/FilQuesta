@@ -6,35 +6,35 @@ import axios from "../auth/axiosInstance";
 const LEVELS_PER_CATEGORY = 15;
 
 const LEVEL_SECTIONS = [
-  { 
-    name: "BASIC", 
+  {
+    name: "BASIC",
     categoryId: "BASIC",
-    color: "#4CAF50", 
-    gradient: "linear-gradient(135deg, #4CAF50, #45a049)" 
+    color: "#4CAF50",
+    gradient: "linear-gradient(135deg, #4CAF50, #45a049)"
   },
-  { 
-    name: "NORMAL", 
+  {
+    name: "NORMAL",
     categoryId: "NORMAL",
-    color: "#FF9800", 
-    gradient: "linear-gradient(135deg, #FF9800, #f57c00)" 
+    color: "#FF9800",
+    gradient: "linear-gradient(135deg, #FF9800, #f57c00)"
   },
-  { 
-    name: "HARD", 
+  {
+    name: "HARD",
     categoryId: "HARD",
-    color: "#2196F3", 
-    gradient: "linear-gradient(135deg, #2196F3, #1976D2)" 
+    color: "#2196F3",
+    gradient: "linear-gradient(135deg, #2196F3, #1976D2)"
   },
-  { 
-    name: "ADVANCED", 
+  {
+    name: "ADVANCED",
     categoryId: "ADVANCED",
-    color: "#9C27B0", 
-    gradient: "linear-gradient(135deg, #9C27B0, #7B1FA2)" 
+    color: "#9C27B0",
+    gradient: "linear-gradient(135deg, #9C27B0, #7B1FA2)"
   },
-  { 
-    name: "EXPERT", 
+  {
+    name: "EXPERT",
     categoryId: "EXPERT",
-    color: "#E91E63", 
-    gradient: "linear-gradient(135deg, #E91E63, #C2185B)" 
+    color: "#E91E63",
+    gradient: "linear-gradient(135deg, #E91E63, #C2185B)"
   },
 ];
 
@@ -106,26 +106,26 @@ const MagicTreeMap: React.FC = () => {
 
   // Listen for unlock updates
   useEffect(() => {
-  const handler = async () => {
-    if (!userId) return;
-    
-    // Refresh category progress when levels are updated
-    try {
-      const progress = await getAllMagicTreeProgress(userId);
-      setCategoryProgress(progress);
-      
-      const completedLevel1 = await hasMagicTreeCompletedAnyLevelOne(userId);
-      setHasCompletedLevel1(completedLevel1);
-    } catch (err) {
-      console.error("Failed to refresh MagicTree progress", err);
-    }
-  };
+    const handler = async () => {
+      if (!userId) return;
 
-  window.addEventListener("levels:updated", handler);
-  return () => {
-    window.removeEventListener("levels:updated", handler);
-  };
-}, [userId]);
+      // Refresh category progress when levels are updated
+      try {
+        const progress = await getAllMagicTreeProgress(userId);
+        setCategoryProgress(progress);
+
+        const completedLevel1 = await hasMagicTreeCompletedAnyLevelOne(userId);
+        setHasCompletedLevel1(completedLevel1);
+      } catch (err) {
+        console.error("Failed to refresh MagicTree progress", err);
+      }
+    };
+
+    window.addEventListener("levels:updated", handler);
+    return () => {
+      window.removeEventListener("levels:updated", handler);
+    };
+  }, [userId]);
 
   if (!userId) {
     return (
@@ -189,7 +189,7 @@ const MagicTreeMap: React.FC = () => {
       >
         🌳 Magic Tree Map
       </h1>
-      
+
       {/* Progress Info */}
       <p
         style={{
@@ -280,12 +280,12 @@ const MagicTreeMap: React.FC = () => {
           // Generate level buttons for this category
           const levelButtons = Array.from({ length: LEVELS_PER_CATEGORY }, (_, i) => {
             const levelNumber = i + 1;
-            
+
             // Unlock logic:
             // 1. Level 1: Unlocked if ANY Level 1 is completed OR if this is the first category
             // 2. Other levels: Unlocked if previous level in THIS category is completed
             let isUnlocked = false;
-            
+
             if (levelNumber === 1) {
               // Level 1: Unlock if any Level 1 is done, OR if no progress yet (allow first play)
               isUnlocked = hasCompletedLevel1 || totalLevelsUnlocked === 0;
@@ -445,4 +445,4 @@ const MagicTreeMap: React.FC = () => {
   );
 };
 
-export default MagicTreeMap;///
+export default MagicTreeMap;/////
