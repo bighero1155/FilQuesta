@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getAllMagicTreeProgress } from "../services/levelService";
+import { getAllCategoryProgress, hasCompletedAnyLevelOne } from "../services/levelService";
 import { useAuth } from "../context/AuthContext";
 import axios from "../auth/axiosInstance";
 
@@ -9,36 +9,41 @@ const LEVEL_SECTIONS = [
   { 
     name: "BASIC", 
     categoryId: "BASIC",
+    subtitle: "Internal Organs",
     color: "#4CAF50", 
     gradient: "linear-gradient(135deg, #4CAF50, #45a049)" 
   },
   { 
     name: "NORMAL", 
     categoryId: "NORMAL",
+    subtitle: "External Parts",
     color: "#FF9800", 
     gradient: "linear-gradient(135deg, #FF9800, #f57c00)" 
   },
   { 
     name: "HARD", 
     categoryId: "HARD",
+    subtitle: "Skeleton",
     color: "#2196F3", 
     gradient: "linear-gradient(135deg, #2196F3, #1976D2)" 
   },
   { 
     name: "ADVANCED", 
     categoryId: "ADVANCED",
+    subtitle: "Diseases & Viruses",
     color: "#9C27B0", 
     gradient: "linear-gradient(135deg, #9C27B0, #7B1FA2)" 
   },
   { 
     name: "EXPERT", 
     categoryId: "EXPERT",
+    subtitle: "Cells",
     color: "#E91E63", 
     gradient: "linear-gradient(135deg, #E91E63, #C2185B)" 
   },
 ];
 
-const MagicTreeMap: React.FC = () => {
+const HumanBodyMap: React.FC = () => {
   const { user } = useAuth();
   const [categoryProgress, setCategoryProgress] = useState<Record<string, number>>({
     BASIC: 0,
@@ -50,6 +55,7 @@ const MagicTreeMap: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<number | null>(null);
   const [gameScore, setGameScore] = useState(0);
+  const [hasCompletedLevel1, setHasCompletedLevel1] = useState(false);
 
   // Get userId from auth or localStorage
   useEffect(() => {
@@ -81,14 +87,22 @@ const MagicTreeMap: React.FC = () => {
     const fetchData = async () => {
       try {
         // Fetch category progress
-        const progress = await getAllMagicTreeProgress(userId);
+        const progress = await getAllCategoryProgress(userId, "HumanBody", [
+          "BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"
+        ]);
         setCategoryProgress(progress);
+
+        // Check if any Level 1 is completed
+        const completedLevel1 = await hasCompletedAnyLevelOne(userId, "HumanBody", [
+          "BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"
+        ]);
+        setHasCompletedLevel1(completedLevel1);
 
         // Fetch user profile for game score
         const userResponse = await axios.get(`/users/${userId}`);
         setGameScore(userResponse.data.total_score || 0);
       } catch (err) {
-        console.error("Failed to load MagicTree data", err);
+        console.error("Failed to load HumanBody data", err);
         setCategoryProgress({ BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 });
         setGameScore(0);
       } finally {
@@ -106,10 +120,17 @@ const MagicTreeMap: React.FC = () => {
       
       // Refresh category progress when levels are updated
       try {
-        const progress = await getAllMagicTreeProgress(userId);
+        const progress = await getAllCategoryProgress(userId, "HumanBody", [
+          "BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"
+        ]);
         setCategoryProgress(progress);
+        
+        const completedLevel1 = await hasCompletedAnyLevelOne(userId, "HumanBody", [
+          "BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"
+        ]);
+        setHasCompletedLevel1(completedLevel1);
       } catch (err) {
-        console.error("Failed to refresh MagicTree progress", err);
+        console.error("Failed to refresh HumanBody progress", err);
       }
     };
 
@@ -126,11 +147,11 @@ const MagicTreeMap: React.FC = () => {
         justifyContent: "center",
         alignItems: "center",
         minHeight: "100vh",
-        background: "linear-gradient(180deg, #003366 0%, #0077cc 100%)",
+        background: "linear-gradient(180deg, #608bf0 0%, #1e293b 100%)",
         color: "#fff",
         fontSize: "1.2rem"
       }}>
-        Please log in to see the Magic Tree map.
+        Please log in to see the Body Explorer map.
       </div>
     );
   }
@@ -142,11 +163,11 @@ const MagicTreeMap: React.FC = () => {
         justifyContent: "center",
         alignItems: "center",
         minHeight: "100vh",
-        background: "linear-gradient(180deg, #003366 0%, #0077cc 100%)",
+        background: "linear-gradient(180deg, #608bf0 0%, #1e293b 100%)",
         color: "#fff",
         fontSize: "1.2rem"
       }}>
-        Loading Magic Tree map…
+        Loading Body Explorer map…
       </div>
     );
   }
@@ -160,7 +181,7 @@ const MagicTreeMap: React.FC = () => {
     <div
       style={{
         textAlign: "center",
-        background: "linear-gradient(180deg, #003366 0%, #0077cc 100%)",
+        background: "linear-gradient(180deg, #608bf0 0%, #1e293b 100%)",
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
@@ -179,7 +200,7 @@ const MagicTreeMap: React.FC = () => {
           fontFamily: "Fredoka, Arial Black, sans-serif",
         }}
       >
-        🌳 Magic Tree Map
+        🫀 Body Explorer Map
       </h1>
       
       {/* Progress Info */}
@@ -273,16 +294,16 @@ const MagicTreeMap: React.FC = () => {
           const levelButtons = Array.from({ length: LEVELS_PER_CATEGORY }, (_, i) => {
             const levelNumber = i + 1;
             
-            // ✅ SAME UNLOCK LOGIC AS HUMANBODYSCENE
-            // Level 1: Unlocked if no progress yet (first play) OR already unlocked
-            // Levels 2-15: Unlocked if previous level in THIS category is completed
+            // Unlock logic:
+            // 1. Level 1: Unlocked if ANY Level 1 is completed OR if this is the first category
+            // 2. Other levels: Unlocked if previous level in THIS category is completed
             let isUnlocked = false;
             
             if (levelNumber === 1) {
-              // Level 1: Allow first play OR if already unlocked
-              isUnlocked = totalLevelsUnlocked === 0 || unlockedInCategory >= 1;
+              // Level 1: Unlock if any Level 1 is done, OR if no progress yet (allow first play)
+              isUnlocked = hasCompletedLevel1 || totalLevelsUnlocked === 0;
             } else {
-              // Levels 2-15: Sequential unlock within category
+              // Levels 2-15: Unlock if previous level in THIS category is completed
               isUnlocked = levelNumber <= unlockedInCategory;
             }
 
@@ -310,13 +331,25 @@ const MagicTreeMap: React.FC = () => {
                   color: "#fff",
                   padding: "12px",
                   borderRadius: "10px",
-                  marginBottom: "10px",
+                  marginBottom: "5px",
                   fontWeight: "bold",
                   fontSize: "clamp(0.95rem, 2.5vw, 1.1rem)",
                   textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
                 }}
               >
                 {section.name}
+              </div>
+
+              {/* Subtitle */}
+              <div
+                style={{
+                  fontSize: "0.8rem",
+                  color: "#94a3b8",
+                  marginBottom: "10px",
+                  fontStyle: "italic",
+                }}
+              >
+                {section.subtitle}
               </div>
 
               {/* Section Progress */}
@@ -351,7 +384,8 @@ const MagicTreeMap: React.FC = () => {
                       onClick={() => {
                         if (lvl.isUnlocked) {
                           // Navigate with global level ID (for backend compatibility)
-                          window.location.href = `/magictreescene?level=${globalLevelId - 1}&category=${section.categoryId}`;
+                          // CHANGED: Use /body-systems instead of /humanbodyscene
+                          window.location.href = `/body-systems?level=${globalLevelId - 1}&category=${section.categoryId}`;
                         }
                       }}
                       style={{
@@ -407,10 +441,10 @@ const MagicTreeMap: React.FC = () => {
         }}
       >
         <button
-          onClick={() => (window.location.href = "/Mathematics")}
+          onClick={() => (window.location.href = "/Science")}
           style={{
             padding: "14px 28px",
-            backgroundColor: "#0044aa",
+            backgroundColor: "#334155",
             color: "#fff",
             border: "none",
             borderRadius: "10px",
@@ -422,19 +456,19 @@ const MagicTreeMap: React.FC = () => {
             minWidth: "180px",
           }}
           onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = "#0066ff";
+            e.currentTarget.style.backgroundColor = "#475569";
             e.currentTarget.style.transform = "scale(1.05)";
           }}
           onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = "#0044aa";
+            e.currentTarget.style.backgroundColor = "#334155";
             e.currentTarget.style.transform = "scale(1)";
           }}
         >
-          ⬅️ Back to Home
+          ⬅️ Back to Science
         </button>
       </div>
     </div>
   );
 };
 
-export default MagicTreeMap;
+export default HumanBodyMap; 
