@@ -17,7 +17,7 @@ const MagicTreeMap: React.FC = () => {
   const { user } = useAuth();
   const [userId, setUserId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [gameScore, setGameScore] = useState(0);
+  const [gameScore, setGameScore] = useState(0); 
 
   // unlocked_levels = COMPLETED levels
   const [categoryProgress, setCategoryProgress] = useState<Record<string, number>>({
