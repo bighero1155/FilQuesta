@@ -1,6 +1,6 @@
 import axios from "../auth/axiosInstance";
 
-const API_URL = "";
+const API_URL = "/MagicTree";
 
 export interface Level {
   id: number;
@@ -56,10 +56,10 @@ export async function unlockNextLevel(
     const allLevels = await getUserLevels(userId);
     const current = allLevels.find((l) => l.game_name === gameName);
 
-    const currentUnlocked = current?.unlocked_levels ?? 0;
+    const currentUnlocked = current?.unlocked_levels ?? 2;
 
     // 🔒 Never go backwards - always unlock at least completedLevel + 1
-    const nextUnlocked = Math.max(currentUnlocked, completedLevel + 1);
+    const nextUnlocked = Math.max(currentUnlocked, completedLevel + 2);
 
     console.log(
       `🔓 Unlocking ${gameName}: completed=${completedLevel}, unlocked=${nextUnlocked}`
@@ -69,7 +69,7 @@ export async function unlockNextLevel(
   } catch (error: any) {
     if (error.response && error.response.status === 404) {
       // First time playing - unlock level after the completed one
-      const nextUnlocked = completedLevel + 1;
+      const nextUnlocked = completedLevel + 2;
       console.log(`📝 No existing progress, unlocking level ${nextUnlocked} for ${gameName}`);
       return await saveLevel(userId, gameName, nextUnlocked);
     }
@@ -91,7 +91,7 @@ export async function getCategoryProgress(
     const allLevels = await getUserLevels(userId);
     const gameName = `${gameBaseName}_${categoryId}`;
     const record = allLevels.find((l) => l.game_name === gameName);
-    return record?.unlocked_levels || 0;
+    return record?.unlocked_levels || 2;
   } catch (error) {
     console.error(`Error fetching ${gameBaseName} ${categoryId} progress:`, error);
     return 0;
@@ -109,7 +109,7 @@ export async function getAllCategoryProgress(
 
     // ✅ IMPORTANT: default to 1 (Level 1 playable)
     const progress: Record<string, number> = {};
-    categories.forEach(cat => (progress[cat] = 1));
+    categories.forEach(cat => (progress[cat] = 2));
 
     allLevels
       .filter(l => l.game_name.startsWith(`${gameBaseName}_`))
@@ -117,7 +117,7 @@ export async function getAllCategoryProgress(
         const category = level.game_name.replace(`${gameBaseName}_`, "");
         if (category in progress) {
           // ✅ never allow less than 1
-          progress[category] = Math.max(1, level.unlocked_levels);
+          progress[category] = Math.max(2, level.unlocked_levels);
         }
       });
 
@@ -126,7 +126,7 @@ export async function getAllCategoryProgress(
     console.error(`Error fetching ${gameBaseName} progress:`, error);
 
     // ✅ safe fallback: all categories start at level 1
-    return Object.fromEntries(categories.map(cat => [cat, 1]));
+    return Object.fromEntries(categories.map(cat => [cat, 2]));
   }
 }
 
@@ -149,7 +149,7 @@ export async function hasCompletedAnyLevelOne(
 ): Promise<boolean> {
   try {
     const progress = await getAllCategoryProgress(userId, gameBaseName, categories);
-    return Object.values(progress).some((unlocked) => unlocked >= 1);
+    return Object.values(progress).some((unlocked) => unlocked >= 2);
   } catch (error) {
     console.error(`Error checking Level 1 completion for ${gameBaseName}:`, error);
     return false;

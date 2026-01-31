@@ -21,11 +21,11 @@ const MagicTreeMap: React.FC = () => {
 
   // unlocked_levels = COMPLETED levels
   const [categoryProgress, setCategoryProgress] = useState<Record<string, number>>({
-    BASIC: 1,
-    NORMAL: 1,
-    HARD: 1,
-    ADVANCED: 1,
-    EXPERT: 1,
+    BASIC: 3,
+    NORMAL: 3,
+    HARD: 3,
+    ADVANCED: 3,
+    EXPERT: 3,
   });
 
   // Resolve user
