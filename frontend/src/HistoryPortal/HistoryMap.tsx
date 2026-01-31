@@ -1,7 +1,7 @@
 // src/HistoryPortal/HistoryMap.tsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllCategoryProgress, hasCompletedAnyLevelOne } from "../services/levelService";
+import { getAllCategoryProgress } from "../services/levelService";
 import { useAuth } from "../context/AuthContext";
 import Loading from "../components/Loading";
 import axios from "../auth/axiosInstance";
@@ -61,7 +61,6 @@ const HistoryMap: React.FC = () => {
   const [userId, setUserId] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [gameScore, setGameScore] = useState(0);
-  const [hasCompletedLevel1, setHasCompletedLevel1] = useState(false);
 
   // Handle responsive detection
   useEffect(() => {
@@ -108,12 +107,6 @@ const HistoryMap: React.FC = () => {
         ]);
         setCategoryProgress(progress);
 
-        // Check if any Level 1 is completed
-        const completedLevel1 = await hasCompletedAnyLevelOne(userId, "History", [
-          "BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"
-        ]);
-        setHasCompletedLevel1(completedLevel1);
-
         // Fetch user profile for game score
         const userResponse = await axios.get(`/users/${userId}`);
         setGameScore(userResponse.data.total_score || 0);
@@ -140,11 +133,6 @@ const HistoryMap: React.FC = () => {
           "BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"
         ]);
         setCategoryProgress(progress);
-        
-        const completedLevel1 = await hasCompletedAnyLevelOne(userId, "History", [
-          "BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"
-        ]);
-        setHasCompletedLevel1(completedLevel1);
       } catch (err) {
         console.error("Failed to refresh History progress", err);
       }
@@ -320,14 +308,14 @@ const HistoryMap: React.FC = () => {
           const levelButtons = Array.from({ length: LEVELS_PER_CATEGORY }, (_, i) => {
             const levelNumber = i + 1;
             
-            // Unlock logic:
-            // 1. Level 1: Unlocked if ANY Level 1 is completed OR if this is the first category
-            // 2. Other levels: Unlocked if previous level in THIS category is completed
+            // ✅ FIXED UNLOCK LOGIC (same as HumanBodyMap):
+            // Level 1: ALWAYS playable
+            // Levels 2-15: Must complete previous level in THIS category
             let isUnlocked = false;
             
             if (levelNumber === 1) {
-              // Level 1: Unlock if any Level 1 is done, OR if no progress yet (allow first play)
-              isUnlocked = hasCompletedLevel1 || totalLevelsUnlocked === 0;
+              // ✅ Level 1 is ALWAYS unlocked
+              isUnlocked = true;
             } else {
               // Levels 2-15: Unlock if previous level in THIS category is completed
               isUnlocked = levelNumber <= unlockedInCategory;
@@ -409,7 +397,7 @@ const HistoryMap: React.FC = () => {
                       disabled={!lvl.isUnlocked}
                       onClick={() => {
                         if (lvl.isUnlocked) {
-                          // Navigate with global level ID and category
+                          // Navigate with global level ID and category (for backend compatibility)
                           navigate(`/history-portal?level=${globalLevelId - 1}&category=${section.categoryId}`);
                         }
                       }}

@@ -3,7 +3,7 @@ import Phaser from "phaser";
 import { HISTORY_LEVELS } from "./levels";
 import { logPageVisit, logGameOver } from "../services/pageVisitService";
 import { updateUserProgress, getUserProfile } from "../services/userService";
-import { saveCategoryLevel, getAllCategoryProgress, hasCompletedAnyLevelOne } from "../services/levelService";
+import { saveCategoryLevel, getAllCategoryProgress } from "../services/levelService";
 import { 
   getTextStyle, 
   getCategoryTheme, 
@@ -40,7 +40,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
   };
 
   // Analytics tracking
-  private startTime: number = 0;
+  private sceneStartTime: number = 0;
   private hasLoggedVisit: boolean = false;
   private score = 0;
   private scorePerCorrectItem = 10;
@@ -49,6 +49,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
     super(SCENE_KEY);
   }
 
+  // Get category display name with emoji
   private getCategoryDisplayName(): string {
     const theme = getCategoryTheme(this.currentCategoryId);
     return `${theme.emoji} ${theme.displayName}`;
@@ -69,6 +70,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
     }
   }
 
+  // Calculate category and level from global level number
   private calculateCategoryFromGlobalLevel(globalLevel: number) {
     const categoryIndex = Math.floor((globalLevel - 1) / 15);
     const levelInCategory = ((globalLevel - 1) % 15) + 1;
@@ -90,6 +92,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
     if (data?.levelKey) {
       this.currentLevelKey = data.levelKey;
     } else {
+      // Get level from URL or data
       const urlParams = new URLSearchParams(window.location.search);
       const levelParam = urlParams.get("level");
       const categoryParam = urlParams.get("category");
@@ -103,11 +106,14 @@ export default class HistoryPortalScene extends Phaser.Scene {
 
       this.currentLevel = startLevel ?? 1;
       
+      // Extract category and level from URL or calculate from global level
       if (categoryParam) {
         this.currentCategoryId = categoryParam;
+        // Calculate level within category from global level
         const categoryIndex = HISTORY_CATEGORIES.indexOf(categoryParam);
         this.currentLevelInCategory = this.currentLevel - (categoryIndex * 15);
       } else {
+        // Calculate category and level from global level number
         this.calculateCategoryFromGlobalLevel(this.currentLevel);
       }
 
@@ -116,7 +122,10 @@ export default class HistoryPortalScene extends Phaser.Scene {
     }
     
     console.log("📌 Current level key:", this.currentLevelKey);
-    this.startTime = Date.now();
+    console.log("📊 Category:", this.currentCategoryId, "Level:", this.currentLevelInCategory);
+    
+    // Initialize analytics tracking
+    this.sceneStartTime = Date.now();
     this.hasLoggedVisit = false;
   }
 
@@ -165,30 +174,22 @@ export default class HistoryPortalScene extends Phaser.Scene {
     const theme = getCategoryTheme(this.currentCategoryId);
     this.cameras.main.setBackgroundColor(theme.background);
 
-    // Fetch category progress
+    // Fetch category progress (async)
     try {
       this.categoryProgress = await getAllCategoryProgress(this.userId!, "History", HISTORY_CATEGORIES);
     } catch {
       this.categoryProgress = { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
     }
 
-    // Check if level is unlocked
+    // ✅ FIXED: Check if level is unlocked
     const unlockedInCategory = this.categoryProgress[this.currentCategoryId] || 0;
-    const hasCompletedAnyLevel1 = await hasCompletedAnyLevelOne(this.userId!, "History", HISTORY_CATEGORIES);
     
-    if (this.currentLevelInCategory === 1) {
-      const totalProgress = Object.values(this.categoryProgress).reduce((sum, val) => sum + val, 0);
-      if (!hasCompletedAnyLevel1 && totalProgress > 0) {
-        alert("🚫 Complete any Level 1 first to unlock all Level 1s!");
-        window.location.href = "/historymap";
-        return;
-      }
-    } else {
-      if (this.currentLevelInCategory > unlockedInCategory) {
-        alert(`🚫 Complete ${this.currentCategoryId} Level ${this.currentLevelInCategory - 1} first!`);
-        window.location.href = "/historymap";
-        return;
-      }
+    // ✅ Level 1 is ALWAYS playable
+    // ✅ Levels 2-15: Must complete previous level in THIS category
+    if (this.currentLevelInCategory > 1 && this.currentLevelInCategory > unlockedInCategory) {
+      alert(`🚫 Complete ${this.currentCategoryId} Level ${this.currentLevelInCategory - 1} first!`);
+      window.location.href = "/historymap";
+      return;
     }
     
     // Stars
@@ -228,7 +229,8 @@ export default class HistoryPortalScene extends Phaser.Scene {
       .setOrigin(1, 0)
       .setInteractive({ useHandCursor: true });
     
-    backBtn.on("pointerdown", () => {
+    backBtn.on("pointerdown", async () => {
+      await this.logVisitBeforeExit();
       window.location.href = "/historymap";
     });
 
@@ -531,7 +533,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
     });
   }
 
-  // Analytics Methods
+  // ---------- Analytics Methods ----------
   private async logInitialVisit() {
     if (!this.userId || this.hasLoggedVisit) return;
     
@@ -546,7 +548,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
   private async logVisitBeforeExit() {
     if (!this.userId) return;
 
-    const timeSpentSeconds = Math.floor((Date.now() - this.startTime) / 1000);
+    const timeSpentSeconds = Math.floor((Date.now() - this.sceneStartTime) / 1000);
     
     try {
       await logPageVisit(this.userId, SCENE_KEY, timeSpentSeconds);
@@ -565,7 +567,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
     }
   }
 
-  // Visual Effect Methods
+  // ---------- Visual Effect Methods ----------
   private showSuccessEffect(x: number, y: number): void {
     const config = ANIMATIONS.successParticles;
     
@@ -651,18 +653,10 @@ export default class HistoryPortalScene extends Phaser.Scene {
     const isMobile = width < 768;
 
     if (won) {
-      try {
-        if (this.userId) {
-          await updateUserProgress(this.userId, this.score);
-          const updatedUser = await getUserProfile(this.userId);
-          if (updatedUser?.total_score !== undefined) {
-            localStorage.setItem("totalScore", updatedUser.total_score.toString());
-          }
-        }
-      } catch (error) {
-        console.error("Failed to update progress:", error);
-      }
-
+      // ✅ Update score first (same pattern as HumanBody)
+      await this.addScore(this.score);
+      
+      // ✅ Then unlock next level (same pattern as HumanBody)
       await this.unlockNextLevel();
     } else {
       await this.logGameOverEvent();
@@ -782,6 +776,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
         const hasNextLevel = this.currentLevelInCategory < 15;
         
         if (hasNextLevel) {
+          // Go to next level in same category
           const nextGlobalLevel = this.currentLevel + 1;
           const nextCategoryId = this.currentCategoryId;
           this.cameras.main.fadeOut(400);
@@ -789,6 +784,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
             window.location.href = `/history-portal?level=${nextGlobalLevel - 1}&category=${nextCategoryId}`;
           });
         } else {
+          // Completed all levels in category, return to map
           this.cameras.main.fadeOut(400);
           this.time.delayedCall(400, () => {
             window.location.href = "/historymap";
@@ -800,21 +796,52 @@ export default class HistoryPortalScene extends Phaser.Scene {
     });
   }
 
+  // ✅ WORKING - Same pattern as HumanBody's addScore
+  private async addScore(points: number) {
+    if (!this.userId) return;
+    
+    try {
+      // Update score in backend
+      await updateUserProgress(this.userId, points);
+      
+      // Refresh local user data
+      const updated = await getUserProfile(this.userId);
+      if (updated?.total_score !== undefined) {
+        localStorage.setItem("totalScore", updated.total_score.toString());
+      }
+      
+      console.log("✅ Score updated successfully");
+    } catch (e) {
+      console.error("❌ Error updating score:", e);
+    }
+  }
+
+  // ✅ FIXED - Same exact pattern as HumanBody's unlockNextLevel
   private async unlockNextLevel() {
     if (!this.userId) return;
-    const nextLevelInCategory = this.currentLevelInCategory + 1;
 
-    const currentUnlocked = this.categoryProgress[this.currentCategoryId] || 0;
+    const completedLevel = this.currentLevelInCategory;
+    const nextLevel = completedLevel + 1;
 
-    if (nextLevelInCategory > currentUnlocked) {
-      try {
-        await saveCategoryLevel(this.userId, "History", this.currentCategoryId, nextLevelInCategory);
-        this.categoryProgress[this.currentCategoryId] = nextLevelInCategory;
-        
-        window.dispatchEvent(new CustomEvent("levels:updated"));
-      } catch (e) {
-        console.error("Failed to save category progress:", e);
-      }
+    console.log(`🔓 Unlocking Level ${nextLevel} in ${this.currentCategoryId}`);
+
+    try {
+      // Save to backend (same way score is saved)
+      await saveCategoryLevel(this.userId, "History", this.currentCategoryId, nextLevel);
+      
+      // Update local cache (same way score updates local)
+      this.categoryProgress[this.currentCategoryId] = nextLevel;
+      
+      // Notify map to refresh
+      window.dispatchEvent(new CustomEvent("levels:updated"));
+      
+      console.log(`✅ Level ${nextLevel} unlocked successfully`);
+    } catch (e) {
+      console.error("❌ Error unlocking level:", e);
     }
+  }
+
+  shutdown() {
+    this.logVisitBeforeExit();
   }
 }
