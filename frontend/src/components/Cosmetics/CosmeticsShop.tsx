@@ -544,4 +544,4 @@ const CosmeticsShop: React.FC = () => {
   );
 };
 
-export default CosmeticsShop;
+export default CosmeticsShop; 
