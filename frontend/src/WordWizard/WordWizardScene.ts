@@ -1,6 +1,6 @@
 import Phaser from "phaser";
-import { updateUserProgress } from "../services/userService";
-import { saveCategoryLevel, getAllCategoryProgress, hasCompletedAnyLevelOne } from "../services/levelService";
+import { updateUserProgress, getUserProfile } from "../services/userService";
+import { saveCategoryLevel, getAllCategoryProgress } from "../services/levelService";
 import { logPageVisit, logGameOver } from "../services/pageVisitService";
 import { LevelConfig, getLevelConfig } from "./levels";
 import { createStyledButtons, createQuitButton } from "./buttons";
@@ -42,7 +42,6 @@ export default class WordWizardScene extends Phaser.Scene {
     EXPERT: 0,
   };
 
-  private startTime = 0;
   private timeRemaining = 90;
   private timerEvent: Phaser.Time.TimerEvent | null = null;
   private timerText?: Phaser.GameObjects.Text;
@@ -53,13 +52,17 @@ export default class WordWizardScene extends Phaser.Scene {
   };
   private nextScoreMultiplier = 1;
 
-  // ⌨️ NEW: Typing mode properties
+  // ⌨️ Typing mode properties
   private isTypingMode = false;
   private typingInputField?: HTMLInputElement;
   private typingSubmitButton?: Phaser.GameObjects.Container;
   private staticLettersText?: Phaser.GameObjects.Text;
 
   private isSecondChanceActive = false;
+
+  // Analytics tracking
+  private sceneStartTime: number = 0;
+  private hasLoggedVisit: boolean = false;
 
   constructor() {
     super({ key: SCENE_KEY });
@@ -84,6 +87,7 @@ export default class WordWizardScene extends Phaser.Scene {
       this.consecutiveLevelsCompleted = 0;
     }
 
+    // Get level from URL or data
     const urlParams = new URLSearchParams(window.location.search);
     const levelParam = urlParams.get("level");
     const categoryParam = urlParams.get("category");
@@ -97,18 +101,26 @@ export default class WordWizardScene extends Phaser.Scene {
 
     this.currentLevel = startLevel ?? 1;
 
+    // Extract category and level from URL or calculate from global level
     if (categoryParam) {
       this.currentCategoryId = categoryParam;
+      // Calculate level within category from global level
       const categoryIndex = WORDWIZARD_CATEGORIES.indexOf(categoryParam);
-      this.currentLevelInCategory = this.currentLevel - categoryIndex * 15;
+      this.currentLevelInCategory = this.currentLevel - (categoryIndex * 15);
     } else {
+      // Calculate category and level from global level number
       this.calculateCategoryFromGlobalLevel(this.currentLevel);
     }
 
+    // Load level config before preload runs
     this.level = getLevelConfig(this.currentLevel);
-    this.startTime = Date.now();
+
+    // Initialize analytics tracking
+    this.sceneStartTime = Date.now();
+    this.hasLoggedVisit = false;
   }
 
+  // Calculate category and level from global level number
   private calculateCategoryFromGlobalLevel(globalLevel: number) {
     const categoryIndex = Math.floor((globalLevel - 1) / 15);
     const levelInCategory = ((globalLevel - 1) % 15) + 1;
@@ -132,6 +144,7 @@ export default class WordWizardScene extends Phaser.Scene {
     }
   }
 
+  // Get category display name with emoji
   private getCategoryDisplayName(): string {
     const categoryEmojis: Record<string, string> = {
       BASIC: "🟢 BASIC",
@@ -148,6 +161,7 @@ export default class WordWizardScene extends Phaser.Scene {
 
     if (!this.userId) return;
 
+    // Fetch category progress (async)
     try {
       this.categoryProgress = await getAllCategoryProgress(
         this.userId,
@@ -158,26 +172,15 @@ export default class WordWizardScene extends Phaser.Scene {
       this.categoryProgress = { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
     }
 
+    // ✅ FIXED: Check if level is unlocked
     const unlockedInCategory = this.categoryProgress[this.currentCategoryId] || 0;
-    const hasCompletedAnyLevel1 = await hasCompletedAnyLevelOne(
-      this.userId,
-      "WordWizard",
-      WORDWIZARD_CATEGORIES
-    );
-
-    if (this.currentLevelInCategory === 1) {
-      const totalProgress = Object.values(this.categoryProgress).reduce((sum, val) => sum + val, 0);
-      if (!hasCompletedAnyLevel1 && totalProgress > 0) {
-        alert("🚫 Complete any Level 1 first to unlock all Level 1s!");
-        window.location.href = "/wordwizardmap";
-        return;
-      }
-    } else {
-      if (this.currentLevelInCategory > unlockedInCategory) {
-        alert(`🚫 Complete ${this.currentCategoryId} Level ${this.currentLevelInCategory - 1} first!`);
-        window.location.href = "/wordwizardmap";
-        return;
-      }
+    
+    // ✅ Level 1 is ALWAYS playable
+    // ✅ Levels 2-15: Must complete previous level in THIS category
+    if (this.currentLevelInCategory > 1 && this.currentLevelInCategory > unlockedInCategory) {
+      alert(`🚫 Complete ${this.currentCategoryId} Level ${this.currentLevelInCategory - 1} first!`);
+      window.location.href = "/wordwizardmap";
+      return;
     }
 
     this.timeRemaining = this.level.time;
@@ -186,7 +189,10 @@ export default class WordWizardScene extends Phaser.Scene {
     this.createLevelInfoText();
     this.createLevel();
     createQuitButton(this);
-    await logPageVisit(this.userId, SCENE_KEY, 0);
+    
+    // Log initial page visit
+    this.logInitialVisit();
+    
     this.createTimerAndHUD();
 
     // ⌨️ Only set up drag events if NOT in typing mode
@@ -237,10 +243,42 @@ export default class WordWizardScene extends Phaser.Scene {
     );
   }
 
-  private async handleSceneEnd() {
+  // ---------- Analytics Methods ----------
+  private async logInitialVisit() {
+    if (!this.userId || this.hasLoggedVisit) return;
+    
+    try {
+      await logPageVisit(this.userId, SCENE_KEY, 0);
+      this.hasLoggedVisit = true;
+    } catch (error) {
+      console.error("Failed to log initial visit:", error);
+    }
+  }
+
+  private async logVisitBeforeExit() {
     if (!this.userId) return;
-    const timeSpent = Math.floor((Date.now() - this.startTime) / 1000);
-    await logPageVisit(this.userId, SCENE_KEY, timeSpent);
+
+    const timeSpentSeconds = Math.floor((Date.now() - this.sceneStartTime) / 1000);
+    
+    try {
+      await logPageVisit(this.userId, SCENE_KEY, timeSpentSeconds);
+    } catch (error) {
+      console.error("Failed to log visit before exit:", error);
+    }
+  }
+
+  private async logGameOverEvent() {
+    if (!this.userId) return;
+
+    try {
+      await logGameOver(this.userId, SCENE_KEY);
+    } catch (error) {
+      console.error("Failed to log game over:", error);
+    }
+  }
+
+  private async handleSceneEnd() {
+    await this.logVisitBeforeExit();
     
     // ⌨️ Clean up HTML input if exists
     if (this.typingInputField) {
@@ -255,25 +293,25 @@ export default class WordWizardScene extends Phaser.Scene {
   }
 
   private clearLevelElements() {
-  this.slots.forEach((s) => s.destroy());
-  this.tiles.forEach((t) => t.destroy());
-  this.slots = [];
-  this.tiles = [];
-  
-  // ⌨️ Clean up typing mode elements
-  if (this.typingInputField) {
-    this.typingInputField.remove();
-    this.typingInputField = undefined;
+    this.slots.forEach((s) => s.destroy());
+    this.tiles.forEach((t) => t.destroy());
+    this.slots = [];
+    this.tiles = [];
+    
+    // ⌨️ Clean up typing mode elements
+    if (this.typingInputField) {
+      this.typingInputField.remove();
+      this.typingInputField = undefined;
+    }
+    if (this.typingSubmitButton) {
+      this.typingSubmitButton.destroy();
+      this.typingSubmitButton = undefined;
+    }
+    if (this.staticLettersText) {
+      this.staticLettersText.destroy();
+      this.staticLettersText = undefined;
+    }
   }
-  if (this.typingSubmitButton) {
-    this.typingSubmitButton.destroy();
-    this.typingSubmitButton = undefined;
-  }
-  if (this.staticLettersText) {
-    this.staticLettersText.destroy(); // Now it's a container
-    this.staticLettersText = undefined;
-  }
-}
 
   private createLevel() {
     this.clearButtons();
@@ -324,39 +362,39 @@ export default class WordWizardScene extends Phaser.Scene {
     });
   }
 
-  // ⌨️ NEW: Create typing mode (levels 11-15)
-private createTypingMode(currentWord: { word: string; description: string }) {
-  const isMobile = this.scale.width < 768;
-  const centerX = this.scale.width / 2;
-  const centerY = this.scale.height / 2;
+  // ⌨️ Create typing mode (levels 11-15)
+  private createTypingMode(currentWord: { word: string; description: string }) {
+    const isMobile = this.scale.width < 768;
+    const centerX = this.scale.width / 2;
+    const centerY = this.scale.height / 2;
 
-  const letters = Phaser.Utils.Array.Shuffle(currentWord.word.split(""));
+    const letters = Phaser.Utils.Array.Shuffle(currentWord.word.split(""));
 
-  // Display scrambled letters using the new design function
-  const lettersY = isMobile ? centerY - 40 : centerY - 100;
-  const letterDisplay = createStaticLetterDisplay(this, letters, centerX, lettersY);
-  this.staticLettersText = letterDisplay as any; // Store for cleanup
+    // Display scrambled letters using the new design function
+    const lettersY = isMobile ? centerY - 40 : centerY - 100;
+    const letterDisplay = createStaticLetterDisplay(this, letters, centerX, lettersY);
+    this.staticLettersText = letterDisplay as any;
 
-  // Create HTML input field using the new design function
-  const inputY = isMobile ? centerY + 28 : centerY + 40;
-  this.typingInputField = createInputField(
-    centerX,
-    inputY,
-    currentWord.word.length,
-    () => this.handleTypingSubmit()
-  );
+    // Create HTML input field using the new design function
+    const inputY = isMobile ? centerY + 28 : centerY + 40;
+    this.typingInputField = createInputField(
+      centerX,
+      inputY,
+      currentWord.word.length,
+      () => this.handleTypingSubmit()
+    );
 
-  // Create submit button using the new design function
-  const buttonY = isMobile ? centerY + 100 : centerY + 130;
-  this.typingSubmitButton = createSubmitButton(
-    this,
-    centerX,
-    buttonY,
-    () => this.handleTypingSubmit()
-  );
-}
+    // Create submit button using the new design function
+    const buttonY = isMobile ? centerY + 100 : centerY + 130;
+    this.typingSubmitButton = createSubmitButton(
+      this,
+      centerX,
+      buttonY,
+      () => this.handleTypingSubmit()
+    );
+  }
 
-  // ⌨️ NEW: Handle typing mode submission
+  // ⌨️ Handle typing mode submission
   private async handleTypingSubmit() {
     if (!this.typingInputField) return;
 
@@ -382,13 +420,8 @@ private createTypingMode(currentWord: { word: string; description: string }) {
         console.error("Failed to save score/streak:", e);
       }
       
-      try {
-        if (this.userId) {
-          await updateUserProgress(this.userId, pointsToAdd);
-        }
-      } catch (error) {
-        console.error("Failed to update progress:", error);
-      }
+      // ✅ Update score (same pattern as HumanBody)
+      await this.addScore(pointsToAdd);
       
       this.nextScoreMultiplier = 1;
       
@@ -404,10 +437,9 @@ private createTypingMode(currentWord: { word: string; description: string }) {
     }
   }
 
-  // ⌨️ NEW: Show visual feedback for typing mode
+  // ⌨️ Show visual feedback for typing mode
   private showTypingFeedback(correct: boolean) {
     if (this.staticLettersText) {
-      // Pulse animation on the entire container
       this.tweens.add({
         targets: this.staticLettersText,
         scale: { from: 1, to: 1.1 },
@@ -458,12 +490,9 @@ private createTypingMode(currentWord: { word: string; description: string }) {
       ? ` 🔥 ${this.consecutiveLevelsCompleted}x STREAK!` 
       : "";
 
-    // ⌨️ Add mode indicator for typing levels
-    const modeText = this.isTypingMode ? "" : "";
-
     this.infoText.setFontSize(29);
     this.infoText.setText(
-      `⭐ Score: ${this.score}${streakText}${modeText}\n` +
+      `⭐ Score: ${this.score}${streakText}\n` +
         `💡 ${currentWord.description}`
     );
   }
@@ -524,13 +553,8 @@ private createTypingMode(currentWord: { word: string; description: string }) {
         console.error("Failed to save score/streak:", e);
       }
       
-      try {
-        if (this.userId) {
-          await updateUserProgress(this.userId, pointsToAdd);
-        }
-      } catch (error) {
-        console.error("Failed to update progress:", error);
-      }
+      // ✅ Update score (same pattern as HumanBody)
+      await this.addScore(pointsToAdd);
       
       this.nextScoreMultiplier = 1;
       this.slots.forEach((slot) => showSlotFeedback(this, slot, true));
@@ -549,9 +573,9 @@ private createTypingMode(currentWord: { word: string; description: string }) {
       this.timerEvent = null;
     }
 
-    // ⭐ NEW: Check if Second Chance was manually activated FIRST (before checking inventory)
+    // Check if Second Chance was manually activated FIRST
     if (this.isSecondChanceActive) {
-      this.isSecondChanceActive = false; // ⭐ Consume the active Second Chance
+      this.isSecondChanceActive = false;
       
       // ⌨️ Reset based on mode
       if (this.isTypingMode) {
@@ -565,7 +589,7 @@ private createTypingMode(currentWord: { word: string; description: string }) {
       
       this.resetTimer();
       this.showSecondChanceMessage();
-      return; // ⭐ Exit early - Second Chance saved the player!
+      return;
     }
 
     // Only check inventory if Second Chance wasn't manually activated
@@ -598,7 +622,7 @@ private createTypingMode(currentWord: { word: string; description: string }) {
         console.error("Failed to reset streak/score:", e);
       }
       
-      await logGameOver(this.userId!, SCENE_KEY);
+      await this.logGameOverEvent();
       this.showGameOverScreen();
     }
   }
@@ -623,6 +647,8 @@ private createTypingMode(currentWord: { word: string; description: string }) {
   }
 
   private async showGameOverScreen() {
+    await this.logVisitBeforeExit();
+    
     this.clearLevelElements();
 
     const centerX = this.scale.width / 2;
@@ -804,15 +830,18 @@ private createTypingMode(currentWord: { word: string; description: string }) {
           buttons.forEach((b) => b.destroy());
           this.clearLevelElements();
 
+          // ✅ Unlock next level (same pattern as HumanBody)
           await this.unlockNextLevel();
           
           const hasNextLevel = this.currentLevelInCategory < 15;
 
           if (hasNextLevel) {
+            // Go to next level in same category
             const nextGlobalLevel = this.currentLevel + 1;
             const nextCategoryId = this.currentCategoryId;
             window.location.href = `/wordwizard?level=${nextGlobalLevel - 1}&category=${nextCategoryId}`;
           } else {
+            // Completed all levels in category, return to map
             try {
               localStorage.setItem("wordwizard_session_score", "0");
               localStorage.setItem("wordwizard_streak", "0");
@@ -827,26 +856,48 @@ private createTypingMode(currentWord: { word: string; description: string }) {
     ]);
   }
 
+  // ✅ WORKING - Same pattern as HumanBody's addScore
+  private async addScore(points: number) {
+    if (!this.userId) return;
+    
+    try {
+      // Update score in backend
+      await updateUserProgress(this.userId, points);
+      
+      // Refresh local user data
+      const updated = await getUserProfile(this.userId);
+      if (updated?.total_score !== undefined) {
+        localStorage.setItem("totalScore", updated.total_score.toString());
+      }
+      
+      console.log("✅ Score updated successfully");
+    } catch (e) {
+      console.error("❌ Error updating score:", e);
+    }
+  }
+
+  // ✅ FIXED - Same exact pattern as HumanBody's unlockNextLevel
   private async unlockNextLevel() {
     if (!this.userId) return;
-    const nextLevelInCategory = this.currentLevelInCategory + 1;
 
-    const currentUnlocked = this.categoryProgress[this.currentCategoryId] || 0;
+    const completedLevel = this.currentLevelInCategory;
+    const nextLevel = completedLevel + 1;
 
-    if (nextLevelInCategory > currentUnlocked) {
-      try {
-        await saveCategoryLevel(
-          this.userId,
-          "WordWizard",
-          this.currentCategoryId,
-          nextLevelInCategory
-        );
-        this.categoryProgress[this.currentCategoryId] = nextLevelInCategory;
+    console.log(`🔓 Unlocking Level ${nextLevel} in ${this.currentCategoryId}`);
 
-        window.dispatchEvent(new CustomEvent("levels:updated"));
-      } catch (e) {
-        console.error("Failed to save category progress:", e);
-      }
+    try {
+      // Save to backend (same way score is saved)
+      await saveCategoryLevel(this.userId, "WordWizard", this.currentCategoryId, nextLevel);
+      
+      // Update local cache (same way score updates local)
+      this.categoryProgress[this.currentCategoryId] = nextLevel;
+      
+      // Notify map to refresh
+      window.dispatchEvent(new CustomEvent("levels:updated"));
+      
+      console.log(`✅ Level ${nextLevel} unlocked successfully`);
+    } catch (e) {
+      console.error("❌ Error unlocking level:", e);
     }
   }
 
@@ -983,7 +1034,7 @@ private createTypingMode(currentWord: { word: string; description: string }) {
       return;
     }
     
-    // ⭐ NEW: Prevent activating Second Chance if already active
+    // Prevent activating Second Chance if already active
     if (type === "second_chance" && this.isSecondChanceActive) {
       const warning = this.add
         .text(this.scale.width / 2, this.scale.height / 2, "♻️ Second Chance already active!", {
@@ -1009,7 +1060,7 @@ private createTypingMode(currentWord: { word: string; description: string }) {
       } else if (type === "second_chance") {
         await PowerUpLogic.activateSecondChance(this.userId!, this);
         
-        // ⭐ NEW: Mark Second Chance as active when manually used
+        // Mark Second Chance as active when manually used
         this.isSecondChanceActive = true;
         
         // ⌨️ Reset based on mode
@@ -1084,6 +1135,8 @@ private createTypingMode(currentWord: { word: string; description: string }) {
   }
 
   shutdown() {
+    this.logVisitBeforeExit();
+    
     if (this.timerEvent) {
       this.timerEvent.remove(false);
       this.timerEvent = null;

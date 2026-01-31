@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getAllCategoryProgress, hasCompletedAnyLevelOne } from "../services/levelService";
+import { getAllCategoryProgress } from "../services/levelService";
 import { useAuth } from "../context/AuthContext";
 import axios from "../auth/axiosInstance";
 
@@ -60,7 +60,6 @@ const WordWizardMap: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<number | null>(null);
   const [gameScore, setGameScore] = useState(0);
-  const [hasCompletedLevel1, setHasCompletedLevel1] = useState(false);
 
   // Get userId from auth or localStorage
   useEffect(() => {
@@ -97,12 +96,6 @@ const WordWizardMap: React.FC = () => {
         ]);
         setCategoryProgress(progress);
 
-        // Check if any Level 1 is completed
-        const completedLevel1 = await hasCompletedAnyLevelOne(userId, "WordWizard", [
-          "BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"
-        ]);
-        setHasCompletedLevel1(completedLevel1);
-
         // Fetch user profile for game score
         const userResponse = await axios.get(`/users/${userId}`);
         setGameScore(userResponse.data.total_score || 0);
@@ -129,11 +122,6 @@ const WordWizardMap: React.FC = () => {
           "BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"
         ]);
         setCategoryProgress(progress);
-        
-        const completedLevel1 = await hasCompletedAnyLevelOne(userId, "WordWizard", [
-          "BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"
-        ]);
-        setHasCompletedLevel1(completedLevel1);
       } catch (err) {
         console.error("Failed to refresh WordWizard progress", err);
       }
@@ -299,14 +287,14 @@ const WordWizardMap: React.FC = () => {
           const levelButtons = Array.from({ length: LEVELS_PER_CATEGORY }, (_, i) => {
             const levelNumber = i + 1;
             
-            // Unlock logic:
-            // 1. Level 1: Unlocked if ANY Level 1 is completed OR if this is the first category
-            // 2. Other levels: Unlocked if previous level in THIS category is completed
+            // ✅ FIXED UNLOCK LOGIC (same as HumanBodyMap):
+            // Level 1: ALWAYS playable
+            // Levels 2-15: Must complete previous level in THIS category
             let isUnlocked = false;
             
             if (levelNumber === 1) {
-              // Level 1: Unlock if any Level 1 is done, OR if no progress yet (allow first play)
-              isUnlocked = hasCompletedLevel1 || totalLevelsUnlocked === 0;
+              // ✅ Level 1 is ALWAYS unlocked
+              isUnlocked = true;
             } else {
               // Levels 2-15: Unlock if previous level in THIS category is completed
               isUnlocked = levelNumber <= unlockedInCategory;
@@ -388,7 +376,7 @@ const WordWizardMap: React.FC = () => {
                       disabled={!lvl.isUnlocked}
                       onClick={() => {
                         if (lvl.isUnlocked) {
-                          // Navigate with global level ID
+                          // Navigate with global level ID (for backend compatibility)
                           window.location.href = `/wordwizard?level=${globalLevelId - 1}&category=${section.categoryId}`;
                         }
                       }}
