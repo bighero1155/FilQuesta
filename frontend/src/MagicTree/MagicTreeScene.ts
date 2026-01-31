@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { saveMagicTreeLevel, getAllMagicTreeProgress } from "../services/levelService";
+import { saveLevel, getAllMagicTreeProgress } from "../services/levelService";
 import { updateUserProgress, getUserProfile } from "../services/userService";
 import { getLevelConfig } from "../MagicTree/levels";
 import { bounce, createSparkle } from "../MagicTree/design";
@@ -103,18 +103,16 @@ export default class MagicTree extends Phaser.Scene {
     try {
       this.categoryProgress = await this.fetchCategoryProgress(this.userId);
     } catch {
-      this.categoryProgress = { BASIC: 1, NORMAL: 1, HARD: 1, ADVANCED: 1, EXPERT: 1 };
+      this.categoryProgress = { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
     }
 
-    // 🚨 FIXED: Use max unlocked level for validation
-    const maxUnlockedInCategory = this.categoryProgress[this.currentCategoryId] ?? 1;
+    // Check if level is unlocked
+    const maxUnlockedInCategory = this.categoryProgress[this.currentCategoryId] ?? 0;
 
     console.log(`🎮 Init: Category=${this.currentCategoryId}, Playing Level=${this.currentLevelInCategory}, MaxUnlocked=${maxUnlockedInCategory}`);
 
     if (this.currentLevelInCategory > maxUnlockedInCategory) {
-      alert(
-        `🚫 Level ${this.currentLevelInCategory} is locked. Complete previous levels first.`
-      );
+      alert(`🚫 Level ${this.currentLevelInCategory} is locked. Complete previous levels first.`);
       window.location.href = "/MagicTree";
       return;
     }
@@ -139,13 +137,13 @@ export default class MagicTree extends Phaser.Scene {
     // Adjust time based on operation difficulty
     switch (cfg.operation) {
       case 'addition':
-        return 60; // 1 minute for addition
+        return 60;
       case 'subtraction':
-        return 60; // 1 minute for subtraction
+        return 60;
       case 'multiplication':
-        return 75; // 1.25 minutes for multiplication
+        return 75;
       case 'division':
-        return 90; // 1.5 minutes for division
+        return 90;
       default:
         return 60;
     }
@@ -263,7 +261,6 @@ export default class MagicTree extends Phaser.Scene {
     }
   }
 
-  // ⏰ CREATE TIMER DISPLAY (LEFT SIDE)
   private createTimerDisplay() {
     const isMobile = this.scale.width < 768;
     const fontSize = isMobile ? "24px" : "32px";
@@ -727,7 +724,7 @@ export default class MagicTree extends Phaser.Scene {
       this.stopCountdown();
       await this.addScore(10);
       
-      // ✅ CRITICAL FIX: Save BEFORE showing UI
+      // ✅ SIMPLE FIX: Save BEFORE showing UI
       await this.unlockNextLevel();
       
       const hasNextLevel = this.currentLevelInCategory < 15;
@@ -815,36 +812,33 @@ export default class MagicTree extends Phaser.Scene {
       return progress;
     } catch (error) {
       console.error("Error fetching category progress:", error);
-      return { BASIC: 1, NORMAL: 1, HARD: 1, ADVANCED: 1, EXPERT: 1 };
+      return { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
     }
   }
 
-  // ✅ FIXED: Properly unlock next level
+  // ✅ SUPER SIMPLE FIX: Just save completedLevel + 1 directly!
   private async unlockNextLevel() {
     if (!this.userId) return;
 
     const completedLevel = this.currentLevelInCategory;
-    const nextLevelToUnlock = completedLevel + 1;
+    const nextLevel = completedLevel + 1;
+    const gameName = `MagicTree_${this.currentCategoryId}`;
 
-    console.log(`🔓 Unlocking: Category=${this.currentCategoryId}, Completed=${completedLevel}, NextUnlock=${nextLevelToUnlock}`);
+    console.log(`🔓 Player completed Level ${completedLevel}. Unlocking Level ${nextLevel}...`);
 
     try {
-      // Save the next unlocked level
-      await saveMagicTreeLevel(
-        this.userId,
-        this.currentCategoryId,
-        nextLevelToUnlock
-      );
+      // 🎯 DIRECT SAVE - No wrappers, no confusion
+      await saveLevel(this.userId, gameName, nextLevel);
 
-      // Re-fetch to confirm
-      this.categoryProgress = await getAllMagicTreeProgress(this.userId);
+      console.log(`✅ SUCCESS! Level ${nextLevel} is now unlocked in ${this.currentCategoryId}`);
 
-      console.log(`✅ Saved successfully. New progress:`, this.categoryProgress);
+      // Update local cache
+      this.categoryProgress[this.currentCategoryId] = nextLevel;
 
-      // Notify map
+      // Notify map to refresh
       window.dispatchEvent(new CustomEvent("levels:updated"));
     } catch (e) {
-      console.error("❌ Failed to save category progress:", e);
+      console.error("❌ Failed to unlock next level:", e);
     }
   }
 }
