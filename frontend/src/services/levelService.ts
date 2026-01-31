@@ -11,7 +11,7 @@ export interface Level {
   updated_at: string;
 }
 
-// ========================================///
+// ========================================
 // CORE FUNCTIONS (Used by ALL games)
 // ========================================
 
@@ -24,57 +24,81 @@ export async function getUserLevels(userId: number): Promise<Level[]> {
   return response.data;
 }
 
-// Save or update levels for a game and user
-// SUPPORTS BOTH: Simple game names AND category-based names
+// ✅ UPDATED: Save or update levels - Following score pattern
 export async function saveLevel(
   userId: number,
   gameName: string,
-  unlockedLevels: number
+  levelToUnlock: number
 ): Promise<Level> {
   if (!userId) throw new Error("User ID is undefined");
   
-  console.log(`💾 Saving: User ${userId}, Game: ${gameName}, Level: ${unlockedLevels}`);
-  
-  const response = await axios.post(
-    `${API_URL}/users/${userId}/levels`,
-    { game_name: gameName, unlocked_levels: unlockedLevels },
-    { withCredentials: true }
-  );
-  
-  console.log('✅ Saved successfully:', response.data);
-  return response.data;
+  try {
+    console.log(`💾 Saving: User ${userId}, Game: ${gameName}, Level: ${levelToUnlock}`);
+    
+    // Get current progress (like score gets current total_score)
+    const allLevels = await getUserLevels(userId);
+    const currentLevel = allLevels.find((l) => l.game_name === gameName);
+    const currentUnlocked = currentLevel?.unlocked_levels || 0;
+    
+    // Only update if new level is higher (prevent going backwards)
+    const newUnlocked = Math.max(currentUnlocked, levelToUnlock);
+    
+    console.log(`📊 Current: ${currentUnlocked}, New: ${newUnlocked}`);
+    
+    // Save to backend (like updateUserProgress saves score)
+    const response = await axios.post(
+      `${API_URL}/users/${userId}/levels`,
+      { game_name: gameName, unlocked_levels: newUnlocked },
+      { withCredentials: true }
+    );
+    
+    // Update localStorage (like score updates localStorage)
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!storedUser.levelProgress) {
+      storedUser.levelProgress = {};
+    }
+    storedUser.levelProgress[gameName] = newUnlocked;
+    localStorage.setItem("user", JSON.stringify(storedUser));
+    
+    console.log('✅ Level saved successfully:', response.data);
+    return response.data;
+    
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      // First time playing - create new record
+      console.log(`📝 Creating new progress for ${gameName}, level ${levelToUnlock}`);
+      
+      const response = await axios.post(
+        `${API_URL}/users/${userId}/levels`,
+        { game_name: gameName, unlocked_levels: levelToUnlock },
+        { withCredentials: true }
+      );
+      
+      // Update localStorage
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!storedUser.levelProgress) {
+        storedUser.levelProgress = {};
+      }
+      storedUser.levelProgress[gameName] = levelToUnlock;
+      localStorage.setItem("user", JSON.stringify(storedUser));
+      
+      return response.data;
+    }
+    
+    console.error('❌ Failed to save level:', error);
+    throw error;
+  }
 }
 
-// ✅ FIXED: Unlock next level based on completed level
-// This ensures unlocked_levels = highest playable level index
+// ✅ DEPRECATED: Use saveLevel directly instead
+// Kept for backwards compatibility
 export async function unlockNextLevel(
   userId: number,
   gameName: string,
   completedLevel: number
 ): Promise<Level> {
-  try {
-    const allLevels = await getUserLevels(userId);
-    const current = allLevels.find((l) => l.game_name === gameName);
-
-    const currentUnlocked = current?.unlocked_levels ?? 0;
-
-    // 🔒 Never go backwards - always unlock at least completedLevel + 1
-    const nextUnlocked = Math.max(currentUnlocked, completedLevel + 1);
-
-    console.log(
-      `🔓 Unlocking ${gameName}: completed=${completedLevel}, unlocked=${nextUnlocked}`
-    );
-
-    return await saveLevel(userId, gameName, nextUnlocked);
-  } catch (error: any) {
-    if (error.response && error.response.status === 404) {
-      // First time playing - unlock level after the completed one
-      const nextUnlocked = completedLevel + 1;
-      console.log(`📝 No existing progress, unlocking level ${nextUnlocked} for ${gameName}`);
-      return await saveLevel(userId, gameName, nextUnlocked);
-    }
-    throw error;
-  }
+  const nextLevel = completedLevel + 1;
+  return await saveLevel(userId, gameName, nextLevel);
 }
 
 // ========================================
@@ -91,26 +115,40 @@ export async function getCategoryProgress(
     const allLevels = await getUserLevels(userId);
     const gameName = `${gameBaseName}_${categoryId}`;
     const record = allLevels.find((l) => l.game_name === gameName);
-    return record?.unlocked_levels || 0;
+    
+    // Return 1 for BASIC category by default (first level unlocked)
+    // Return 0 for other categories (locked)
+    const defaultLevel = categoryId === "BASIC" ? 1 : 0;
+    return record?.unlocked_levels || defaultLevel;
   } catch (error) {
     console.error(`Error fetching ${gameBaseName} ${categoryId} progress:`, error);
-    return 0;
+    // Return 1 for BASIC, 0 for others
+    return categoryId === "BASIC" ? 1 : 0;
   }
 }
 
-// Get all category progress for a game
+// ✅ UPDATED: Get all category progress - Following score pattern
 export async function getAllCategoryProgress(
   userId: number,
   gameBaseName: string,     // e.g., "MagicTree"
   categories: string[]       // e.g., ["BASIC", "NORMAL", "HARD"]
 ): Promise<Record<string, number>> {
   try {
+    console.log(`📥 Fetching ${gameBaseName} progress for user ${userId}`);
+    
+    // Get all levels from backend (like getUserProfile gets user data)
     const allLevels = await getUserLevels(userId);
     const gameLevels = allLevels.filter((l) => l.game_name.startsWith(`${gameBaseName}_`));
     
+    console.log(`📊 Raw ${gameBaseName} levels:`, gameLevels);
+    
+    // Initialize progress (BASIC starts at 1, others at 0)
     const progress: Record<string, number> = {};
-    categories.forEach(cat => progress[cat] = 0);
+    categories.forEach(cat => {
+      progress[cat] = cat === "BASIC" ? 1 : 0;
+    });
 
+    // Update with saved progress
     gameLevels.forEach((level) => {
       const category = level.game_name.replace(`${gameBaseName}_`, "");
       if (category in progress) {
@@ -118,14 +156,22 @@ export async function getAllCategoryProgress(
       }
     });
 
+    console.log(`✅ Processed ${gameBaseName} progress:`, progress);
     return progress;
+    
   } catch (error) {
-    console.error(`Error fetching ${gameBaseName} progress:`, error);
-    return Object.fromEntries(categories.map(cat => [cat, 0]));
+    console.error(`❌ Error fetching ${gameBaseName} progress:`, error);
+    
+    // Return defaults if error (BASIC=1, others=0)
+    const defaults: Record<string, number> = {};
+    categories.forEach(cat => {
+      defaults[cat] = cat === "BASIC" ? 1 : 0;
+    });
+    return defaults;
   }
 }
 
-// Save category progress for any game
+// ✅ UPDATED: Save category progress - Following score pattern
 export async function saveCategoryLevel(
   userId: number,
   gameBaseName: string,
@@ -133,6 +179,10 @@ export async function saveCategoryLevel(
   levelNumber: number
 ): Promise<Level> {
   const gameName = `${gameBaseName}_${categoryId}`;
+  
+  console.log(`🔓 Unlocking ${gameName} level ${levelNumber}`);
+  
+  // Use saveLevel which now follows the score pattern
   return await saveLevel(userId, gameName, levelNumber);
 }
 
@@ -144,7 +194,8 @@ export async function hasCompletedAnyLevelOne(
 ): Promise<boolean> {
   try {
     const progress = await getAllCategoryProgress(userId, gameBaseName, categories);
-    return Object.values(progress).some((unlocked) => unlocked >= 1);
+    // Check if any category has unlocked level 2 or higher (meaning level 1 was completed)
+    return Object.values(progress).some((unlocked) => unlocked >= 2);
   } catch (error) {
     console.error(`Error checking Level 1 completion for ${gameBaseName}:`, error);
     return false;
@@ -165,6 +216,14 @@ export async function resetAllCategoryLevels(
         data: { game_name: `${gameBaseName}_${category}` },
         withCredentials: true,
       });
+      
+      // Update localStorage
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      if (storedUser.levelProgress) {
+        delete storedUser.levelProgress[`${gameBaseName}_${category}`];
+        localStorage.setItem("user", JSON.stringify(storedUser));
+      }
+      
     } catch (error) {
       console.error(`Error resetting ${gameBaseName}_${category}:`, error);
     }
@@ -184,6 +243,7 @@ export async function getMagicTreeCategoryProgress(
   return getCategoryProgress(userId, "MagicTree", categoryId);
 }
 
+// ✅ This is what MagicTree.ts calls - now follows score pattern
 export async function getAllMagicTreeProgress(userId: number): Promise<Record<string, number>> {
   return getAllCategoryProgress(userId, "MagicTree", MAGICTREE_CATEGORIES);
 }

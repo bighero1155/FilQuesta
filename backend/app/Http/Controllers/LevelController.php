@@ -24,28 +24,47 @@ class LevelController extends Controller
 
     // Create or update levels for a user/game
     public function storeOrUpdate(Request $request, $user_id)
-    {
-        $validator = Validator::make($request->all(), [
-            'game_name'        => 'required|string|max:100',
-            'unlocked_levels'  => 'required|integer|min:0',
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'game_name'       => 'required|string|max:100',
+        'unlocked_levels' => 'required|integer|min:0',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $user = User::find($user_id);
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-
-        $level = Level::updateOrCreate(
-            ['user_id' => $user_id, 'game_name' => $request->game_name],
-            ['unlocked_levels' => $request->unlocked_levels]
-        );
-
-        return response()->json(['message' => 'Level saved', 'level' => $level], 201);
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
     }
+
+    $user = User::find($user_id);
+    if (!$user) {
+        return response()->json(['message' => 'User not found'], 404);
+    }
+
+    // Find existing level record
+    $level = Level::where('user_id', $user_id)
+        ->where('game_name', $request->game_name)
+        ->first();
+
+    if ($level) {
+        // 🔒 Score-pattern logic: never go backwards
+        $level->unlocked_levels = max(
+            $level->unlocked_levels,
+            $request->unlocked_levels
+        );
+        $level->save();
+    } else {
+        // First time playing this game/category
+        $level = Level::create([
+            'user_id'         => $user_id,
+            'game_name'       => $request->game_name,
+            'unlocked_levels' => $request->unlocked_levels,
+        ]);
+    }
+
+    return response()->json([
+        'message' => 'Level progress saved',
+        'level'   => $level
+    ], 200);
+}
 
     // Delete a level record
     public function destroy($user_id, $id)

@@ -1,14 +1,13 @@
 import Phaser from "phaser";
-import { saveMagicTreeLevel, getAllMagicTreeProgress } from "../services/levelService";
+import { saveLevel, getAllMagicTreeProgress } from "../services/levelService";
 import { updateUserProgress, getUserProfile } from "../services/userService";
 import { getLevelConfig } from "../MagicTree/levels";
-import { bounce, createSparkle } from "../MagicTree/design";
 import {
   createHUD,
   showNextLevelUI,
   showRestartButton,
   UIElements,
-} from "../MagicTree/uiElements"; 
+} from "../MagicTree/uiElements";
 import { logPageVisit, logGameOver } from "../services/pageVisitService";
 
 const SCENE_KEY = "MagicTree";
@@ -43,8 +42,6 @@ export default class MagicTree extends Phaser.Scene {
   private isPressingLeft = false;
   private isPressingRight = false;
   private fruitLegend: Phaser.GameObjects.Text[] = [];
-  
-  // ⏰ Timer Properties
   private timeRemaining = 60;
   private timerText!: Phaser.GameObjects.Text;
   private countdownTimer?: Phaser.Time.TimerEvent;
@@ -56,7 +53,6 @@ export default class MagicTree extends Phaser.Scene {
   async init(data: any) {
     this.score = data?.score ?? 0;
     
-    // Get level from URL or data
     const urlParams = new URLSearchParams(window.location.search);
     const levelParam = urlParams.get("level");
     const categoryParam = urlParams.get("category");
@@ -70,27 +66,22 @@ export default class MagicTree extends Phaser.Scene {
 
     this.currentLevel = startLevel ?? 1;
     
-    // Extract category and level from URL or calculate from global level
     if (categoryParam) {
       this.currentCategoryId = categoryParam;
-      // Calculate level within category from global level
       const categoryIndex = ["BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"].indexOf(categoryParam);
       this.currentLevelInCategory = this.currentLevel - (categoryIndex * 15);
     } else {
-      // Calculate category and level from global level number
       this.calculateCategoryFromGlobalLevel(this.currentLevel);
     }
     
     this.gameActive = true;
     this.currentSum = 0;
-    
-    // ⏰ Reset timer
     this.timeRemaining = this.getTimeLimitForLevel(this.currentLevel);
     
     try {
       this.time.removeAllEvents();
     } catch (err) {
-      console.warn("MagicTree.init: removeAllEvents failed or had nothing to remove", err);
+      console.warn("MagicTree.init: removeAllEvents failed", err);
     }
 
     this.userId = this.getUserId();
@@ -106,31 +97,18 @@ export default class MagicTree extends Phaser.Scene {
       this.categoryProgress = { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
     }
 
-    // Check if level is unlocked
-    const unlockedInCategory = this.categoryProgress[this.currentCategoryId] || 0;
-    const hasCompletedAnyLevel1 = Object.values(this.categoryProgress).some(val => val >= 1);
-    
-    if (this.currentLevelInCategory === 1) {
-      // Level 1: Must have completed any Level 1, OR this is first play ever
-      const totalProgress = Object.values(this.categoryProgress).reduce((sum, val) => sum + val, 0);
-      if (!hasCompletedAnyLevel1 && totalProgress > 0) {
-        alert("🚫 Complete any Level 1 first to unlock all Level 1s!");
-        window.location.href = "/MagicTree";
-        return;
-      }
-    } else {
-      // Levels 2-10: Must have completed previous level in THIS category
-      if (this.currentLevelInCategory > unlockedInCategory) {
-        alert(`🚫 Complete ${this.currentCategoryId} Level ${this.currentLevelInCategory - 1} first!`);
-        window.location.href = "/MagicTree";
-        return;
-      }
+    const maxUnlockedInCategory = this.categoryProgress[this.currentCategoryId] ?? 0;
+    console.log(`🎮 Init: Category=${this.currentCategoryId}, Level=${this.currentLevelInCategory}, MaxUnlocked=${maxUnlockedInCategory}`);
+
+    if (this.currentLevelInCategory > maxUnlockedInCategory) {
+      alert(`🚫 Level ${this.currentLevelInCategory} is locked. Complete previous levels first.`);
+      window.location.href = "/MagicTree";
+      return;
     }
 
     this.startTime = Date.now();
   }
 
-  // Calculate category and level from global level number
   private calculateCategoryFromGlobalLevel(globalLevel: number) {
     const categories = ["BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"];
     const categoryIndex = Math.floor((globalLevel - 1) / 15);
@@ -140,20 +118,18 @@ export default class MagicTree extends Phaser.Scene {
     this.currentLevelInCategory = levelInCategory;
   }
 
-  // ⏰ Get time limit based on level difficulty
   private getTimeLimitForLevel(level: number): number {
     const cfg = getLevelConfig(level);
     
-    // Adjust time based on operation difficulty
     switch (cfg.operation) {
       case 'addition':
-        return 60; // 1 minute for addition
+        return 60;
       case 'subtraction':
-        return 60; // 1 minute for subtraction
+        return 60;
       case 'multiplication':
-        return 75; // 1.25 minutes for multiplication
+        return 75;
       case 'division':
-        return 90; // 1.5 minutes for division
+        return 90;
       default:
         return 60;
     }
@@ -177,7 +153,7 @@ export default class MagicTree extends Phaser.Scene {
       .setOrigin(0.5)
       .setDisplaySize(this.scale.width, this.scale.height);
 
-    const basketScale = isMobile ? 0.5 : Math.min(this.scale.width / 800, 1) * 0.7;
+    const basketScale = isMobile ? 0.5 : 0.7;
     const basketY = isMobile ? this.scale.height - 80 : this.scale.height - 50;
     
     this.basket = this.physics.add
@@ -185,23 +161,14 @@ export default class MagicTree extends Phaser.Scene {
       .setCollideWorldBounds(true)
       .setScale(basketScale)
       .setImmovable(true);
+    
     const body = this.basket.body as Phaser.Physics.Arcade.Body;
     body.setAllowGravity(false);
     body.moves = true;
-    
-    const hitboxScale = 0.6; 
-    body.setSize(
-      this.basket.displayWidth * hitboxScale,
-      this.basket.displayHeight * hitboxScale
-    );
-    body.setOffset(
-      (this.basket.width - body.width) / 2,
-      (this.basket.height - body.height) / 2
-    );
+    body.setSize(this.basket.displayWidth * 0.6, this.basket.displayHeight * 0.6);
 
     this.fruits = this.physics.add.group();
-    
-    this.fruitScale = isMobile ? 0.10 : Math.min(this.scale.width / 800, 1) * 0.15;
+    this.fruitScale = isMobile ? 0.10 : 0.15;
     
     this.ground = this.add.rectangle(
       this.scale.width / 2,
@@ -216,7 +183,7 @@ export default class MagicTree extends Phaser.Scene {
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.ui = createHUD(this, this.score, this.currentLevelInCategory);
     this.createQuitButton();
-    this.createTimerDisplay(); // ⏰ Create timer display
+    this.createTimerDisplay();
     this.createFruitLegend();
 
     if (isMobile) {
@@ -233,7 +200,7 @@ export default class MagicTree extends Phaser.Scene {
 
     this.startFruitTimer();
     this.startQuestion();
-    this.startCountdownTimer(); // ⏰ Start the countdown
+    this.startCountdownTimer();
 
     this.scale.on("resize", (size: Phaser.Structs.Size) => {
       const resizeIsMobile = size.width < 768;
@@ -245,7 +212,7 @@ export default class MagicTree extends Phaser.Scene {
       
       this.ground.setPosition(size.width / 2, size.height - 10);
       if (this.quitButton) this.positionQuitButton();
-      this.updateTimerPosition(); // ⏰ Update timer position
+      this.updateTimerPosition();
       this.updateFruitLegendPosition();
     });
   }
@@ -271,40 +238,29 @@ export default class MagicTree extends Phaser.Scene {
     }
   }
 
-  // ⏰ CREATE TIMER DISPLAY (LEFT SIDE)
   private createTimerDisplay() {
     const isMobile = this.scale.width < 768;
     const fontSize = isMobile ? "24px" : "32px";
     const strokeThickness = isMobile ? 4 : 5;
-    
-    // Position on left side, below fruit legend
     const xPos = isMobile ? 25 : 35;
-    const yPos = this.scale.height * 0.65; // Below the legend
+    const yPos = this.scale.height * 0.65;
     
     this.timerText = this.add.text(
       xPos,
       yPos,
       `⏰ ${this.formatTime(this.timeRemaining)}`,
       {
-        fontFamily: "Fredoka, Arial Black, sans-serif",
+        fontFamily: "Arial Black",
         fontSize: fontSize,
         color: "#00ff00",
         stroke: "#000000",
         strokeThickness: strokeThickness,
-        shadow: {
-          offsetX: 3,
-          offsetY: 3,
-          color: "#000",
-          blur: 5,
-          fill: true,
-        },
       }
     )
-    .setOrigin(0, 0.5) // Left-aligned
+    .setOrigin(0, 0.5)
     .setDepth(100);
   }
 
-  // ⏰ UPDATE TIMER POSITION ON RESIZE
   private updateTimerPosition() {
     const isMobile = this.scale.width < 768;
     const fontSize = isMobile ? "24px" : "32px";
@@ -317,32 +273,27 @@ export default class MagicTree extends Phaser.Scene {
     }
   }
 
-  // ⏰ FORMAT TIME (MM:SS)
   private formatTime(seconds: number): string {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
-  // ⏰ START COUNTDOWN TIMER
   private startCountdownTimer() {
     if (this.countdownTimer) {
       this.countdownTimer.remove(false);
     }
 
     this.countdownTimer = this.time.addEvent({
-      delay: 1000, // 1 second
+      delay: 1000,
       loop: true,
       callback: () => {
         if (this.gameActive) {
           this.timeRemaining--;
           this.updateTimerDisplay();
 
-          // Warning colors
           if (this.timeRemaining <= 10) {
-            this.timerText.setColor("#ff0000"); // Red
-            
-            // Pulse effect when low
+            this.timerText.setColor("#ff0000");
             this.tweens.add({
               targets: this.timerText,
               scale: 1.2,
@@ -351,10 +302,9 @@ export default class MagicTree extends Phaser.Scene {
               ease: 'Sine.easeInOut'
             });
           } else if (this.timeRemaining <= 30) {
-            this.timerText.setColor("#ffaa00"); // Orange
+            this.timerText.setColor("#ffaa00");
           }
 
-          // Game over when time runs out
           if (this.timeRemaining <= 0) {
             this.handleTimeOut();
           }
@@ -363,31 +313,26 @@ export default class MagicTree extends Phaser.Scene {
     });
   }
 
-  // ⏰ UPDATE TIMER DISPLAY
   private updateTimerDisplay() {
     if (this.timerText) {
       this.timerText.setText(`⏰ ${this.formatTime(this.timeRemaining)}`);
     }
   }
 
-  // ⏰ HANDLE TIME OUT
   private async handleTimeOut() {
     this.stopFruits();
     this.stopCountdown();
     
-    // Log game over
     if (this.userId) {
       await logGameOver(this.userId, SCENE_KEY);
     }
     await this.logSessionTime();
 
-    // Show restart button after a short delay
     this.time.delayedCall(1000, () => {
       this.showRestart();
     });
   }
 
-  // ⏰ STOP COUNTDOWN
   private stopCountdown() {
     if (this.countdownTimer) {
       this.countdownTimer.remove(false);
@@ -395,7 +340,6 @@ export default class MagicTree extends Phaser.Scene {
     }
   }
 
-  // CREATE FRUIT LEGEND
   private createFruitLegend() {
     const cfg = getLevelConfig(this.currentLevel);
     const isMobile = this.scale.width < 768;
@@ -424,18 +368,11 @@ export default class MagicTree extends Phaser.Scene {
         baseY + index * spacing,
         `${item.emoji} ${item.text}`,
         {
-          fontFamily: "Fredoka, Arial Black, sans-serif",
+          fontFamily: "Arial Black",
           fontSize,
           color: "#ffffff",
           stroke: "#000000",
           strokeThickness: isMobile ? 3 : 4,
-          shadow: {
-            offsetX: 2,
-            offsetY: 2,
-            color: "#000",
-            blur: 4,
-            fill: true,
-          },
         }
       )
       .setOrigin(0, 0.5)
@@ -443,7 +380,6 @@ export default class MagicTree extends Phaser.Scene {
     });
   }
 
-  // UPDATE FRUIT LEGEND POSITION ON RESIZE
   private updateFruitLegendPosition() {
     const isMobile = this.scale.width < 768;
     const startX = isMobile ? 20 : 30;
@@ -459,17 +395,15 @@ export default class MagicTree extends Phaser.Scene {
     });
   }
 
-  // Touch Controls
   private createTouchControls() {
     const btnSize = 100;
     const btnY = this.scale.height - 150;
     const padding = 30;
 
-    // Left Button
     this.leftButton = this.add.graphics();
-    this.leftButton.fillStyle(0x4a90e2, 0.1);
+    this.leftButton.fillStyle(0x4a90e2, 0.3);
     this.leftButton.fillRoundedRect(padding, btnY, btnSize, btnSize, 15);
-    this.leftButton.lineStyle(4, 0xffffff, 0.1);
+    this.leftButton.lineStyle(4, 0xffffff, 0.5);
     this.leftButton.strokeRoundedRect(padding, btnY, btnSize, btnSize, 15);
     this.leftButton.setDepth(1000);
 
@@ -479,11 +413,10 @@ export default class MagicTree extends Phaser.Scene {
       fontStyle: "bold",
     })
     .setOrigin(0.5)
-    .setDepth(1);
+    .setDepth(1001);
 
-    // Right Button
     this.rightButton = this.add.graphics();
-    this.rightButton.fillStyle(0x4a90e2, 0.1);
+    this.rightButton.fillStyle(0x4a90e2, 0.3);
     this.rightButton.fillRoundedRect(
       this.scale.width - btnSize - padding,
       btnY,
@@ -491,7 +424,7 @@ export default class MagicTree extends Phaser.Scene {
       btnSize,
       15
     );
-    this.rightButton.lineStyle(4, 0xffffff, 0.1);
+    this.rightButton.lineStyle(4, 0xffffff, 0.5);
     this.rightButton.strokeRoundedRect(
       this.scale.width - btnSize - padding,
       btnY,
@@ -512,7 +445,7 @@ export default class MagicTree extends Phaser.Scene {
       }
     )
     .setOrigin(0.5)
-    .setDepth(1);
+    .setDepth(1001);
 
     const leftZone = this.add.zone(
       padding + btnSize / 2,
@@ -534,7 +467,7 @@ export default class MagicTree extends Phaser.Scene {
 
     leftZone.on("pointerdown", () => {
       this.isPressingLeft = true;
-      this.leftButton?.setAlpha(1);
+      this.leftButton?.setAlpha(0.8);
     });
 
     leftZone.on("pointerup", () => {
@@ -549,7 +482,7 @@ export default class MagicTree extends Phaser.Scene {
 
     rightZone.on("pointerdown", () => {
       this.isPressingRight = true;
-      this.rightButton?.setAlpha(1);
+      this.rightButton?.setAlpha(0.8);
     });
 
     rightZone.on("pointerup", () => {
@@ -563,20 +496,19 @@ export default class MagicTree extends Phaser.Scene {
     });
   }
 
-  // Quit Button
   private createQuitButton() {
     const isMobile = this.scale.width < 768;
-    
     const fontSize = isMobile ? "22px" : "26px";
     const strokeThickness = isMobile ? 3 : 4;
     
     const style = {
-      fontFamily: "Fredoka, Arial Black, sans-serif",
+      fontFamily: "Arial Black",
       fontSize: fontSize,
       color: "#fff",
       stroke: "#000066",
       strokeThickness: strokeThickness,
     };
+    
     this.quitButton = this.add
       .text(0, 0, "Quit", style)
       .setInteractive({ useHandCursor: true })
@@ -609,11 +541,11 @@ export default class MagicTree extends Phaser.Scene {
     if (this.quitButton) this.quitButton.setPosition(x, y);
   }
 
-  // Gameplay
   private startFruitTimer() {
     if (this.fruitTimer) this.fruitTimer.remove(false);
     const cfg = getLevelConfig(this.currentLevel);
     const spawnDelay = (cfg as any).spawnDelay ?? 1200;
+    
     this.fruitTimer = this.time.addEvent({
       delay: spawnDelay,
       loop: true,
@@ -677,20 +609,16 @@ export default class MagicTree extends Phaser.Scene {
       }
         
       case 'fixed': {
-        // NEW: Check if multiple questions exist
         if (cfg.questions && cfg.questions.length > 0) {
-          // Randomly pick one question from the pool
           const randomIndex = Phaser.Math.Between(0, cfg.questions.length - 1);
           const selectedQuestion = cfg.questions[randomIndex];
           questionText = selectedQuestion.question;
           this.targetAnswer = selectedQuestion.answer;
         } 
-        // Fallback to single question (backward compatible)
         else if (cfg.question && cfg.answer !== undefined) {
           questionText = cfg.question;
           this.targetAnswer = cfg.answer;
         } 
-        // Final fallback
         else {
           this.targetAnswer = a + b;
           questionText = `${a} + ${b} = ?`;
@@ -705,12 +633,14 @@ export default class MagicTree extends Phaser.Scene {
   private spawnFruit() {
     const x = Phaser.Math.Between(50, this.scale.width - 50);
     const cfg = getLevelConfig(this.currentLevel);
-    let key = "fruit1",
-      value = 1,
-      rotten = false;
+    let key = "fruit1";
+    let value = 1;
+    let rotten = false;
+    
     const roll = Math.random();
-    if (roll < 0.3) key = "fruit1";
-    else if (cfg.allowRotten && Math.random() > 0.8) {
+    if (roll < 0.3) {
+      key = "fruit1";
+    } else if (cfg.allowRotten && Math.random() > 0.8) {
       key = "rotten";
       rotten = true;
       value = -cfg.fruitMultiplier;
@@ -725,10 +655,9 @@ export default class MagicTree extends Phaser.Scene {
     
     const isMobile = this.scale.width < 768;
     const rottenScale = isMobile ? this.fruitScale * 1.3 : this.fruitScale * 1.5;
-    
     f.setScale(rotten ? rottenScale : this.fruitScale);
-    
     f.setCollideWorldBounds(false);
+    
     const body = f.body as Phaser.Physics.Arcade.Body;
     body.setAllowGravity(true);
     body.moves = true;
@@ -745,45 +674,45 @@ export default class MagicTree extends Phaser.Scene {
 
   private async collectFruit(fruit: Phaser.Physics.Arcade.Sprite) {
     const val = (fruit as any).fruitValue;
-    const { x, y } = fruit;
     fruit.destroy();
-    createSparkle(this, x, y);
-    bounce(this, this.basket);
 
     this.currentSum += val;
     this.ui.sumText.setText("Current: " + this.currentSum);
 
     if (this.currentSum === this.targetAnswer) {
       this.stopFruits();
-      this.stopCountdown(); // ⏰ Stop timer on success
+      this.stopCountdown();
+      
+      // Add score first
       await this.addScore(10);
+      
+      // Then unlock next level (using same pattern as score)
       await this.unlockNextLevel();
       
-      // Determine if there's a next level
       const hasNextLevel = this.currentLevelInCategory < 15;
       
       showNextLevelUI(
         this,
         this.ui,
         this.currentLevelInCategory,
-        15, // Max levels per category
+        15,
         () => {
           if (hasNextLevel) {
-            // Go to next level in same category
-            const nextGlobalLevel = this.currentLevel + 1;
+            const categoryIndex = ["BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"].indexOf(this.currentCategoryId);
+            const nextGlobalLevel = (categoryIndex * 15) + (this.currentLevelInCategory + 1);
+            
             this.scene.restart({ 
               score: this.score, 
               level: nextGlobalLevel 
             });
           } else {
-            // Completed all levels in category, return to map
             window.location.href = "/MagicTree";
           }
         }
       );
     } else if (this.currentSum > this.targetAnswer || this.currentSum < 0) {
       this.stopFruits();
-      this.stopCountdown(); // ⏰ Stop timer on fail
+      this.stopCountdown();
       if (this.userId) await logGameOver(this.userId, SCENE_KEY);
       await this.logSessionTime();
       this.showRestart();
@@ -802,17 +731,51 @@ export default class MagicTree extends Phaser.Scene {
     );
   }
 
+  // ✅ WORKING - Same pattern as score
   private async addScore(points: number) {
     this.score += points;
     this.ui.scoreText.setText("Score: " + this.score);
+    
     if (!this.userId) return;
+    
     try {
+      // Update score in backend
       await updateUserProgress(this.userId, points);
+      
+      // Refresh local user data
       const updated = await getUserProfile(this.userId);
       localStorage.setItem("user", JSON.stringify(updated));
       localStorage.setItem("score", String(this.score));
+      
+      console.log("✅ Score updated successfully");
     } catch (e) {
-      console.error("Error updating progress:", e);
+      console.error("❌ Error updating score:", e);
+    }
+  }
+
+  // ✅ FIXED - Same exact pattern as addScore
+  private async unlockNextLevel() {
+    if (!this.userId) return;
+
+    const completedLevel = this.currentLevelInCategory;
+    const nextLevel = completedLevel + 1;
+    const gameName = `MagicTree_${this.currentCategoryId}`;
+
+    console.log(`🔓 Unlocking Level ${nextLevel} in ${this.currentCategoryId}`);
+
+    try {
+      // Save to backend (same way score is saved)
+      await saveLevel(this.userId, gameName, nextLevel);
+      
+      // Update local cache (same way score updates local)
+      this.categoryProgress[this.currentCategoryId] = nextLevel;
+      
+      // Notify map to refresh
+      window.dispatchEvent(new CustomEvent("levels:updated"));
+      
+      console.log(`✅ Level ${nextLevel} unlocked successfully`);
+    } catch (e) {
+      console.error("❌ Error unlocking level:", e);
     }
   }
 
@@ -840,48 +803,12 @@ export default class MagicTree extends Phaser.Scene {
 
   private async fetchCategoryProgress(uid: number): Promise<Record<string, number>> {
     try {
-      return await getAllMagicTreeProgress(uid);
+      const progress = await getAllMagicTreeProgress(uid);
+      console.log("📥 Fetched progress:", progress);
+      return progress;
     } catch (error) {
-      console.error("Error fetching category progress:", error);
+      console.error("❌ Error fetching progress:", error);
       return { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
-    }
-  }
-
-  // ✅ FIXED: Now passes completedLevel to saveMagicTreeLevel
-  private async unlockNextLevel() {
-    if (!this.userId) return;
-
-    // Only save if this unlocks a NEW level (not already unlocked)
-    const currentUnlocked = this.categoryProgress[this.currentCategoryId] || 0;
-    const completedLevel = this.currentLevelInCategory;
-
-    if (completedLevel >= currentUnlocked) {
-      try {
-        // ✅ FIX: Pass the completed level, saveMagicTreeLevel will unlock completedLevel + 1
-        await saveMagicTreeLevel(
-          this.userId, 
-          this.currentCategoryId, 
-          completedLevel
-        );
-        
-        // Update local progress to reflect the newly unlocked level
-        this.categoryProgress[this.currentCategoryId] = completedLevel + 1;
-        
-        console.log(
-          `✅ Level ${completedLevel} completed in ${this.currentCategoryId}. ` +
-          `Level ${completedLevel + 1} is now unlocked.`
-        );
-        
-        // Dispatch event to update UI
-        window.dispatchEvent(new CustomEvent("levels:updated"));
-      } catch (e) {
-        console.error("Failed to save category progress:", e);
-      }
-    } else {
-      console.log(
-        `ℹ️ Level ${completedLevel} already completed in ${this.currentCategoryId}. ` +
-        `No need to update.`
-      );
     }
   }
 }
