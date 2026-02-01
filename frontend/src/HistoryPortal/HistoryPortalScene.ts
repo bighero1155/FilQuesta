@@ -79,7 +79,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
     this.currentLevelInCategory = levelInCategory;
   }
 
-  init(data?: { levelKey?: string; levelId?: number }) {
+  init(data?: { levelId?: number }) {
     console.log("🎯 INIT - Data received:", data);
     
     this.userId = this.getUserId();
@@ -89,37 +89,40 @@ export default class HistoryPortalScene extends Phaser.Scene {
       return;
     }
 
-    if (data?.levelKey) {
-      this.currentLevelKey = data.levelKey;
-    } else {
-      // Get level from URL or data
-      const urlParams = new URLSearchParams(window.location.search);
-      const levelParam = urlParams.get("level");
-      const categoryParam = urlParams.get("category");
-      
-      let startLevel = data?.levelId ?? null;
-      
-      if (levelParam !== null) {
-        const parsed = Number(levelParam);
-        if (!Number.isNaN(parsed)) startLevel = parsed + 1;
-      }
+    // ✅ FIX: Removed the levelKey shortcut path entirely.
+    // Previously, restart passed { levelKey } which caused init() to skip
+    // all category/level parsing. currentLevel, currentCategoryId, and
+    // currentLevelInCategory would all stay at their defaults (1, "BASIC", 1).
+    // Now restart passes { levelId } so this block always runs and everything
+    // is recalculated correctly — same pattern as HumanBodyScene.
 
-      this.currentLevel = startLevel ?? 1;
-      
-      // Extract category and level from URL or calculate from global level
-      if (categoryParam) {
-        this.currentCategoryId = categoryParam;
-        // Calculate level within category from global level
-        const categoryIndex = HISTORY_CATEGORIES.indexOf(categoryParam);
-        this.currentLevelInCategory = this.currentLevel - (categoryIndex * 15);
-      } else {
-        // Calculate category and level from global level number
-        this.calculateCategoryFromGlobalLevel(this.currentLevel);
-      }
-
-      const keys = Object.keys(HISTORY_LEVELS);
-      this.currentLevelKey = keys[this.currentLevel - 1] || "history-1";
+    const urlParams = new URLSearchParams(window.location.search);
+    const levelParam = urlParams.get("level");
+    const categoryParam = urlParams.get("category");
+    
+    let startLevel = data?.levelId ?? null;
+    
+    if (levelParam !== null) {
+      const parsed = Number(levelParam);
+      if (!Number.isNaN(parsed)) startLevel = parsed + 1;
     }
+
+    this.currentLevel = startLevel ?? 1;
+    
+    // Extract category and level from URL or calculate from global level
+    if (categoryParam) {
+      this.currentCategoryId = categoryParam;
+      // Calculate level within category from global level
+      const categoryIndex = HISTORY_CATEGORIES.indexOf(categoryParam);
+      this.currentLevelInCategory = this.currentLevel - (categoryIndex * 15);
+    } else {
+      // Calculate category and level from global level number
+      this.calculateCategoryFromGlobalLevel(this.currentLevel);
+    }
+
+    // Derive the level key from currentLevel (replaces the old levelKey path)
+    const keys = Object.keys(HISTORY_LEVELS);
+    this.currentLevelKey = keys[this.currentLevel - 1] || "history-1";
     
     console.log("📌 Current level key:", this.currentLevelKey);
     console.log("📊 Category:", this.currentCategoryId, "Level:", this.currentLevelInCategory);
@@ -181,11 +184,10 @@ export default class HistoryPortalScene extends Phaser.Scene {
       this.categoryProgress = { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
     }
 
-    // ✅ FIXED: Check if level is unlocked
+    // ✅ Level 1 is ALWAYS playable (same guard as HumanBodyScene and fixed MagicTree)
+    // ✅ Levels 2-15: Must complete previous level in THIS category
     const unlockedInCategory = this.categoryProgress[this.currentCategoryId] || 0;
     
-    // ✅ Level 1 is ALWAYS playable
-    // ✅ Levels 2-15: Must complete previous level in THIS category
     if (this.currentLevelInCategory > 1 && this.currentLevelInCategory > unlockedInCategory) {
       alert(`🚫 Complete ${this.currentCategoryId} Level ${this.currentLevelInCategory - 1} first!`);
       window.location.href = "/historymap";
@@ -765,14 +767,11 @@ export default class HistoryPortalScene extends Phaser.Scene {
     
     button.on("pointerdown", () => {
       if (won) {
-        if (this.currentLevelInCategory % 5 === 0) {
-          this.cameras.main.fadeOut(400);
-          this.time.delayedCall(400, () => {
-            window.location.href = "/historymap";
-          });
-          return;
-        }
-        
+        // ✅ FIX: Removed the `currentLevelInCategory % 5 === 0` check that
+        // was forcing a return to the map at levels 5 and 10.
+        // HumanBody and MagicTree don't have this — levels should flow
+        // continuously 1→2→3...→15, then return to map only at 15.
+
         const hasNextLevel = this.currentLevelInCategory < 15;
         
         if (hasNextLevel) {
@@ -791,7 +790,10 @@ export default class HistoryPortalScene extends Phaser.Scene {
           });
         }
       } else {
-        this.scene.restart({ levelKey: this.currentLevelKey });
+        // ✅ FIX: Pass levelId instead of levelKey so init() runs the full
+        // category/level parsing. Previously { levelKey } caused init() to
+        // skip the else block, leaving currentLevel stuck at 1.
+        this.scene.restart({ levelId: this.currentLevel });
       }
     });
   }
