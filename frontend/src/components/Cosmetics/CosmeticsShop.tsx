@@ -31,7 +31,6 @@ const CosmeticsShop: React.FC = () => {
   const fetchCosmetics = useCallback(async () => {
     try {
       const data = await getCosmetics();
-      // ✅ Images are already transformed to full URLs by the service
       setCosmetics(data);
     } catch (error) {
       console.error("Failed to load cosmetics:", error);
@@ -44,7 +43,6 @@ const CosmeticsShop: React.FC = () => {
     if (!user) return;
     try {
       const data = await getUserCosmetics(user.user_id);
-      // ✅ Images are already transformed to full URLs by the service
       setUserCosmetics(data);
     } catch (error) {
       console.error("Failed to load user cosmetics:", error);
@@ -89,7 +87,8 @@ const CosmeticsShop: React.FC = () => {
         })
       );
 
-      // Refresh user cosmetics to show new purchase
+      // FIX: Refresh BOTH lists so images stay in sync
+      await fetchCosmetics();
       await fetchUserCosmetics();
     } catch (error: any) {
       console.error("Purchase error:", error);
@@ -104,22 +103,26 @@ const CosmeticsShop: React.FC = () => {
     try {
       await equipCosmetic(cosmeticId);
 
-      // Refresh user cosmetics to update equipped status
-      await fetchUserCosmetics();
+      // FIX: Refresh BOTH lists so images stay in sync
+      await fetchCosmetics();
+      const freshUserCosmetics = await getUserCosmetics(user.user_id);
+      setUserCosmetics(freshUserCosmetics);
 
-      const equipped = cosmetics.find((c) => c.cosmetic_id === cosmeticId);
+      // FIX: Find the equipped avatar from the FRESH userCosmetics response,
+      // which has image URLs transformed by the backend — not from the
+      // potentially stale `cosmetics` state array.
+      const equippedUserCosmetic = freshUserCosmetics.find(
+        (uc) => uc.cosmetic_id === cosmeticId && uc.is_equipped
+      );
 
-      // ✅ CRITICAL: If it's an avatar, update localStorage with the FULL URL
-      // The backend controller stores the relative path in the database,
-      // but we need the full URL for the frontend to display it
-      if (equipped?.type === "avatar" && typeof equipped.image === "string") {
-        const updatedUser = { 
-          ...user, 
-          avatar: equipped.image // ✅ This is already a full URL from getCosmetics()
+      if (equippedUserCosmetic && equippedUserCosmetic.type === "avatar" && typeof equippedUserCosmetic.image === "string") {
+        const updatedUser = {
+          ...user,
+          avatar: equippedUserCosmetic.image, // Fresh full URL from the server
         };
 
         localStorage.setItem("user", JSON.stringify(updatedUser));
-        
+
         // Trigger storage event to update avatar across the app
         window.dispatchEvent(
           new StorageEvent("storage", {
@@ -490,7 +493,6 @@ const CosmeticsShop: React.FC = () => {
                           className="cosmetic-image"
                           onError={(e) => {
                             console.error("Failed to load cosmetic image:", item.image);
-                            // Replace with placeholder
                             e.currentTarget.style.display = 'none';
                             const parent = e.currentTarget.parentElement;
                             if (parent && !parent.querySelector('.image-placeholder')) {
@@ -544,4 +546,4 @@ const CosmeticsShop: React.FC = () => {
   );
 };
 
-export default CosmeticsShop; 
+export default CosmeticsShop;

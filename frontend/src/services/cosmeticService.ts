@@ -99,6 +99,11 @@ export interface UserCosmetic {
   user_id?: number;
   cosmetic_id: number;
   is_equipped: boolean;
+  // Flat fields returned by the backend's userCosmetics endpoint
+  type?: string;
+  name?: string;
+  image?: string;
+  // Only present on raw pivot rows, NOT on the mapped userCosmetics response
   cosmetic?: Cosmetic;
 }
 
@@ -192,13 +197,13 @@ export const getUserCosmetics = async (
     withCredentials: true,
   });
   
-  // Transform nested cosmetic image paths to full URLs
+  // The backend's userCosmetics endpoint returns a FLAT array:
+  // { cosmetic_id, type, name, image, is_equipped }
+  // NOT a nested { cosmetic_id, is_equipped, cosmetic: { ... } }
+  // So we transform the top-level image field directly.
   const userCosmetics = response.data.map((uc: UserCosmetic) => ({
     ...uc,
-    cosmetic: uc.cosmetic ? {
-      ...uc.cosmetic,
-      image: typeof uc.cosmetic.image === 'string' ? getImageUrl(uc.cosmetic.image) : uc.cosmetic.image,
-    } : undefined,
+    image: typeof uc.image === 'string' ? getImageUrl(uc.image) : uc.image,
   }));
   
   return userCosmetics;
