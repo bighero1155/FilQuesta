@@ -1,5 +1,6 @@
 // src/components/Cosmetics/CosmeticsShop.tsx
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   getCosmetics,
   getUserCosmetics,
@@ -18,6 +19,7 @@ interface AuthUser {
 
 const CosmeticsShop: React.FC = () => {
   const { user } = useAuth() as { user: AuthUser | null };
+  const navigate = useNavigate();
 
   const [cosmetics, setCosmetics] = useState<Cosmetic[]>([]);
   const [userCosmetics, setUserCosmetics] = useState<UserCosmetic[]>([]);
@@ -83,6 +85,22 @@ const CosmeticsShop: React.FC = () => {
       await buyCosmetic(id);
       const owned = await getUserCosmetics(user.user_id);
       setUserCosmetics(owned);
+
+      // Update coins in localStorage and trigger refresh
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Fetch updated user data or manually update coins
+        const cosmetic = cosmetics.find(c => c.cosmetic_id === id);
+        if (cosmetic && parsed.coins !== undefined) {
+          parsed.coins -= cosmetic.price;
+          localStorage.setItem("user", JSON.stringify(parsed));
+        }
+      }
+
+      // Trigger storage event for other components
+      window.dispatchEvent(new Event('storage'));
+      
     } catch (err: any) {
       alert(err?.response?.data?.message || "Buy failed");
     }
@@ -95,6 +113,25 @@ const CosmeticsShop: React.FC = () => {
       await equipCosmetic(id);
       const owned = await getUserCosmetics(user.user_id);
       setUserCosmetics(owned);
+
+      // Update equipped cosmetic in localStorage
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const equippedCosmetic = cosmetics.find(c => c.cosmetic_id === id);
+        if (equippedCosmetic && equippedCosmetic.image) {
+          // Update avatar with equipped cosmetic image
+          parsed.avatar = equippedCosmetic.image;
+          localStorage.setItem("user", JSON.stringify(parsed));
+        }
+      }
+
+      // Trigger storage event to update other components
+      window.dispatchEvent(new Event('storage'));
+      
+      // Force a page refresh to update all components
+      window.location.reload();
+      
     } catch (err: any) {
       alert(err?.response?.data?.message || "Equip failed");
     }
@@ -108,6 +145,25 @@ const CosmeticsShop: React.FC = () => {
       padding: "2rem",
       fontFamily: "'Arial', 'Segoe UI', sans-serif",
       color: "#e0f2ff",
+    },
+    backButton: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "0.5rem",
+      padding: "0.75rem 1.5rem",
+      background: "linear-gradient(135deg, #1e3a5f 0%, #2d5a8a 100%)",
+      border: "2px solid rgba(56, 189, 248, 0.3)",
+      borderRadius: "12px",
+      color: "#e0f2ff",
+      fontSize: "1rem",
+      fontWeight: 600,
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      marginBottom: "2rem",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+    },
+    backIcon: {
+      fontSize: "1.25rem",
     },
     header: {
       display: "flex",
@@ -424,6 +480,27 @@ const CosmeticsShop: React.FC = () => {
   /* ================= RENDER ================= */
   return (
     <div style={styles.container}>
+      {/* Back Button */}
+      <button
+        style={styles.backButton}
+        onClick={() => navigate("/landing")}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "linear-gradient(135deg, #2d5a8a, #3b7ab8)";
+          e.currentTarget.style.borderColor = "rgba(56, 189, 248, 0.5)";
+          e.currentTarget.style.transform = "translateY(-2px)";
+          e.currentTarget.style.boxShadow = "0 6px 16px rgba(56, 189, 248, 0.4)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "linear-gradient(135deg, #1e3a5f 0%, #2d5a8a 100%)";
+          e.currentTarget.style.borderColor = "rgba(56, 189, 248, 0.3)";
+          e.currentTarget.style.transform = "translateY(0)";
+          e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.3)";
+        }}
+      >
+        <span style={styles.backIcon}>←</span>
+        Back to Landing
+      </button>
+
       {/* Header */}
       <div style={styles.header}>
         <h1 style={styles.title}>
