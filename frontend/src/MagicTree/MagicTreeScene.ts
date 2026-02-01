@@ -100,7 +100,11 @@ export default class MagicTree extends Phaser.Scene {
     const maxUnlockedInCategory = this.categoryProgress[this.currentCategoryId] ?? 0;
     console.log(`🎮 Init: Category=${this.currentCategoryId}, Level=${this.currentLevelInCategory}, MaxUnlocked=${maxUnlockedInCategory}`);
 
-    if (this.currentLevelInCategory > maxUnlockedInCategory) {
+    // ✅ FIX: Level 1 is ALWAYS playable (added `> 1` guard, matching HumanBodyScene)
+    // Before: this.currentLevelInCategory > maxUnlockedInCategory
+    //   → blocked Level 1 whenever progress was 0 (1 > 0 = true)
+    // After: Level 1 bypasses the check entirely, Levels 2-15 still require completing previous
+    if (this.currentLevelInCategory > 1 && this.currentLevelInCategory > maxUnlockedInCategory) {
       alert(`🚫 Level ${this.currentLevelInCategory} is locked. Complete previous levels first.`);
       window.location.href = "/MagicTree";
       return;
