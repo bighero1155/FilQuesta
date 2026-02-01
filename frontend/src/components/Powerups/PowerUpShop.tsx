@@ -59,6 +59,14 @@ const PowerUpShop: React.FC = () => {
       setMessage(res.message);
       setCoins(res.coins_left);
 
+      // ✅ Sync to localStorage (same pattern as QuestShop's handleExchange)
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        parsed.coins = res.coins_left;
+        localStorage.setItem("user", JSON.stringify(parsed));
+      }
+
       // Animation pulse effect
       const card = document.getElementById(`card-${power_up_id}`);
       if (card) {
