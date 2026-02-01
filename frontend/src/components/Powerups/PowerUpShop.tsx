@@ -33,7 +33,8 @@ const PowerUpShop: React.FC = () => {
         const data = await getAllPowerUps();
         setPowerUps(data);
 
-        const userCoins = (user as any)?.coins ?? 0;
+        const stored = localStorage.getItem("user");
+        const userCoins = stored ? JSON.parse(stored).coins ?? 0 : 0;
         setCoins(userCoins);
       } catch (err) {
         console.error("Failed to load power-ups:", err);
@@ -43,13 +44,12 @@ const PowerUpShop: React.FC = () => {
     };
 
     fetchPowerUps();
-  }, [user]);
+  }, []);
 
   const handleBuy = async (power_up_id: number, price: number) => {
     if (!user) return;
 
-    const userCoins = (user as any)?.coins ?? coins;
-    if (userCoins < price) {
+    if (coins < price) {
       setMessage("❌ Not enough coins!");
       return;
     }
@@ -59,7 +59,7 @@ const PowerUpShop: React.FC = () => {
       setMessage(res.message);
       setCoins(res.coins_left);
 
-      // ✅ Sync to localStorage (same pattern as QuestShop's handleExchange)
+      // Sync to localStorage
       const stored = localStorage.getItem("user");
       if (stored) {
         const parsed = JSON.parse(stored);

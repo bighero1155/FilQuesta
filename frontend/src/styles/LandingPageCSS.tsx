@@ -126,11 +126,10 @@ const LandingPageCSS: React.FC = () => {
 
       /* ============================
          FLOATING QUIZ CODE BOX
-         (Position moved UP)
       ============================ */
       .enter-code-top {
-        position: fixed;
-        bottom: 650px;
+        position: absolute;
+        top: 20px;
         right: 20px;
         background: rgba(255, 255, 255, 0.12);
         backdrop-filter: blur(12px);
@@ -151,6 +150,7 @@ const LandingPageCSS: React.FC = () => {
         padding: 0 10px;
         color: white;
         font-size: 12px;
+        box-sizing: border-box;
       }
 
       .enter-code-input::placeholder {
@@ -259,9 +259,9 @@ const LandingPageCSS: React.FC = () => {
         }
 
         .enter-code-top {
-          bottom: 90px;
+          top: 15px;
           right: 10px;
-          width: 80%;
+          width: 200px;
         }
       }
 
@@ -274,6 +274,13 @@ const LandingPageCSS: React.FC = () => {
         .game-grid {
           grid-template-columns: 1fr;
           gap: 20px;
+        }
+
+        .enter-code-top {
+          top: 10px;
+          right: 8px;
+          width: 170px;
+          padding: 10px;
         }
       }
     `}</style>
