@@ -351,59 +351,79 @@ const ClassroomPage: React.FC = () => {
           )}
 
           {/* Teacher/Admin classrooms dashboard */}
-          {(isTeacher || isAdmin) && !classroom && teacherClassrooms.length > 0 && (
+          {(isTeacher || isAdmin) && !classroom && (
             <div className="row justify-content-center">
               <div className="col-lg-8">
                 <div className="card shadow-lg border-0 p-4 classroom-list-card">
                   <h3 className="fw-bold mb-4 text-primary">📚 My Classrooms</h3>
-                  <div className="d-grid gap-3">
-                    {teacherClassrooms.map((c) => (
-                      <div
-                        key={c.classroom_id}
-                        className="d-flex justify-content-between align-items-center classroom-card"
-                        onClick={() => fetchClassroom(c.classroom_id)}
-                        style={{ position: 'relative' }}
-                      >
-                        <div>
-                          <h5 className="mb-2 fw-bold">{c.title}</h5>
-                          <span className="badge classroom-card-badge">
-                            📋 {c.code}
-                          </span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                          {/* Delete button */}
-                          <button
-                            className="btn btn-sm"
-                            style={{
-                              background: 'linear-gradient(135deg, #ff6b6b, #ee5a6f)',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '8px',
-                              padding: '8px 12px',
-                              fontSize: '16px',
-                              cursor: 'pointer',
-                              transition: 'all 0.3s ease',
-                              boxShadow: '0 2px 8px rgba(238, 90, 111, 0.3)',
-                            }}
-                            onClick={(e) => handleDeleteClassroom(c.classroom_id, c.title, e)}
-                            disabled={deletingClassroomId === c.classroom_id}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = 'scale(1.05)';
-                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(238, 90, 111, 0.5)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = 'scale(1)';
-                              e.currentTarget.style.boxShadow = '0 2px 8px rgba(238, 90, 111, 0.3)';
-                            }}
-                            title="Delete Classroom"
-                          >
-                            {deletingClassroomId === c.classroom_id ? "..." : "🗑️"}
-                          </button>
-                          <span className="classroom-card-arrow">→</span>
-                        </div>
+                  
+                  {teacherClassrooms.length === 0 ? (
+                    <div className="text-center py-5">
+                      <div className="classroom-empty-icon mb-3" style={{ fontSize: '4rem' }}>
+                        🏫
                       </div>
-                    ))}
-                  </div>
+                      <h4 className="text-muted mb-3">You Have No Classrooms Yet</h4>
+                      <p className="text-muted mb-4">
+                        Create your first classroom to start managing students and assignments.
+                      </p>
+                      <button
+                        className="btn btn-primary btn-lg"
+                        onClick={() => navigate("/create-class")}
+                      >
+                        <i className="bi bi-plus-circle me-2"></i>
+                        Create Your First Classroom
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="d-grid gap-3">
+                      {teacherClassrooms.map((c) => (
+                        <div
+                          key={c.classroom_id}
+                          className="d-flex justify-content-between align-items-center classroom-card"
+                          onClick={() => fetchClassroom(c.classroom_id)}
+                          style={{ position: 'relative' }}
+                        >
+                          <div>
+                            <h5 className="mb-2 fw-bold">{c.title}</h5>
+                            <span className="badge classroom-card-badge">
+                              📋 {c.code}
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            {/* Delete button */}
+                            <button
+                              className="btn btn-sm"
+                              style={{
+                                background: 'linear-gradient(135deg, #ff6b6b, #ee5a6f)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '8px 12px',
+                                fontSize: '16px',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                boxShadow: '0 2px 8px rgba(238, 90, 111, 0.3)',
+                              }}
+                              onClick={(e) => handleDeleteClassroom(c.classroom_id, c.title, e)}
+                              disabled={deletingClassroomId === c.classroom_id}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.05)';
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(238, 90, 111, 0.5)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'scale(1)';
+                                e.currentTarget.style.boxShadow = '0 2px 8px rgba(238, 90, 111, 0.3)';
+                              }}
+                              title="Delete Classroom"
+                            >
+                              {deletingClassroomId === c.classroom_id ? "..." : "🗑️"}
+                            </button>
+                            <span className="classroom-card-arrow">→</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
