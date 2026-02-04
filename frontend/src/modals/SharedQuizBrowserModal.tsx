@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { getSharedSessions, deleteSharedSession, SharedQuizSession } from "../services/quizService";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext"; 
@@ -17,33 +17,25 @@ const SharedQuizBrowserModal: React.FC<Props> = ({ show, onClose }) => {
   const navigate = useNavigate();
   const { user } = useAuth(); 
 
-  const fetchSessions = useCallback(async () => {
+  const fetchSessions = async () => {
     setLoading(true);
     setError(null);
     try {
       const data = await getSharedSessions();
-      
-      // Filter sessions: students see all, teachers see only their own
-      let filteredData = Array.isArray(data) ? data : [];
-      
-      if (user?.role === 'teacher') {
-        filteredData = filteredData.filter(s => s.teacher_id === user.user_id);
-      }
-      
-      setSessions(filteredData);
+      setSessions(data);
     } catch (err) {
       console.error(err);
       setError("Failed to load quizzes");
     } finally {
       setLoading(false);
     }
-  }, [user?.role, user?.user_id]); // Dependencies for useCallback
+  };
 
   useEffect(() => {
     if (show) {
       fetchSessions();
     }
-  }, [show, fetchSessions]); // Now we can safely include fetchSessions
+  }, [show]);
 
   if (!show) return null;
 
@@ -52,6 +44,7 @@ const SharedQuizBrowserModal: React.FC<Props> = ({ show, onClose }) => {
     onClose();
   };
 
+  // ← ADD THIS DELETE HANDLER
   const handleDeleteQuiz = async (sessionId: number, e: React.MouseEvent) => {
     e.stopPropagation();
     
@@ -71,8 +64,7 @@ const SharedQuizBrowserModal: React.FC<Props> = ({ show, onClose }) => {
     }
   };
 
-  const isTeacher = user?.role === "teacher";
-  const isAdmin = user?.role === "admin";
+  const isTeacher = user?.role === "teacher"; // ← ADD THIS
 
   return (
     <>
@@ -96,14 +88,21 @@ const SharedQuizBrowserModal: React.FC<Props> = ({ show, onClose }) => {
             ) : sessions.length === 0 ? (
               <div className="qm-empty">
                 <div className="qm-empty-icon">📚</div>
-                <div className="qm-empty-text">
-                  {isTeacher ? "No Active Quizzes Created by You" : "No Active Quizzes"}
-                </div>
+                <div className="qm-empty-text">No Active Quizzes</div>
               </div>
             ) : (
               <div className="qm-list">
                 {sessions.map((s) => {
-                  const isOwner = (isTeacher || isAdmin) && s.teacher_id === user?.user_id;
+                  // ← ADD THIS OWNERSHIP CHECK
+                  const isOwner = isTeacher && s.teacher_id === user?.user_id;
+                  
+                  // ← DEBUG: Add this console.log temporarily
+                  console.log('Session:', s.quiz?.title, {
+                    isTeacher,
+                    sessionTeacherId: s.teacher_id,
+                    userId: user?.user_id,
+                    isOwner
+                  });
                   
                   return (
                     <div key={s.session_id} className="qm-card">
@@ -113,6 +112,7 @@ const SharedQuizBrowserModal: React.FC<Props> = ({ show, onClose }) => {
                         </div>
                         <span className="qm-code">{s.code}</span>
                       </div>
+                      {/* ← REPLACE SINGLE BUTTON WITH ACTIONS DIV */}
                       <div className="qm-actions">
                         <button
                           className="qm-join"
