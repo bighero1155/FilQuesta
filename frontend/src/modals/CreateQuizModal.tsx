@@ -252,7 +252,8 @@ const CreateQuizModal: React.FC<CreateQuizModalProps> = ({
                               onClick={handleAddQuestion}
                               title="Add Question"
                             >
-                              <i className="bi bi-plus"></i>
+                              <i className="bi bi-plus me-1"></i>
+                              Add Question
                             </button>
                             <button
                               type="button"

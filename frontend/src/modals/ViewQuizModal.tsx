@@ -181,9 +181,6 @@ const ViewQuizModal: React.FC<ViewQuizModalProps> = ({
                                       {o.is_correct && (
                                         <div className="ms-auto d-flex align-items-center gap-1">
                                           <i className="bi bi-check-circle-fill text-success" style={{ fontSize: '1.2rem' }}></i>
-                                          <small className="text-success fw-semibold d-none d-lg-inline">
-                                            Correct
-                                          </small>
                                         </div>
                                       )}
                                     </div>

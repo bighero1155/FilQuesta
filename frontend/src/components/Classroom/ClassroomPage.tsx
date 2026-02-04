@@ -366,13 +366,6 @@ const ClassroomPage: React.FC = () => {
                       <p className="text-muted mb-4">
                         Create your first classroom to start managing students and assignments.
                       </p>
-                      <button
-                        className="btn btn-primary btn-lg"
-                        onClick={() => navigate("/create-class")}
-                      >
-                        <i className="bi bi-plus-circle me-2"></i>
-                        Create Your First Classroom
-                      </button>
                     </div>
                   ) : (
                     <div className="d-grid gap-3">
