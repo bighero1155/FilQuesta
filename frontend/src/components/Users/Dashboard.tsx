@@ -4,7 +4,6 @@ import axios from "../../auth/axiosInstance";
 import { useAuth } from "../../context/AuthContext";
 import LeaderboardModal from "../../modals/LeaderboardModal";
 import { Link } from "react-router-dom";
-import UserManagement from "../Users/UserManagement";
 import QuizResultsTable from "../Users/QuizResultsTable";
 
 interface DashboardData {
@@ -354,19 +353,6 @@ const Dashboard: React.FC = () => {
               sharedQuizResults={sharedQuizResults}
             />
           </div>
-        </div>
-      </div>
-
-      {/* User Management Section */}
-      <div className="card border-0 shadow-sm" style={{ borderRadius: '12px' }}>
-        <div className="card-header bg-white border-0 py-3 px-4">
-          <h5 className="mb-0 fw-bold text-dark d-flex align-items-center">
-            <i className="bi bi-people-fill me-2 text-primary"></i>
-            User Management
-          </h5>
-        </div>
-        <div className="card-body p-4">
-          <UserManagement />
         </div>
       </div>
 

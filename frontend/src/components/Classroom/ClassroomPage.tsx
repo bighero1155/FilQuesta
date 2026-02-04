@@ -44,6 +44,14 @@ const ClassroomPage: React.FC = () => {
   const [deletingClassroomId, setDeletingClassroomId] = useState<number | null>(null);
 
   const isTeacher = user?.role === "teacher";
+  const isAdmin = user?.role === "admin";
+
+  /** Get back navigation path based on user role */
+  const getBackPath = () => {
+    if (isAdmin) return "/dashboard";
+    if (isTeacher) return "/dashboard";
+    return "/Classroom";
+  };
 
   /** Fetch all classrooms for teacher */
   const fetchTeacherClassrooms = useCallback(async () => {
@@ -95,7 +103,7 @@ const ClassroomPage: React.FC = () => {
   useEffect(() => {
     if (!user) return;
 
-    if (isTeacher) {
+    if (isTeacher || isAdmin) {
       if (classroomId) {
         fetchClassroom(Number(classroomId));
       } else {
@@ -104,7 +112,7 @@ const ClassroomPage: React.FC = () => {
     } else {
       fetchStudentClassroom();
     }
-  }, [user, isTeacher, classroomId, fetchClassroom, fetchTeacherClassrooms, fetchStudentClassroom]);
+  }, [user, isTeacher, isAdmin, classroomId, fetchClassroom, fetchTeacherClassrooms, fetchStudentClassroom]);
 
   /** Student joins classroom */
   const handleJoin = async (e: React.FormEvent) => {
@@ -144,7 +152,7 @@ const ClassroomPage: React.FC = () => {
     }
   };
 
-  /** Delete classroom - for teacher in classroom list view */
+  /** Delete classroom - for teacher/admin in classroom list view */
   const handleDeleteClassroom = async (classroomId: number, classroomTitle: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
     
@@ -169,7 +177,7 @@ const ClassroomPage: React.FC = () => {
     }
   };
 
-  /** Delete current classroom - for teacher in classroom view */
+  /** Delete current classroom - for teacher/admin in classroom view */
   const handleDeleteCurrentClassroom = async () => {
     if (!classroom) return;
     
@@ -184,7 +192,7 @@ const ClassroomPage: React.FC = () => {
       } as any);
       
       alert("Classroom deleted successfully.");
-      navigate("/dashboard");
+      navigate(getBackPath());
     } catch (err: any) {
       console.error(err);
       alert(err.response?.data?.message || "Failed to delete classroom");
@@ -193,9 +201,9 @@ const ClassroomPage: React.FC = () => {
     }
   };
 
-  /** Assign points — only teachers can use this */
+  /** Assign points — teachers and admins can use this */
   const handleAssignPoints = async (studentId: number) => {
-    if (!isTeacher) return;
+    if (!isTeacher && !isAdmin) return;
 
     const points = prompt("Enter points to assign:");
     if (!points || isNaN(Number(points))) return;
@@ -217,9 +225,9 @@ const ClassroomPage: React.FC = () => {
     }
   };
 
-  /** Teacher removes a student from classroom */
+  /** Teacher/Admin removes a student from classroom */
   const handleRemoveStudent = async (studentId: number, studentName: string) => {
-    if (!isTeacher || !classroom) return;
+    if (!isTeacher && !isAdmin || !classroom) return;
 
     const confirmRemove = window.confirm(
       `Are you sure you want to remove ${studentName} from the classroom?`
@@ -247,7 +255,7 @@ const ClassroomPage: React.FC = () => {
     }
   };
 
-  /** When teacher clicks student → open modal with logs */
+  /** When teacher/admin clicks student → open modal with logs */
   const handleViewStudent = async (student: StudentWithScore) => {
     setSelectedStudent(student);
     setLoadingLogs(true);
@@ -283,7 +291,7 @@ const ClassroomPage: React.FC = () => {
       <div className="classroom-page">
         {/* Back Button */}
         <button
-          onClick={() => navigate(isTeacher ? "/dashboard" : "/Landing")}
+          onClick={() => navigate(getBackPath())}
           className="btn classroom-back-btn"
         >
           ← Back
@@ -313,7 +321,7 @@ const ClassroomPage: React.FC = () => {
           )}
 
           {/* Student join view */}
-          {!isTeacher && !classroom && (
+          {!isTeacher && !isAdmin && !classroom && (
             <div className="row justify-content-center">
               <div className="col-lg-6">
                 <div className="card shadow-lg border-0 p-5 text-center classroom-join-card">
@@ -342,8 +350,8 @@ const ClassroomPage: React.FC = () => {
             </div>
           )}
 
-          {/* Teacher classrooms dashboard */}
-          {isTeacher && !classroom && teacherClassrooms.length > 0 && (
+          {/* Teacher/Admin classrooms dashboard */}
+          {(isTeacher || isAdmin) && !classroom && teacherClassrooms.length > 0 && (
             <div className="row justify-content-center">
               <div className="col-lg-8">
                 <div className="card shadow-lg border-0 p-4 classroom-list-card">
@@ -410,7 +418,7 @@ const ClassroomPage: React.FC = () => {
                   {classroom.title}
                 </h1>
                 <div className="d-flex justify-content-center align-items-center gap-4 flex-wrap">
-                  {isTeacher && (
+                  {(isTeacher || isAdmin) && (
                     <div className="badge classroom-header-badge">
                       📋 Code: {classroom.code}
                     </div>
@@ -418,7 +426,7 @@ const ClassroomPage: React.FC = () => {
                   <div className="badge classroom-header-badge">
                     👥 Students: {students.length}
                   </div>
-                  {!isTeacher && (
+                  {!isTeacher && !isAdmin && (
                     <button
                       className="btn classroom-btn classroom-btn-danger px-4 py-2"
                       onClick={handleLeaveClassroom}
@@ -471,8 +479,8 @@ const ClassroomPage: React.FC = () => {
                     students.map((student) => (
                       <div key={student.user_id} className="col-sm-6 col-md-4 col-lg-3">
                         <div
-                          className={`student-card ${isTeacher ? 'clickable' : ''}`}
-                          onClick={() => isTeacher && handleViewStudent(student)}
+                          className={`student-card ${(isTeacher || isAdmin) ? 'clickable' : ''}`}
+                          onClick={() => (isTeacher || isAdmin) && handleViewStudent(student)}
                         >
                           <ProfileHeader
                             userData={{
@@ -493,8 +501,8 @@ const ClassroomPage: React.FC = () => {
                             {student.total_score || 0}
                           </div>
 
-                          {/* Teacher Controls */}
-                          {isTeacher && (
+                          {/* Teacher/Admin Controls */}
+                          {(isTeacher || isAdmin) && (
                             <>
                               {/* Remove Student Button - Top Left */}
                               <button
@@ -555,8 +563,8 @@ const ClassroomPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Copy Code & Delete Buttons for Teachers */}
-              {isTeacher && (
+              {/* Copy Code & Delete Buttons for Teachers/Admins */}
+              {(isTeacher || isAdmin) && (
                 <div className="text-center mt-5">
                   <div className="d-flex justify-content-center gap-3 flex-wrap">
                     <button
@@ -649,7 +657,7 @@ const ClassroomPage: React.FC = () => {
                   )}
                 </div>
                 <div className="modal-footer classroom-modal-footer">
-                  {isTeacher && (
+                  {(isTeacher || isAdmin) && (
                     <>
                       <button
                         className="btn classroom-btn classroom-btn-success"
