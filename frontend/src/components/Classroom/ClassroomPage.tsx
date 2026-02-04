@@ -355,7 +355,6 @@ const ClassroomPage: React.FC = () => {
             <div className="row justify-content-center">
               <div className="col-lg-8">
                 <div className="card shadow-lg border-0 p-4 classroom-list-card">
-                  <h3 className="fw-bold mb-4 text-primary">📚 My Classrooms</h3>
                   
                   {teacherClassrooms.length === 0 ? (
                     <div className="text-center py-5">
