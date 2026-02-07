@@ -175,7 +175,7 @@ const Register: React.FC = () => {
           content: '';
           position: absolute;
           inset: 0;
-          background: rgba(13, 110, 253, 0.85);
+          background: linear-gradient(135deg, rgba(34, 193, 195, 0.85) 0%, rgba(45, 134, 253, 0.85) 100%);
           backdrop-filter: blur(3px);
         }
 
@@ -187,11 +187,11 @@ const Register: React.FC = () => {
           width: 100%;
           position: relative;
           z-index: 1;
-          border: 4px solid #0d6efd;
+          border: 4px solid #22c1c3;
         }
 
         .register-header {
-          background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+          background: linear-gradient(135deg, #22c1c3 0%, #2d86fd 100%);
           padding: 30px 25px;
           text-align: center;
           color: white;
@@ -218,7 +218,7 @@ const Register: React.FC = () => {
 
         .back-button:hover {
           background: white;
-          color: #0d6efd;
+          color: #22c1c3;
           transform: translateX(-3px);
         }
 
@@ -247,9 +247,9 @@ const Register: React.FC = () => {
 
         .progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, #0d6efd, #0a58ca);
+          background: linear-gradient(90deg, #22c1c3, #2d86fd);
           transition: width 0.4s ease;
-          box-shadow: 0 0 10px rgba(13, 110, 253, 0.5);
+          box-shadow: 0 0 10px rgba(34, 193, 195, 0.5);
         }
 
         .step-indicator {
@@ -268,9 +268,9 @@ const Register: React.FC = () => {
         }
 
         .step-dot.active {
-          background: #0d6efd;
+          background: linear-gradient(135deg, #22c1c3, #2d86fd);
           transform: scale(1.3);
-          box-shadow: 0 0 8px rgba(13, 110, 253, 0.6);
+          box-shadow: 0 0 8px rgba(34, 193, 195, 0.6);
         }
 
         .register-body {
@@ -286,7 +286,7 @@ const Register: React.FC = () => {
           margin-bottom: 8px;
           font-family: 'Press Start 2P', cursive;
           font-size: 0.6rem;
-          color: #0d6efd;
+          color: #22c1c3;
           line-height: 1.5;
         }
 
@@ -297,7 +297,7 @@ const Register: React.FC = () => {
         .form-input {
           width: 100%;
           padding: 12px 14px;
-          border: 3px solid #0d6efd;
+          border: 3px solid #22c1c3;
           border-radius: 8px;
           font-size: 14px;
           transition: all 0.3s ease;
@@ -308,8 +308,8 @@ const Register: React.FC = () => {
 
         .form-input:focus {
           outline: none;
-          border-color: #0a58ca;
-          box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.2);
+          border-color: #2d86fd;
+          box-shadow: 0 0 0 4px rgba(34, 193, 195, 0.2);
           transform: translateY(-2px);
         }
 
@@ -323,13 +323,13 @@ const Register: React.FC = () => {
           top: 50%;
           transform: translateY(-50%);
           cursor: pointer;
-          color: #0d6efd;
+          color: #22c1c3;
           font-size: 18px;
           transition: color 0.3s ease;
         }
 
         .password-toggle:hover {
-          color: #0a58ca;
+          color: #2d86fd;
         }
 
         .error-message {
@@ -404,13 +404,13 @@ const Register: React.FC = () => {
         }
 
         .btn-primary {
-          background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+          background: linear-gradient(135deg, #22c1c3 0%, #2d86fd 100%);
           color: white;
           flex: 1;
         }
 
         .btn-primary:hover:not(:disabled) {
-          background: linear-gradient(135deg, #0a58ca 0%, #084298 100%);
+          background: linear-gradient(135deg, #1da8aa 0%, #2470d6 100%);
           transform: translateY(-2px);
           box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
         }
@@ -438,13 +438,14 @@ const Register: React.FC = () => {
         }
 
         .login-link a {
-          color: #0d6efd;
+          color: #22c1c3;
           text-decoration: none;
           margin-left: 4px;
         }
 
         .login-link a:hover {
           text-decoration: underline;
+          color: #2d86fd;
         }
 
         .step-content {
@@ -729,4 +730,4 @@ const Register: React.FC = () => {
   );
 };
 
-export default Register;
+export default Register;   
