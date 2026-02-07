@@ -297,7 +297,7 @@ const Dashboard: React.FC = () => {
             <div className="card-header bg-white border-0 py-3 px-4">
               <div className="d-flex justify-content-between align-items-center">
                 <h5 className="mb-0 fw-bold text-dark d-flex align-items-center">
-                  <i className="bi bi-person-lines-fill me-2 text-primary"></i>
+                  <i className="bi bi-folder-fill me-2 text-primary"></i>
                   Students by Section
                 </h5>
                 <span className="badge bg-primary rounded-pill px-3 py-2">
@@ -308,17 +308,17 @@ const Dashboard: React.FC = () => {
             <div className="card-body p-4" style={{ maxHeight: '280px', overflowY: 'auto' }}>
               {sections.length === 0 ? (
                 <div className="text-center py-4">
-                  <i className="bi bi-person-lines-fill display-4 text-muted opacity-25 mb-3 d-block"></i>
+                  <i className="bi bi-inbox display-4 text-muted opacity-25 mb-3 d-block"></i>
                   <p className="text-muted mb-0">No sections available yet</p>
                 </div>
-              ) : ( 
+              ) : (
                 <div className="row g-3">
                   {sections.map((section) => (
                     <div key={section.name} className="col-6 col-md-4 col-xl-3">
                       <div className="card border-0 shadow-sm text-center" style={{ borderRadius: '10px', backgroundColor: '#f8f9fa' }}>
                         <div className="card-body py-3 px-2">
                           <div className="bg-primary bg-gradient text-white rounded-circle mx-auto d-flex align-items-center justify-content-center mb-2" style={{ width: '48px', height: '48px' }}>
-                            <i className="bi bi-person-lines-fill fs-5"></i>
+                            <i className="bi bi-folder-fill fs-5"></i>
                           </div>
                           <div className="fw-bold text-dark mb-1 small text-truncate" title={section.name}>
                             {section.name}

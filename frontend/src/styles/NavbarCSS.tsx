@@ -5,7 +5,7 @@ const NavbarCSS = () => (
     .nav-sidebar {
       height: 100vh;
       width: 280px;
-      background: linear-gradient(135deg, #22c1c3 0%, #2d86fd 100%);
+      background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
       color: white;
       position: fixed;
       top: 0;
@@ -129,11 +129,6 @@ const NavbarCSS = () => (
       transform: translateX(4px);
     }
 
-    /* Hide mobile teacher button on desktop */
-    .nav-teacher-mobile {
-      display: none;
-    }
-
     @media (max-width: 768px) {
       .nav-sidebar {
         width: 100%;
@@ -197,11 +192,6 @@ const NavbarCSS = () => (
         border-top: none;
         margin-left: 6px;
       }
-
-      /* Show mobile teacher button */
-      .nav-teacher-mobile {
-        display: block;
-      }
     }
 
     @media (max-width: 480px) {
@@ -218,6 +208,23 @@ const NavbarCSS = () => (
         padding: 8px 10px;
       }
     }
+
+    /* Hide mobile teacher button on desktop */
+.nav-teacher-mobile {
+  display: none;
+}
+
+/* Mobile behavior */
+@media (max-width: 768px) {
+  .nav-profile-section {
+    display: none; /* hide full profile */
+  }
+
+  .nav-teacher-mobile {
+    display: block; /* show icon-only teacher button */
+  }
+}
+
   `}</style>
 );
 

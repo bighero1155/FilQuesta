@@ -138,8 +138,8 @@ const LandingPage: React.FC = () => {
         {error && <div className="enter-code-error">{error}</div>}
       </form>
 
-      <div className="content-area">   
-        <h1 className="main-title">FILQUESTA</h1>        
+      <div className="content-area">
+        <h1 className="main-title">FILQUESTA</h1>
 
         <div className="quote-carousel">{QUOTES[0]}</div>
 
