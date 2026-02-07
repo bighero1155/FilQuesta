@@ -16,7 +16,7 @@ interface SharedQuizSession extends Omit<ApiSharedQuizSession, "quiz"> {
   quiz?: {
     title?: string;
     questions: { question_id: number }[];
-  };
+  };    
   participants?: {
     student_id: number;
     equipped_badge?: { name?: string; image?: string | null } | null;
