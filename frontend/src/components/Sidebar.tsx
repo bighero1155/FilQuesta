@@ -68,6 +68,9 @@ const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </div>
 
+      {/* OVERLAY FOR MOBILE */}
+      {mobileOpen && <div className="sidebar-overlay" onClick={toggleMobile}></div>}
+
       {/* SIDEBAR */}
       <div className={`sidebar ${mobileOpen ? "open" : ""}`}>
         <div className="sidebar-header">
@@ -82,7 +85,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           <li>
             <button
               className="nav-link"
-              onClick={() => onNavigate("/landing")}
+              onClick={() => {
+                onNavigate("/landing");
+                setMobileOpen(false);
+              }}
               disabled={loading}
             >
               <Home size={18} />
@@ -91,28 +97,52 @@ const Sidebar: React.FC<SidebarProps> = ({
           </li>
 
           <li>
-            <button className="nav-link" onClick={onProfile}>
+            <button 
+              className="nav-link" 
+              onClick={() => {
+                onProfile();
+                setMobileOpen(false);
+              }}
+            >
               <User size={18} />
               <span>Profile</span>
             </button>
           </li>
 
           <li>
-            <button className="nav-link" onClick={onLeaderboard}>
+            <button 
+              className="nav-link" 
+              onClick={() => {
+                onLeaderboard();
+                setMobileOpen(false);
+              }}
+            >
               <Trophy size={18} />
               <span>Leaderboard</span>
             </button>
           </li>
 
           <li>
-            <button className="nav-link" onClick={onProgress}>
+            <button 
+              className="nav-link" 
+              onClick={() => {
+                onProgress();
+                setMobileOpen(false);
+              }}
+            >
               <BarChart2 size={18} />
               <span>Progress</span>
             </button>
           </li>
 
           <li>
-            <button className="nav-link" onClick={() => onNavigate("/Classroom")}>
+            <button 
+              className="nav-link" 
+              onClick={() => {
+                onNavigate("/Classroom");
+                setMobileOpen(false);
+              }}
+            >
               <School size={18} />
               <span>Classroom</span>
             </button>
@@ -121,7 +151,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           <li>
             <button
               className="nav-link"
-              onClick={() => setShowQuestShop(true)}
+              onClick={() => {
+                setShowQuestShop(true);
+                setMobileOpen(false);
+              }}
             >
               <ShoppingCart size={18} />
               <span>Quest Shop</span>
@@ -129,7 +162,13 @@ const Sidebar: React.FC<SidebarProps> = ({
           </li>
 
           <li>
-            <button className="nav-link danger" onClick={onLogout}>
+            <button 
+              className="nav-link danger" 
+              onClick={() => {
+                onLogout();
+                setMobileOpen(false);
+              }}
+            >
               <LogOut size={18} />
               <span>Quit</span>
             </button>
@@ -148,8 +187,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         /* ===== DESKTOP SIDEBAR ===== */
         .sidebar {
           height: 100vh;
-          width: 290px;  /* ⬅ increased from 250px */
-          background: linear-gradient(to bottom right, #0077be, #00c2cb);
+          width: 290px;
+          background: linear-gradient(to bottom right, #22c1c3, #2d86fd);
           color: #fff;
           position: fixed;
           left: 0;
@@ -159,21 +198,32 @@ const Sidebar: React.FC<SidebarProps> = ({
           flex-direction: column;
           z-index: 995;
           transition: transform 0.3s ease;
+          overflow-y: auto;
         }
 
         .sidebar-header {
           font-family: 'Press Start 2P';
           font-size: 1.1rem;
           margin-bottom: 20px;
+          line-height: 1.4;
+        }
+
+        .brand-text {
+          display: block;
         }
 
         .sidebar-nav {
           list-style: none;
           padding: 0;
+          margin: 0;
           margin-top: 15px;
           display: flex;
           flex-direction: column;
           gap: 10px;
+        }
+
+        .sidebar-nav li {
+          margin: 0;
         }
 
         .nav-link {
@@ -188,19 +238,31 @@ const Sidebar: React.FC<SidebarProps> = ({
           font-family: 'Press Start 2P';
           cursor: pointer;
           transition: 0.2s;
-          font-size: 0.82rem; /* fit long labels nicely */
+          font-size: 0.82rem;
+          width: 100%;
+          text-align: left;
         }
 
-        .nav-link:hover {
+        .nav-link:hover:not(:disabled) {
           background-color: rgba(255,255,255,0.15);
         }
 
-        .danger:hover {
+        .nav-link:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .danger:hover:not(:disabled) {
           background-color: rgba(255,77,77,0.45);
         }
 
         .my-quizzes-wrapper {
           margin-top: auto;
+          padding-bottom: 10px;
+        }
+
+        .profile-wrapper {
+          margin-bottom: 10px;
         }
 
         /* ===== MOBILE TOPBAR ===== */
@@ -208,25 +270,32 @@ const Sidebar: React.FC<SidebarProps> = ({
           display: none;
         }
 
+        .sidebar-overlay {
+          display: none;
+        }
+
         /* ===== MOBILE SIDEBAR ===== */
         @media (max-width: 768px) {
           body {
-            padding-top: 70px !important;
+            padding-top: 0 !important;
           }
 
           .mobile-topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #0077be;
-            padding: 12px 18px;
+            background: linear-gradient(to right, #22c1c3, #2d86fd);
+            padding: 14px 18px;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            z-index: 998;
+            z-index: 1000;
             color: white;
             font-family: 'Press Start 2P';
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            height: 60px;
+            box-sizing: border-box;
           }
 
           .menu-icon-btn, 
@@ -235,25 +304,60 @@ const Sidebar: React.FC<SidebarProps> = ({
             border: none;
             color: white;
             cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+            border-radius: 6px;
+          }
+
+          .menu-icon-btn:active,
+          .shop-btn:active {
+            background-color: rgba(255, 255, 255, 0.1);
           }
 
           .topbar-title {
             margin: 0;
-            font-size: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+          }
+
+          .sidebar-overlay {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1998;
+            opacity: 1;
+            transition: opacity 0.3s ease;
           }
 
           .sidebar {
             transform: translateX(-100%);
-            top: 70px;
-            width: 260px; /* ⬅ increased mobile drawer width */
-            height: calc(100vh - 70px);
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
             position: fixed;
-            z-index: 999;
-            padding-top: 25px;
+            z-index: 1999;
+            padding: 18px;
+            padding-top: 20px;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
           }
 
           .sidebar.open {
             transform: translateX(0);
+          }
+
+          .sidebar-header {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
           }
 
           .profile-wrapper {
@@ -261,7 +365,44 @@ const Sidebar: React.FC<SidebarProps> = ({
           }
 
           .sidebar-nav {
-            gap: 18px;
+            gap: 12px;
+            margin-top: 10px;
+          }
+
+          .nav-link {
+            font-size: 0.75rem;
+            padding: 14px 12px;
+          }
+
+          .my-quizzes-wrapper {
+            margin-top: 20px;
+            padding-bottom: 20px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .topbar-title {
+            font-size: 0.75rem;
+          }
+
+          .menu-icon-btn svg,
+          .shop-btn svg {
+            width: 24px;
+            height: 24px;
+          }
+
+          .sidebar {
+            width: 260px;
+          }
+
+          .nav-link {
+            font-size: 0.7rem;
+            gap: 10px;
+          }
+
+          .nav-link svg {
+            width: 16px;
+            height: 16px;
           }
         }
       `}</style>
