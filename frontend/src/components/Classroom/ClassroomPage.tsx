@@ -293,6 +293,11 @@ const ClassroomPage: React.FC = () => {
         <button
           onClick={() => navigate(getBackPath())}
           className="btn classroom-back-btn"
+          style={{
+            fontSize: '1rem',
+            padding: '12px 24px',
+            fontWeight: 'bold',
+          }}
         >
           ← Back
         </button>

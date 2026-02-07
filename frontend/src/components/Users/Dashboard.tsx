@@ -297,7 +297,7 @@ const Dashboard: React.FC = () => {
             <div className="card-header bg-white border-0 py-3 px-4">
               <div className="d-flex justify-content-between align-items-center">
                 <h5 className="mb-0 fw-bold text-dark d-flex align-items-center">
-                  <i className="bi bi-folder-fill me-2 text-primary"></i>
+                  <i className="bi bi-person-lines-fill me-2 text-primary"></i>
                   Students by Section
                 </h5>
                 <span className="badge bg-primary rounded-pill px-3 py-2">
@@ -318,7 +318,7 @@ const Dashboard: React.FC = () => {
                       <div className="card border-0 shadow-sm text-center" style={{ borderRadius: '10px', backgroundColor: '#f8f9fa' }}>
                         <div className="card-body py-3 px-2">
                           <div className="bg-primary bg-gradient text-white rounded-circle mx-auto d-flex align-items-center justify-content-center mb-2" style={{ width: '48px', height: '48px' }}>
-                            <i className="bi bi-folder-fill fs-5"></i>
+                            <i className="bi bi-person-lines-fill fs-5"></i>
                           </div>
                           <div className="fw-bold text-dark mb-1 small text-truncate" title={section.name}>
                             {section.name}
