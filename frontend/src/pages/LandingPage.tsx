@@ -139,7 +139,7 @@ const LandingPage: React.FC = () => {
       </form>
 
       <div className="content-area">
-        <h1 className="main-title">FILQUESTA</h1>
+        <h1 className="main-title">FILQUESTA</h1>        
 
         <div className="quote-carousel">{QUOTES[0]}</div>
 
