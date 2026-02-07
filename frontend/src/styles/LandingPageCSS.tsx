@@ -5,7 +5,7 @@ const LandingPageCSS: React.FC = () => {
     <style>{`
       body {
         font-family: "Press Start 2P", monospace;
-        background: linear-gradient(135deg, #004aad, #5a8fd6);
+        background: linear-gradient(135deg, #22c1c3, #2d86fd);
         background-attachment: fixed;
         color: white;
         margin: 0;
@@ -128,7 +128,7 @@ const LandingPageCSS: React.FC = () => {
          FLOATING QUIZ CODE BOX
       ============================ */
       .enter-code-top {
-        position: absolute;
+        position: fixed;
         top: 20px;
         right: 20px;
         background: rgba(255, 255, 255, 0.12);
@@ -166,7 +166,7 @@ const LandingPageCSS: React.FC = () => {
         width: 100%;
         height: 38px;
         margin-top: 8px;
-        background: linear-gradient(135deg, #00eaff, #008cff);
+        background: linear-gradient(135deg, #22c1c3, #2d86fd);
         border: none;
         color: white;
         border-radius: 8px;
@@ -186,14 +186,16 @@ const LandingPageCSS: React.FC = () => {
       }
 
       .enter-code-error {
-        font-size: 12px;
+        font-size: 10px;
         color: #ffb3b3;
         margin-top: 4px;
+        text-align: center;
       }
 
       .main-title {
         font-size: 65px;
-        text-shadow: 0 0 12px #00eaff, 0 0 24px #1560bd;
+        text-shadow: 0 0 12px #22c1c3, 0 0 24px #2d86fd;
+        margin-top: 0;
       }
 
       .quote-carousel {
@@ -254,21 +256,42 @@ const LandingPageCSS: React.FC = () => {
         .content-area {
           padding-left: 20px !important;
           padding-right: 20px;
-          padding-top: 80px !important;
+          padding-top: 140px !important;
           gap: 20px;
         }
 
         .enter-code-top {
-          top: 15px;
-          right: 10px;
-          width: 200px;
+          top: 70px;
+          left: 50%;
+          transform: translateX(-50%);
+          right: auto;
+          width: calc(100% - 40px);
+          max-width: 300px;
+        }
+
+        .main-title {
+          font-size: 42px;
+          margin-top: 10px;
+        }
+
+        .quote-carousel {
+          font-size: 13px;
+          line-height: 1.6;
         }
       }
 
       /* Small mobile breakpoint */
       @media (max-width: 600px) {
+        .content-area {
+          padding-top: 150px !important;
+        }
+
         .main-title {
-          font-size: 34px;
+          font-size: 32px;
+        }
+
+        .quote-carousel {
+          font-size: 11px;
         }
 
         .game-grid {
@@ -277,10 +300,38 @@ const LandingPageCSS: React.FC = () => {
         }
 
         .enter-code-top {
-          top: 10px;
-          right: 8px;
-          width: 170px;
-          padding: 10px;
+          top: 75px;
+          width: calc(100% - 30px);
+          padding: 12px;
+        }
+
+        .enter-code-input {
+          height: 42px;
+          font-size: 13px;
+        }
+
+        .enter-code-btn {
+          height: 42px;
+          font-size: 12px;
+        }
+      }
+
+      /* Extra small mobile */
+      @media (max-width: 400px) {
+        .content-area {
+          padding-top: 160px !important;
+        }
+
+        .main-title {
+          font-size: 28px;
+        }
+
+        .quote-carousel {
+          font-size: 10px;
+        }
+
+        .enter-code-top {
+          top: 80px;
         }
       }
     `}</style>
