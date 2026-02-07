@@ -115,7 +115,7 @@ const LandingPageCSS: React.FC = () => {
       .content-area {
         flex: 1;
         padding: 60px 20px;
-        padding-left: calc(260px + 20px);
+        padding-left: calc(290px + 20px);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -137,7 +137,7 @@ const LandingPageCSS: React.FC = () => {
         border-radius: 14px;
         width: 230px;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-        z-index: 2000;
+        z-index: 900;
         border: 1px solid rgba(255, 255, 255, 0.25);
       }
 
@@ -256,34 +256,42 @@ const LandingPageCSS: React.FC = () => {
         .content-area {
           padding-left: 20px !important;
           padding-right: 20px;
-          padding-top: 140px !important;
+          padding-top: 80px !important;
           gap: 20px;
         }
 
         .enter-code-top {
-          top: 70px;
+          top: auto;
+          bottom: 20px;
           left: 50%;
           transform: translateX(-50%);
           right: auto;
           width: calc(100% - 40px);
-          max-width: 300px;
+          max-width: 320px;
+          z-index: 950;
         }
 
         .main-title {
           font-size: 42px;
-          margin-top: 10px;
+          margin-top: 0;
+          order: -2;
         }
 
         .quote-carousel {
           font-size: 13px;
           line-height: 1.6;
+          order: -1;
+        }
+
+        .game-grid {
+          order: 1;
         }
       }
 
       /* Small mobile breakpoint */
       @media (max-width: 600px) {
         .content-area {
-          padding-top: 150px !important;
+          padding-top: 90px !important;
         }
 
         .main-title {
@@ -300,9 +308,10 @@ const LandingPageCSS: React.FC = () => {
         }
 
         .enter-code-top {
-          top: 75px;
           width: calc(100% - 30px);
+          max-width: 300px;
           padding: 12px;
+          bottom: 15px;
         }
 
         .enter-code-input {
@@ -319,7 +328,7 @@ const LandingPageCSS: React.FC = () => {
       /* Extra small mobile */
       @media (max-width: 400px) {
         .content-area {
-          padding-top: 160px !important;
+          padding-top: 100px !important;
         }
 
         .main-title {
@@ -331,7 +340,8 @@ const LandingPageCSS: React.FC = () => {
         }
 
         .enter-code-top {
-          top: 80px;
+          bottom: 12px;
+          max-width: 280px;
         }
       }
     `}</style>
