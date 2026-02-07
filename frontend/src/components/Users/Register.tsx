@@ -725,7 +725,7 @@ const Register: React.FC = () => {
             <a href="/login">Login here</a>
           </div>
         </div>
-      </div>
+      </div>  
     </div>
   );
 };
