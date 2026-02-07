@@ -16,7 +16,7 @@ const ClassroomPageCSS = () => (
       left: 14px;
       z-index: 9999;
 
-      padding: 16px 36px;
+      padding: 6px 14px;
       height: 34px;
       width: fit-content;
 
@@ -29,7 +29,7 @@ const ClassroomPageCSS = () => (
         rgba(220,230,255,0.85)
       );
 
-      font-size: 1.2rem;
+      font-size: 0.8rem;
       font-weight: 700;
       letter-spacing: 0.3px;
       color: #3b4cca;
@@ -567,8 +567,8 @@ const ClassroomPageCSS = () => (
       }
 
       .classroom-back-btn {
-        padding: 16px 36px;
-        font-size: 1.2rem;
+        padding: 8px 15px;
+        font-size: 0.9rem;
       }
 
       .classroom-header-badge {
@@ -627,8 +627,8 @@ const ClassroomPageCSS = () => (
       .classroom-back-btn {
         top: 10px;
         left: 10px;
-        padding: 16px 36px;
-        font-size: 1.2rem;
+        padding: 6px 12px;
+        font-size: 0.8rem;
       }
 
       .text-glow {
@@ -706,8 +706,8 @@ const ClassroomPageCSS = () => (
     left: 14px;
 
     height: 32px;
-    padding: 16px 36px;
-    font-size: 1.2rem;
+    padding: 6px 12px;
+    font-size: 0.75rem;
   }
 }
   `}</style>
