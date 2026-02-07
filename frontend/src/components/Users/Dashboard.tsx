@@ -308,7 +308,7 @@ const Dashboard: React.FC = () => {
             <div className="card-body p-4" style={{ maxHeight: '280px', overflowY: 'auto' }}>
               {sections.length === 0 ? (
                 <div className="text-center py-4">
-                  <i className="bi bi-inbox display-4 text-muted opacity-25 mb-3 d-block"></i>
+                  <i className="bi bi-person-lines-fill display-4 text-muted opacity-25 mb-3 d-block"></i>
                   <p className="text-muted mb-0">No sections available yet</p>
                 </div>
               ) : (
