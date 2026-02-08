@@ -70,13 +70,13 @@ const RecommendationWidget: React.FC = () => {
 
   const getGameName = (link: string) => {
     switch (link) {
-      case "/humanbodygame":
+      case "/humanbodymap":
         return "Human Body Game";
-      case "/wordwizard":
+      case "/wordwizardmap":
         return "Word Wizard";
-      case "/magictree":
+      case "/MagicTree":
         return "Magic Tree";
-      case "/history-portal":
+      case "/historymap":
         return "History Portal";
       default:
         return link.replace("/", "").toUpperCase();

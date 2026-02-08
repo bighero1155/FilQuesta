@@ -73,7 +73,7 @@ const RecommendModal: React.FC<RecommendModalProps> = ({
               onChange={(e) => setSelectedGame(e.target.value)}
             >
               <option value="">-- Choose Game --</option>
-              <option value="/humanbodygame">Human Body Game</option>
+              <option value="/humanbodymap">Human Body Game</option>
               <option value="/wordwizardmap">Word Wizard</option>
               <option value="/MagicTree">Magic Tree</option>
               <option value="/historymap">History Portal</option>
