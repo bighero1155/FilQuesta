@@ -31,8 +31,8 @@ const UserManagement: React.FC = () => {
   const [, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [saving, setSaving] = useState<boolean>(false); // Add saving state
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({}); // Field-specific errors
+  const [saving, setSaving] = useState<boolean>(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isAdding, setIsAdding] = useState<boolean>(false);
@@ -121,7 +121,6 @@ const UserManagement: React.FC = () => {
 
   const handleFormChange = useCallback((field: keyof User, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear field-specific error when user starts typing
     if (fieldErrors[field]) {
       setFieldErrors(prev => {
         const updated = { ...prev };
@@ -129,13 +128,11 @@ const UserManagement: React.FC = () => {
         return updated;
       });
     }
-    // Clear general error when user starts typing
     if (error) {
       setError(null);
     }
   }, [error, fieldErrors]);
 
-  // Validate form before submission
   const validateForm = useCallback((): boolean => {
     const errors: Record<string, string> = {};
     
@@ -151,7 +148,6 @@ const UserManagement: React.FC = () => {
     if (!formData.email?.trim()) {
       errors.email = "Email is required";
     } else {
-      // Email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
         errors.email = "Please enter a valid email address";
@@ -160,7 +156,6 @@ const UserManagement: React.FC = () => {
     if (!formData.age?.trim()) {
       errors.age = "Age is required";
     } else {
-      // Age validation
       const age = parseInt(formData.age);
       if (isNaN(age) || age < 1 || age > 150) {
         errors.age = "Please enter a valid age between 1 and 150";
@@ -170,7 +165,6 @@ const UserManagement: React.FC = () => {
       errors.role = "Role is required";
     }
     
-    // Password validation (only when adding)
     if (isAdding && !formData.password?.trim()) {
       errors.password = "Password is required";
     } else if (isAdding && formData.password && formData.password.length < 6) {
@@ -182,7 +176,6 @@ const UserManagement: React.FC = () => {
   }, [formData, isAdding]);
 
   const handleSave = useCallback(async () => {
-    // Validate form
     const isValid = validateForm();
     if (!isValid) {
       return;
@@ -192,19 +185,17 @@ const UserManagement: React.FC = () => {
       setSaving(true);
       setError(null);
       
-      // Prepare data - keep age as string (Laravel expects string)
       const dataToSend = {
         ...formData,
         age: formData.age ? String(formData.age) : "",
       };
 
-      console.log("Sending data:", dataToSend); // Debug log
+      console.log("Sending data:", dataToSend);
 
       if (isAdding) {
         const newUser = await addUser(dataToSend);
         setUsers(prevUsers => [...prevUsers, newUser.user]);
         closeModal();
-        // Set success message after modal closes
         setTimeout(() => {
           setSuccess("✓ User successfully added!");
         }, 100);
@@ -216,16 +207,14 @@ const UserManagement: React.FC = () => {
           )
         );
         closeModal();
-        // Set success message after modal closes
         setTimeout(() => {
           setSuccess("✓ User successfully updated!");
         }, 100);
       }
     } catch (err: any) {
       console.error("Error saving user:", err);
-      console.error("Error response:", err?.response?.data); // Debug log
+      console.error("Error response:", err?.response?.data);
       
-      // Show specific validation errors from server
       if (err?.response?.data?.errors) {
         const errors = err.response.data.errors;
         const serverFieldErrors: Record<string, string> = {};
@@ -248,7 +237,6 @@ const UserManagement: React.FC = () => {
     }
   }, [formData, isAdding, editingUser, validateForm, closeModal]);
 
-  // Memoize filtered users to prevent unnecessary re-renders
   const filteredUsers = useMemo(() => {
     return users.filter((user) => user.role !== "admin");
   }, [users]);
@@ -257,7 +245,7 @@ const UserManagement: React.FC = () => {
     <div className="user-management-wrapper">
       <UserManagementCSS />
       
-      {/* Success Alert - Positioned at top with better styling */}
+      {/* Success Alert */}
       {success && (
         <div 
           className="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
@@ -265,6 +253,7 @@ const UserManagement: React.FC = () => {
           style={{ 
             zIndex: 9999, 
             minWidth: '300px',
+            maxWidth: '90%',
             boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
             animation: 'slideDown 0.3s ease-out'
           }}
@@ -279,7 +268,7 @@ const UserManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Error Alert - Positioned at top */}
+      {/* Error Alert */}
       {error && !editingUser && !isAdding && (
         <div 
           className="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
@@ -287,6 +276,7 @@ const UserManagement: React.FC = () => {
           style={{ 
             zIndex: 9999, 
             minWidth: '300px',
+            maxWidth: '90%',
             boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
             animation: 'slideDown 0.3s ease-out'
           }}
@@ -321,68 +311,76 @@ const UserManagement: React.FC = () => {
         <h2 className="user-management-title">User Management</h2>
         <button className="btn-add-user" onClick={handleAdd}>
           <UserPlus size={20} />
-          Add User
+          <span className="btn-add-user-text">Add User</span>
         </button>
       </div>
 
       <div className="table-container">
-        <table className="user-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Age</th>
-              <th>Address</th>
-              <th>School</th>
-              <th>Contact</th>
-              <th>Username</th>
-              <th>Section</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.map((user) => (
-              <tr key={user.user_id}>
-                <td className="wrap-cell name-cell">
-                  <div>{user.first_name}</div>
-                  <div>{user.middle_name}</div>
-                  <div>{user.last_name}</div>
-                </td>
-                <td className="nowrap-cell">{user.age}</td>
-                <td className="wrap-cell">{user.address}</td>
-                <td className="wrap-cell">{user.school}</td>
-                <td className="wrap-cell">{user.contact_number}</td>
-                <td className="wrap-cell">{user.username}</td>
-                <td className="wrap-cell">{user.section}</td>
-                <td className="wrap-cell">{user.email}</td>
-                <td className="nowrap-cell">
-                  <span className={`badge-role badge-${user.role}`}>
-                    {user.role}
-                  </span>
-                </td>
-                <td>
-                  <div className="action-buttons">
-                    <button
-                      className="btn-action btn-edit"
-                      onClick={() => handleEdit(user)}
-                    >
-                      <Edit size={16} />
-                      Edit
-                    </button>
-                    <button
-                      className="btn-action btn-delete"
-                      onClick={() => handleDelete(user.user_id)}
-                    >
-                      <Trash2 size={16} />
-                      Delete
-                    </button>
-                  </div>
-                </td>
+        <div className="table-responsive-wrapper">
+          <table className="user-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Address</th>
+                <th>School</th>
+                <th>Contact</th>
+                <th>Username</th>
+                <th>Section</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th className="actions-header">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredUsers.map((user) => (
+                <tr key={user.user_id}>
+                  <td className="wrap-cell name-cell" data-label="Name">
+                    <div className="name-wrapper">
+                      <div className="name-line">{user.first_name}</div>
+                      {user.middle_name && <div className="name-line middle-name">{user.middle_name}</div>}
+                      <div className="name-line">{user.last_name}</div>
+                    </div>
+                  </td>
+                  <td className="nowrap-cell" data-label="Age">{user.age}</td>
+                  <td className="wrap-cell" data-label="Address">{user.address}</td>
+                  <td className="wrap-cell" data-label="School">{user.school}</td>
+                  <td className="wrap-cell" data-label="Contact">{user.contact_number}</td>
+                  <td className="wrap-cell" data-label="Username">{user.username}</td>
+                  <td className="wrap-cell" data-label="Section">{user.section}</td>
+                  <td className="wrap-cell" data-label="Email">{user.email}</td>
+                  <td className="nowrap-cell role-cell" data-label="Role">
+                    <span className={`badge-role badge-${user.role}`}>
+                      {user.role === 'teacher' && '👨‍🏫 '}
+                      {user.role === 'student' && '🎓 '}
+                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                    </span>
+                  </td>
+                  <td className="actions-cell" data-label="Actions">
+                    <div className="action-buttons">
+                      <button
+                        className="btn-action btn-edit"
+                        onClick={() => handleEdit(user)}
+                        title="Edit User"
+                      >
+                        <Edit size={16} />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        className="btn-action btn-delete"
+                        onClick={() => handleDelete(user.user_id)}
+                        title="Delete User"
+                      >
+                        <Trash2 size={16} />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {filteredUsers.length === 0 && (
           <div className="no-users-alert">No users found.</div>
         )}
@@ -404,7 +402,6 @@ const UserManagement: React.FC = () => {
             </div>
             
             <div className="modal-body-custom">
-              {/* General error display in modal */}
               {error && (
                 <div className="alert alert-danger alert-dismissible fade show" role="alert">
                   <strong>Error:</strong> {error}
@@ -595,15 +592,15 @@ const UserManagement: React.FC = () => {
                     disabled={saving}
                     required
                   >
-                    <option value="student">Student</option>
-                    <option value="teacher">Teacher</option>
+                    <option value="student">🎓 Student</option>
+                    <option value="teacher">👨‍🏫 Teacher</option>
                   </select>
                   {fieldErrors.role && (
                     <div className="invalid-feedback d-block">{fieldErrors.role}</div>
                   )}
                 </div>
 
-                {/* Password - Only show when adding */}
+                {/* Password */}
                 {isAdding && (
                   <div className="form-group">
                     <label className="form-label-custom form-label-required">Password</label>
