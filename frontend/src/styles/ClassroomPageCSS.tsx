@@ -229,6 +229,74 @@ const ClassroomPageCSS = () => (
       transform: translateX(5px);
     }
 
+    /* Teacher Avatar Section */
+    .classroom-teacher-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      animation: slideUp 0.6s ease-out;
+    }
+
+    .classroom-teacher-avatar-container {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 4px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      flex-shrink: 0;
+    }
+
+    .classroom-teacher-avatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .classroom-teacher-avatar-fallback {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: white;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+
+    .classroom-teacher-info {
+      text-align: left;
+      color: white;
+    }
+
+    .classroom-teacher-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.25rem;
+      opacity: 0.8;
+    }
+
+    .classroom-teacher-name {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
     /* Header Badges */
     .classroom-header-badge {
       background: rgba(255, 255, 255, 0.2);
@@ -609,6 +677,29 @@ const ClassroomPageCSS = () => (
         transform: translateX(-50%) translateY(0);
       }
 
+      .classroom-teacher-section {
+        max-width: 100%;
+        padding: 0.75rem;
+      }
+
+      .classroom-teacher-avatar-container {
+        width: 60px;
+        height: 60px;
+        border-width: 3px;
+      }
+
+      .classroom-teacher-avatar-fallback {
+        font-size: 2rem;
+      }
+
+      .classroom-teacher-name {
+        font-size: 1rem;
+      }
+
+      .classroom-teacher-label {
+        font-size: 0.65rem;
+      }
+
       .classroom-header-badge {
         font-size: 0.85rem;
         padding: 8px 15px;
@@ -705,6 +796,15 @@ const ClassroomPageCSS = () => (
       .classroom-tab {
         font-size: 0.75rem;
         padding: 6px 10px;
+      }
+
+      .classroom-teacher-section {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .classroom-teacher-info {
+        text-align: center;
       }
     }
     

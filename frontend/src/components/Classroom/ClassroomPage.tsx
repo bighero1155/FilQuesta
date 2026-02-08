@@ -5,6 +5,7 @@ import classroomService, { Classroom, Student } from "../../services/classroomSe
 import { useAuth } from "../../context/AuthContext";
 import { updateUserProgress } from "../../services/userService";
 import { getUserGameOverLogs } from "../../services/pageVisitService";
+import { getImageUrl } from "../../services/cosmeticService";
 import RecommendModal from "../Classroom/RecommendModal";
 import ProfileHeader from "../../pages/ProfileHeader";
 import ClassroomMessages from "./ClassroomMessages";
@@ -24,6 +25,15 @@ interface GameOverLog {
   total_time_spent: number; 
 }
 
+interface TeacherInfo {
+  user_id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+  avatar?: string;
+  email?: string;
+}
+
 const ClassroomPage: React.FC = () => {
   const { user } = useAuth();
   const { classroomId } = useParams<{ classroomId: string }>();
@@ -32,6 +42,7 @@ const ClassroomPage: React.FC = () => {
   const [classroom, setClassroom] = useState<Classroom | null>(null);
   const [students, setStudents] = useState<StudentWithScore[]>([]);
   const [teacherClassrooms, setTeacherClassrooms] = useState<Classroom[]>([]);
+  const [teacherInfo, setTeacherInfo] = useState<TeacherInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [joinCode, setJoinCode] = useState("");
@@ -60,6 +71,16 @@ const ClassroomPage: React.FC = () => {
     navigate(getBackPath());
   };
 
+  /** Fetch teacher information */
+  const fetchTeacherInfo = useCallback(async (teacherId: number) => {
+    try {
+      const response = await axios.get(`/users/${teacherId}`);
+      setTeacherInfo(response.data);
+    } catch (err) {
+      console.error("Failed to fetch teacher info:", err);
+    }
+  }, []);
+
   /** Fetch all classrooms for teacher */
   const fetchTeacherClassrooms = useCallback(async () => {
     if (!user) return;
@@ -81,12 +102,17 @@ const ClassroomPage: React.FC = () => {
       const data = await classroomService.getById(id);
       setClassroom(data);
       setStudents(data.students || []);
+      
+      // Fetch teacher info if we have a teacher_id
+      if (data.teacher_id) {
+        await fetchTeacherInfo(data.teacher_id);
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to fetch classroom");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchTeacherInfo]);
 
   // Fetch student's classroom (if they're already in one)
   const fetchStudentClassroom = useCallback(async () => {
@@ -99,13 +125,18 @@ const ClassroomPage: React.FC = () => {
         const fullClassroom = await classroomService.getById(classroomId);
         setClassroom(fullClassroom);
         setStudents(fullClassroom.students || []);
+        
+        // Fetch teacher info
+        if (fullClassroom.teacher_id) {
+          await fetchTeacherInfo(fullClassroom.teacher_id);
+        }
       }
     } catch (err: any) {
       console.error("Failed to fetch student classroom:", err);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, fetchTeacherInfo]);
 
   useEffect(() => {
     if (!user) return;
@@ -132,6 +163,12 @@ const ClassroomPage: React.FC = () => {
       const data = await classroomService.join(joinCode, user.user_id);
       setClassroom(data.classroom);
       setStudents(data.classroom.students || []);
+      
+      // Fetch teacher info after joining
+      if (data.classroom.teacher_id) {
+        await fetchTeacherInfo(data.classroom.teacher_id);
+      }
+      
       setJoinCode("");
     } catch (err: any) {
       setJoinError(err.response?.data?.message || "Failed to join classroom");
@@ -151,6 +188,7 @@ const ClassroomPage: React.FC = () => {
       await classroomService.leave(classroom.classroom_id, user.user_id);
       setClassroom(null);
       setStudents([]);
+      setTeacherInfo(null);
       alert("You have left the classroom successfully.");
     } catch (err: any) {
       alert(err.response?.data?.message || "Failed to leave classroom");
@@ -433,12 +471,49 @@ const ClassroomPage: React.FC = () => {
           {/* Classroom view with ProfileHeader */}
           {classroom && (
             <>
-              {/* Header Section */}
+              {/* Header Section with Teacher Avatar */}
               <div className="text-center mb-5">
                 <h1 className="display-4 fw-bold text-white mb-3 text-glow">
                   {classroom.title}
                 </h1>
-                <div className="d-flex justify-content-center align-items-center gap-4 flex-wrap">
+                
+                {/* Teacher Info Section */}
+                {teacherInfo && (
+                  <div className="classroom-teacher-section">
+                    <div className="classroom-teacher-avatar-container">
+                      {teacherInfo.avatar ? (
+                        <img
+                          src={getImageUrl(teacherInfo.avatar)}
+                          alt={`${teacherInfo.first_name} ${teacherInfo.last_name}`}
+                          className="classroom-teacher-avatar"
+                          onError={(e) => {
+                            console.error("Teacher avatar failed to load");
+                            e.currentTarget.style.display = 'none';
+                            const parent = e.currentTarget.parentElement;
+                            if (parent && !parent.querySelector('.classroom-teacher-avatar-fallback')) {
+                              const fallback = document.createElement('div');
+                              fallback.className = 'classroom-teacher-avatar-fallback';
+                              fallback.innerHTML = '<i class="bi bi-person-fill"></i>';
+                              parent.appendChild(fallback);
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="classroom-teacher-avatar-fallback">
+                          <i className="bi bi-person-fill"></i>
+                        </div>
+                      )}
+                    </div>
+                    <div className="classroom-teacher-info">
+                      <p className="classroom-teacher-label">Teacher</p>
+                      <p className="classroom-teacher-name">
+                        {teacherInfo.first_name} {teacherInfo.last_name}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="d-flex justify-content-center align-items-center gap-4 flex-wrap mt-3">
                   {(isTeacher || isAdmin) && (
                     <div className="badge classroom-header-badge">
                       📋 Code: {classroom.code}
