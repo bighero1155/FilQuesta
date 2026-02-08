@@ -135,9 +135,6 @@ const QuizDashboard: React.FC = () => {
     0
   );
 
-  const avgQuestions =
-    quizzes.length > 0 ? Math.round(totalQuestions / quizzes.length) : 0;
-
   return (
     <>
       <QuizDashboardCSS />
@@ -199,18 +196,6 @@ const QuizDashboard: React.FC = () => {
               <div className="quiz-dashboard-stat-details">
                 <h6 className="quiz-dashboard-stat-label">Total Questions</h6>
                 <h3 className="quiz-dashboard-stat-value">{totalQuestions}</h3>
-              </div>
-            </div>
-          </div>
-
-          <div className="quiz-dashboard-stat-card">
-            <div className="quiz-dashboard-stat-content">
-              <div className="quiz-dashboard-stat-icon quiz-dashboard-stat-icon-info">
-                <i className="bi bi-graph-up"></i>
-              </div>
-              <div className="quiz-dashboard-stat-details">
-                <h6 className="quiz-dashboard-stat-label">Avg Questions</h6>
-                <h3 className="quiz-dashboard-stat-value">{avgQuestions}</h3>
               </div>
             </div>
           </div>
