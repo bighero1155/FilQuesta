@@ -53,6 +53,13 @@ const ClassroomPage: React.FC = () => {
     return "/Classroom";
   };
 
+  /** Handle back button click */
+  const handleBackClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(getBackPath());
+  };
+
   /** Fetch all classrooms for teacher */
   const fetchTeacherClassrooms = useCallback(async () => {
     if (!user) return;
@@ -289,12 +296,14 @@ const ClassroomPage: React.FC = () => {
     <>
       <ClassroomPageCSS />
       <div className="classroom-page">
-        {/* Back Button */}
+        {/* Back Button - Updated Design */}
         <button
-          onClick={() => navigate(getBackPath())}
+          onClick={handleBackClick}
           className="btn classroom-back-btn"
+          type="button"
         >
-          ← Back
+          <span className="classroom-back-icon">←</span>
+          Back
         </button>
 
         {/* Floating Background Elements */}

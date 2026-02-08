@@ -9,48 +9,50 @@ const ClassroomPageCSS = () => (
       position: relative;
     }
 
-    /* Back Button Styles */
+    /* Back Button Styles - Updated to match CosmeticsShop */
     .classroom-back-btn {
       position: fixed;
-      top: 14px;
-      left: 14px;
-      z-index: 9999;
+      top: 2rem;
+      left: 2rem;
+      z-index: 10000;
 
-      padding: 16px 36px;
-      height: 34px;
-      width: fit-content;
-
-      border-radius: 999px;
-      border: 1.5px solid rgba(255,255,255,0.6);
-
-      background: linear-gradient(
-        180deg,
-        rgba(255,255,255,0.95),
-        rgba(220,230,255,0.85)
-      );
-
-      font-size: 1.2rem;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      color: #3b4cca;
-
-      box-shadow:
-        0 4px 10px rgba(0,0,0,0.18),
-        inset 0 1px 0 rgba(255,255,255,0.9);
-
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      
+      background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8a 100%);
+      border: 2px solid rgba(56, 189, 248, 0.3);
+      border-radius: 12px;
+      
+      color: #e0f2ff;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       cursor: pointer;
       user-select: none;
-
-      transition:
-        transform 0.15s ease,
-        box-shadow 0.15s ease,
-        filter 0.15s ease;
+      
+      transition: all 0.3s ease;
+      pointer-events: auto;
     }
 
     .classroom-back-btn:hover {
-      background-color: #4c51bf;
-      transform: translateX(-5px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      background: linear-gradient(135deg, #2d5a8a, #3b7ab8);
+      border-color: rgba(56, 189, 248, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(56, 189, 248, 0.4);
+      color: #e0f2ff;
+    }
+    
+    .classroom-back-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .classroom-back-icon {
+      fontSize: 1.25rem;
     }
 
     /* Text Glow Effect */
@@ -497,13 +499,6 @@ const ClassroomPageCSS = () => (
       box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
     }
 
-    .classroom-back-btn:active {
-      transform: scale(0.95);
-      box-shadow:
-        0 3px 8px rgba(0,0,0,0.25),
-        inset 0 2px 4px rgba(0,0,0,0.15);
-    }
-
     /* Alert Styles */
     .classroom-alert {
       border-radius: 12px;
@@ -556,6 +551,33 @@ const ClassroomPageCSS = () => (
       }
     }
 
+    /* Remove Student Button */ 
+    .student-remove-btn {
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      border: 3px solid white;
+      box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+      background: #dc3545;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      font-weight: bold;
+      z-index: 10;
+    }
+
+    .student-remove-btn:hover {
+      transform: scale(1.1) rotate(90deg);
+      box-shadow: 0 6px 20px rgba(220, 53, 69, 0.6);
+      background: #c82333;
+    }
+
     /* Responsive Design */
     @media (max-width: 768px) {
       .classroom-page {
@@ -567,8 +589,10 @@ const ClassroomPageCSS = () => (
       }
 
       .classroom-back-btn {
-        padding: 16px 36px;
-        font-size: 1.2rem;
+        top: 1rem;
+        left: 1rem;
+        padding: 0.625rem 1.25rem;
+        font-size: 0.875rem;
       }
 
       .classroom-header-badge {
@@ -604,6 +628,12 @@ const ClassroomPageCSS = () => (
         font-size: 18px;
       }
 
+      .student-remove-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 18px;
+      }
+
       .classroom-code-input {
         font-size: 1.1rem;
       }
@@ -625,10 +655,10 @@ const ClassroomPageCSS = () => (
       }
 
       .classroom-back-btn {
-        top: 10px;
-        left: 10px;
-        padding: 16px 36px;
-        font-size: 1.2rem;
+        top: 0.75rem;
+        left: 0.75rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
       }
 
       .text-glow {
@@ -642,74 +672,15 @@ const ClassroomPageCSS = () => (
       .classroom-modal-body {
         padding: 1rem;
       }
+
+      .student-remove-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+        top: -8px;
+        left: -8px;
+      }
     }
-      /* Remove Student Button */ 
-.student-remove-btn {
-  position: absolute;
-  top: -10px;
-  left: -10px;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  font-size: 20px;
-  border: 3px solid white;
-  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
-  background: #dc3545;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  font-weight: bold;
-  z-index: 10;
-}
-
-.student-remove-btn:hover {
-  transform: scale(1.1) rotate(90deg);
-  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.6);
-  background: #c82333;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .student-remove-btn {
-    width: 35px;
-    height: 35px;
-    font-size: 18px;
-  }
-}
-
-@media (max-width: 576px) {
-  .student-remove-btn {
-    width: 30px;
-    height: 30px;
-    font-size: 16px;
-    top: -8px;
-    left: -8px;
-  }
-}
-
-@media (hover: hover) {
-  .classroom-back-btn:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      0 8px 18px rgba(0,0,0,0.25),
-      0 0 10px rgba(120,140,255,0.6);
-    filter: brightness(1.05);
-  }
-}
-
-@media (max-width: 768px) {
-  .classroom-back-btn {
-    top: auto;
-    bottom: 90px; /* above bottom UI */
-    left: 14px;
-
-    height: 32px;
-    padding: 16px 36px;
-    font-size: 1.2rem;
-  }
-}
   `}</style>
 );
 
