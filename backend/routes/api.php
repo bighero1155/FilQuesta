@@ -40,6 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/users/{user_id}/progress', [UserController::class, 'updateProgress']);
     Route::put('/users/{id}/score', [UserController::class, 'updateScore']);
     Route::get('/leaderboard', [UserController::class, 'leaderboard']);
+    Route::post('/upload-avatar', [UserController::class, 'uploadAvatar']);
 
     Route::get('/users/{user_id}/levels', [LevelController::class, 'userLevels']);
     Route::post('/users/{user_id}/levels', [LevelController::class, 'storeOrUpdate']);

@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { updateUser } from "../../services/userService";
 import { getImageUrl } from "../../services/cosmeticService";
 import TeacherEditModalCSS from "../../styles/TeacherEditModalCSS";
+import axios from "../../auth/axiosInstance";
 
 interface Props {
   show: boolean;
@@ -23,6 +24,8 @@ const TeacherEditModal: React.FC<Props> = ({ show, onClose }) => {
   const [form, setForm] = useState<any>({});
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: string; text: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -47,6 +50,8 @@ const TeacherEditModal: React.FC<Props> = ({ show, onClose }) => {
     });
 
     setSelectedAvatar(stored.avatar || null);
+    setUploadedImage(null);
+    setImagePreview(null);
     setErrors({});
     setMessage(null);
   }, [show, user]);
@@ -61,6 +66,41 @@ const TeacherEditModal: React.FC<Props> = ({ show, onClose }) => {
   const handleAvatarSelect = (url: string) => {
     setSelectedAvatar(url);
     setForm((f: any) => ({ ...f, avatar: url }));
+    // Clear uploaded image when selecting preset
+    setUploadedImage(null);
+    setImagePreview(null);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setMessage({ type: 'error', text: 'Please select a valid image file' });
+        return;
+      }
+
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        setMessage({ type: 'error', text: 'Image size must be less than 2MB' });
+        return;
+      }
+
+      setUploadedImage(file);
+      setImagePreview(URL.createObjectURL(file));
+      
+      // Clear preset selection when uploading custom image
+      setSelectedAvatar(null);
+      setMessage(null);
+    }
+  };
+
+  const handleRemoveUploadedImage = () => {
+    setUploadedImage(null);
+    setImagePreview(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
   };
 
   const handleSubmit = async (e: any) => {
@@ -71,10 +111,32 @@ const TeacherEditModal: React.FC<Props> = ({ show, onClose }) => {
     setMessage(null);
     setErrors({});
 
-    const payload: any = { ...form, role: "teacher" };
-    if (!form.password) delete payload.password;
-
     try {
+      let avatarPath = form.avatar;
+
+      // If there's an uploaded image, upload it first
+      if (uploadedImage) {
+        const formData = new FormData();
+        formData.append('avatar', uploadedImage);
+        formData.append('user_id', (user as any).user_id.toString());
+
+        const uploadResponse = await axios.post('/upload-avatar', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        avatarPath = uploadResponse.data.avatar_path;
+      }
+
+      const payload: any = { 
+        ...form, 
+        role: "teacher",
+        avatar: avatarPath 
+      };
+      
+      if (!form.password) delete payload.password;
+
       const updated = await updateUser((user as any).user_id, payload);
 
       const stored = JSON.parse(localStorage.getItem("user") || "{}");
@@ -113,7 +175,11 @@ const TeacherEditModal: React.FC<Props> = ({ show, onClose }) => {
   if (!show) return null;
 
   // Use centralized getImageUrl for avatar display
-  const displayAvatar = selectedAvatar ? getImageUrl(selectedAvatar) : undefined;
+  const displayAvatar = imagePreview 
+    ? imagePreview 
+    : selectedAvatar 
+      ? getImageUrl(selectedAvatar) 
+      : undefined;
 
   return (
     <>
@@ -142,24 +208,53 @@ const TeacherEditModal: React.FC<Props> = ({ show, onClose }) => {
             <div className="te-content">
               <div className="te-avatar-section">
                 {displayAvatar ? (
-                  <img
-                    src={displayAvatar}
-                    alt="avatar"
-                    className="te-avatar-preview"
-                    onError={(e) => {
-                      console.error("TeacherEditModal - Avatar failed to load:", displayAvatar);
-                      // Fallback to placeholder if image fails
-                      const target = e.currentTarget;
-                      target.style.display = 'none';
-                      const parent = target.parentElement;
-                      if (parent && !parent.querySelector('.te-avatar-placeholder')) {
-                        const placeholder = document.createElement('div');
-                        placeholder.className = 'te-avatar-placeholder';
-                        placeholder.innerHTML = '<i class="bi bi-person-fill"></i>';
-                        parent.appendChild(placeholder);
-                      }
-                    }}
-                  />
+                  <div style={{ position: 'relative', display: 'inline-block' }}>
+                    <img
+                      src={displayAvatar}
+                      alt="avatar"
+                      className="te-avatar-preview"
+                      onError={(e) => {
+                        console.error("TeacherEditModal - Avatar failed to load:", displayAvatar);
+                        // Fallback to placeholder if image fails
+                        const target = e.currentTarget;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent && !parent.querySelector('.te-avatar-placeholder')) {
+                          const placeholder = document.createElement('div');
+                          placeholder.className = 'te-avatar-placeholder';
+                          placeholder.innerHTML = '<i class="bi bi-person-fill"></i>';
+                          parent.appendChild(placeholder);
+                        }
+                      }}
+                    />
+                    {imagePreview && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveUploadedImage}
+                        style={{
+                          position: 'absolute',
+                          top: '-10px',
+                          right: '-10px',
+                          background: '#dc3545',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '50%',
+                          width: '30px',
+                          height: '30px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '18px',
+                          fontWeight: 'bold',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        }}
+                        title="Remove uploaded image"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <div className="te-avatar-placeholder">
                     <i className="bi bi-person-fill"></i>
@@ -167,7 +262,32 @@ const TeacherEditModal: React.FC<Props> = ({ show, onClose }) => {
                 )}
 
                 <div>
-                  <div className="te-avatar-label">CHOOSE AVATAR</div>
+                  {/* Upload Custom Image Section */}
+                  <div className="te-avatar-label" style={{ marginBottom: '10px' }}>
+                    UPLOAD YOUR OWN IMAGE
+                  </div>
+                  <div style={{ marginBottom: '20px' }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        padding: '10px',
+                        border: '2px dashed #667eea',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        backgroundColor: '#f8f9fa',
+                      }}
+                    />
+                    <small style={{ display: 'block', marginTop: '5px', color: '#6c757d' }}>
+                      Max size: 2MB | Formats: JPG, PNG, GIF
+                    </small>
+                  </div>
+
+                  {/* Preset Avatars Section */}
+                  <div className="te-avatar-label">OR CHOOSE PRESET AVATAR</div>
                   <div className="te-avatar-grid">
                     {PRESET_AVATARS.map((src) => (
                       <button

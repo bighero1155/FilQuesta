@@ -7,10 +7,57 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
+    /**
+     * Upload avatar image for user
+     */
+    public function uploadAvatar(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'user_id' => 'required|exists:users,user_id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $user = User::findOrFail($request->user_id);
+
+            // Delete old avatar if it exists and is not a preset
+            if ($user->avatar && !str_starts_with($user->avatar, '/assets/')) {
+                $oldPath = str_replace('teacher_avatars/', '', $user->avatar);
+                $oldPath = str_replace(asset('storage/'), '', $oldPath);
+                $oldPath = str_replace('storage/', '', $oldPath);
+                
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+
+            // Store new avatar
+            $image = $request->file('avatar');
+            $avatarPath = $image->store('teacher_avatars', 'public');
+
+            return response()->json([
+                'message' => 'Avatar uploaded successfully',
+                'avatar_path' => $avatarPath,
+                'avatar_url' => asset('storage/' . $avatarPath)
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Avatar upload failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * Store a new user.
      */
@@ -144,7 +191,7 @@ class UserController extends Controller
             'section'         => 'nullable|string|max:55',
             'email'           => 'nullable|email|unique:users,email,' . $user_id . ',user_id',
             'password'        => 'nullable|string',
-            'role'            => 'required|in:student,teacher',
+            'role'            => 'required|in:student,teacher,admin',
             'coins'           => 'nullable|integer|min:0',
             'total_score'     => 'nullable|integer|min:0',
             'avatar'          => 'nullable|string|max:255',
@@ -227,6 +274,17 @@ class UserController extends Controller
 
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
+        }
+
+        // Delete avatar if it's not a preset
+        if ($user->avatar && !str_starts_with($user->avatar, '/assets/')) {
+            $avatarPath = str_replace('teacher_avatars/', '', $user->avatar);
+            $avatarPath = str_replace(asset('storage/'), '', $avatarPath);
+            $avatarPath = str_replace('storage/', '', $avatarPath);
+            
+            if (Storage::disk('public')->exists($avatarPath)) {
+                Storage::disk('public')->delete($avatarPath);
+            }
         }
 
         $user->delete();
@@ -321,6 +379,7 @@ class UserController extends Controller
             'role' => $user->role,
         ]);
     }
+    
     public function getQuizScore($user_id)
     {
         $sharedQuizScore = DB::table('shared_quiz_participants')
