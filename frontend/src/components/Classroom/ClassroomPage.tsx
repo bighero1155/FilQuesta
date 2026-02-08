@@ -59,9 +59,8 @@ const ClassroomPage: React.FC = () => {
 
   /** Get back navigation path based on user role */
   const getBackPath = () => {
-    if (isAdmin) return "/dashboard";
-    if (isTeacher) return "/dashboard";
-    return "/Classroom";
+    if (isAdmin || isTeacher) return "/dashboard";
+    return "/landing";
   };
 
   /** Handle back button click */
