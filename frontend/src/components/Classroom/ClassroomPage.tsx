@@ -464,25 +464,37 @@ const ClassroomPage: React.FC = () => {
 
               {/* Top Navigation Tabs */}
               <div className="d-flex justify-content-center mb-4">
-                <div className="btn-group shadow-sm classroom-tabs" role="group">
-                  <button 
-                    className={`btn classroom-tab ${activeTab === 'students' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('students')}
-                  >
-                    👥 Students
-                  </button>
-                  <button 
-                    className={`btn classroom-tab ${activeTab === 'reports' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('reports')}
-                  >
-                    📊 Reports
-                  </button>
-                  <button 
-                    className={`btn classroom-tab ${activeTab === 'messages' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('messages')}
-                  >
-                    💬 Messages
-                  </button>
+                <div className="w-100" style={{ maxWidth: '800px' }}>
+                  <div className="btn-group shadow-sm classroom-tabs w-100" role="group">
+                    <button 
+                      className={`btn classroom-tab ${activeTab === 'students' ? 'active' : ''}`}
+                      onClick={() => setActiveTab('students')}
+                    >
+                      👥 Students
+                    </button>
+                    <button 
+                      className={`btn classroom-tab ${activeTab === 'reports' ? 'active' : ''}`}
+                      onClick={() => setActiveTab('reports')}
+                    >
+                      📊 Reports
+                    </button>
+                    <button 
+                      className={`btn classroom-tab ${activeTab === 'messages' ? 'active' : ''}`}
+                      onClick={() => setActiveTab('messages')}
+                    >
+                      💬 Messages
+                    </button>
+                  </div>
+                  
+                  {/* Delete Classroom Button - Only visible on mobile */}
+                  {(isTeacher || isAdmin) && (
+                    <button
+                      className="classroom-delete-tab-btn"
+                      onClick={handleDeleteCurrentClassroom}
+                    >
+                      🗑️ Delete Classroom
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -598,8 +610,9 @@ const ClassroomPage: React.FC = () => {
                       📋 Copy Class Code
                     </button>
                     
+                    {/* Delete button - Hidden on mobile */}
                     <button
-                      className="btn btn-lg"
+                      className="btn btn-lg classroom-bottom-delete-btn"
                       style={{
                         background: 'linear-gradient(135deg, #ff6b6b, #ee5a6f)',
                         color: 'white',

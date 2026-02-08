@@ -582,17 +582,31 @@ const ClassroomPageCSS = () => (
     @media (max-width: 768px) {
       .classroom-page {
         padding-top: 60px;
+        padding-bottom: 100px; /* Space for bottom back button */
       }
 
       .classroom-symbol {
         font-size: 2rem;
       }
 
+      /* Move back button to bottom on mobile */
       .classroom-back-btn {
-        top: 1rem;
-        left: 1rem;
-        padding: 0.625rem 1.25rem;
-        font-size: 0.875rem;
+        top: auto;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        width: auto;
+        min-width: 150px;
+      }
+
+      .classroom-back-btn:hover {
+        transform: translateX(-50%) translateY(-2px);
+      }
+
+      .classroom-back-btn:active {
+        transform: translateX(-50%) translateY(0);
       }
 
       .classroom-header-badge {
@@ -606,14 +620,16 @@ const ClassroomPageCSS = () => (
       }
 
       .classroom-tabs {
-        flex-direction: column;
+        flex-direction: row;
         width: 100%;
+        flex-wrap: wrap;
       }
 
       .classroom-tab {
         border-radius: 12px;
-        margin: 3px 0;
-        width: 100%;
+        margin: 3px;
+        flex: 1;
+        min-width: 100px;
       }
 
       .student-score-badge {
@@ -646,19 +662,24 @@ const ClassroomPageCSS = () => (
         padding: 0.75rem 2rem;
         font-size: 0.9rem;
       }
+
+      /* Hide the bottom delete classroom button on mobile */
+      .classroom-bottom-delete-btn {
+        display: none !important;
+      }
     }
 
     @media (max-width: 576px) {
       .classroom-page {
         padding-top: 50px;
-        padding-bottom: 40px;
+        padding-bottom: 90px; /* Space for bottom back button */
       }
 
       .classroom-back-btn {
-        top: 0.75rem;
-        left: 0.75rem;
-        padding: 0.5rem 1rem;
-        font-size: 0.8rem;
+        bottom: 15px;
+        padding: 0.625rem 1.5rem;
+        font-size: 0.9rem;
+        min-width: 130px;
       }
 
       .text-glow {
@@ -679,6 +700,44 @@ const ClassroomPageCSS = () => (
         font-size: 16px;
         top: -8px;
         left: -8px;
+      }
+
+      .classroom-tab {
+        font-size: 0.75rem;
+        padding: 6px 10px;
+      }
+    }
+    
+    /* Delete Classroom Button for Tabs */
+    .classroom-delete-tab-btn {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(238, 90, 111, 0.3);
+      margin-top: 1rem;
+      width: 100%;
+      display: none; /* Hidden by default, shown on mobile */
+    }
+
+    .classroom-delete-tab-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(238, 90, 111, 0.5);
+      background: linear-gradient(135deg, #ee5a6f, #ff6b6b);
+    }
+
+    .classroom-delete-tab-btn:active {
+      transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+      .classroom-delete-tab-btn {
+        display: block; /* Show on mobile */
       }
     }
   `}</style>
