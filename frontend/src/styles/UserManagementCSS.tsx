@@ -3,17 +3,22 @@ import React from 'react';
 const UserManagementCSS: React.FC = () => {
   return (
     <style>{`
+      /* ============================================
+         GLOBAL STYLES - Clean and Simple
+         ============================================ */
       .user-management-wrapper {
         position: relative;
         padding: 0 1rem;
       }
 
+      /* ============================================
+         HEADER SECTION
+         ============================================ */
       .user-management-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 1.5rem;
-        flex-wrap: wrap;
         gap: 1rem;
       }
 
@@ -36,39 +41,42 @@ const UserManagementCSS: React.FC = () => {
         align-items: center;
         gap: 0.5rem;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
         cursor: pointer;
+        transition: background 0.2s ease, box-shadow 0.2s ease;
       }
 
       .btn-add-user:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         background: #f8f9fa;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
       }
 
       .btn-add-user:active {
-        transform: translateY(0);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       }
 
+      /* ============================================
+         TABLE CONTAINER
+         ============================================ */
       .table-container {
         background: rgba(255, 255, 255, 0.95);
         border-radius: 15px;
         padding: 1.5rem;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        overflow: hidden;
       }
 
-      .table-responsive-wrapper {
+      .table-wrapper {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
       }
 
+      /* ============================================
+         TABLE STYLES - No Transform/Scale Effects
+         ============================================ */
       .user-table {
         width: 100%;
         margin-bottom: 0;
-        border-collapse: separate;
-        border-spacing: 0;
-        min-width: 1200px;
+        border-collapse: collapse;
+        min-width: 1000px;
       }
 
       .user-table thead th {
@@ -77,11 +85,8 @@ const UserManagementCSS: React.FC = () => {
         border: none;
         font-weight: 600;
         padding: 1rem;
+        text-align: left;
         white-space: nowrap;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        font-size: 0.95rem;
       }
 
       .user-table thead th:first-child {
@@ -93,55 +98,40 @@ const UserManagementCSS: React.FC = () => {
       }
 
       .user-table tbody tr {
-        transition: all 0.3s ease;
         background: white;
+        border-bottom: 1px solid rgba(102, 126, 234, 0.1);
       }
 
       .user-table tbody tr:hover {
-        background: rgba(102, 126, 234, 0.08);
-        transform: scale(1.005);
+        background: rgba(102, 126, 234, 0.05);
       }
 
       .user-table tbody td {
         padding: 1rem;
         vertical-align: middle;
-        border-bottom: 1px solid rgba(102, 126, 234, 0.1);
-        font-size: 0.9rem;
       }
 
-      .wrap-cell {
-        white-space: normal;
-        word-break: break-word;
-        line-height: 1.5;
-        max-width: 200px;
-      }
-
-      .nowrap-cell {
-        white-space: nowrap;
-      }
-
+      /* ============================================
+         TABLE CELL STYLES
+         ============================================ */
       .name-cell {
         min-width: 150px;
       }
 
-      .name-wrapper {
-        display: flex;
-        flex-direction: column;
-        gap: 0.15rem;
-      }
-
-      .name-line {
-        line-height: 1.3;
+      .name-cell > div {
+        line-height: 1.4;
         font-weight: 500;
       }
 
       .middle-name {
         font-weight: 400;
-        opacity: 0.8;
-        font-size: 0.85em;
+        opacity: 0.7;
+        font-size: 0.9em;
       }
 
-      /* Role Badges - NEW COLORS */
+      /* ============================================
+         ROLE BADGES - Cyan (Teacher) & Light Green (Student)
+         ============================================ */
       .badge-role {
         padding: 0.5rem 1rem;
         border-radius: 20px;
@@ -149,10 +139,9 @@ const UserManagementCSS: React.FC = () => {
         font-size: 0.85rem;
         display: inline-flex;
         align-items: center;
-        gap: 0.25rem;
+        gap: 0.3rem;
         white-space: nowrap;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
       }
 
       /* Student Badge - Light Green */
@@ -162,11 +151,6 @@ const UserManagementCSS: React.FC = () => {
         border: 2px solid #4ab887;
       }
 
-      .badge-student:hover {
-        background: linear-gradient(135deg, #52c995, #42b580);
-        box-shadow: 0 4px 12px rgba(82, 201, 149, 0.4);
-      }
-
       /* Teacher Badge - Cyan */
       .badge-teacher {
         background: linear-gradient(135deg, #00d4ff, #00b4d8);
@@ -174,27 +158,19 @@ const UserManagementCSS: React.FC = () => {
         border: 2px solid #0096b8;
       }
 
-      .badge-teacher:hover {
-        background: linear-gradient(135deg, #00b4d8, #0096b8);
-        box-shadow: 0 4px 12px rgba(0, 180, 216, 0.4);
-      }
-
-      .role-cell {
-        text-align: center;
-      }
-
+      /* ============================================
+         ACTION BUTTONS - No Transform Effects
+         ============================================ */
       .action-buttons {
         display: flex;
         gap: 0.5rem;
         flex-wrap: wrap;
-        justify-content: center;
       }
 
       .btn-action {
         border: none;
         padding: 0.5rem 0.875rem;
         border-radius: 8px;
-        transition: all 0.3s ease;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
@@ -202,6 +178,7 @@ const UserManagementCSS: React.FC = () => {
         font-size: 0.875rem;
         font-weight: 600;
         white-space: nowrap;
+        transition: opacity 0.2s ease, box-shadow 0.2s ease;
       }
 
       .btn-edit {
@@ -211,13 +188,12 @@ const UserManagementCSS: React.FC = () => {
       }
 
       .btn-edit:hover {
-        transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        background: linear-gradient(135deg, #5568d3, #663a91);
+        opacity: 0.9;
       }
 
       .btn-edit:active {
-        transform: translateY(0);
+        box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
       }
 
       .btn-delete {
@@ -227,15 +203,17 @@ const UserManagementCSS: React.FC = () => {
       }
 
       .btn-delete:hover {
-        transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
-        background: linear-gradient(135deg, #e4465b, #df82ea);
+        opacity: 0.9;
       }
 
       .btn-delete:active {
-        transform: translateY(0);
+        box-shadow: 0 2px 6px rgba(245, 87, 108, 0.3);
       }
 
+      /* ============================================
+         NO USERS ALERT
+         ============================================ */
       .no-users-alert {
         background: rgba(255, 255, 255, 0.95);
         border-radius: 15px;
@@ -246,7 +224,9 @@ const UserManagementCSS: React.FC = () => {
         margin-top: 1rem;
       }
 
-      /* Modal Styles */
+      /* ============================================
+         MODAL STYLES
+         ============================================ */
       .modal-overlay {
         position: fixed;
         top: 0;
@@ -260,7 +240,6 @@ const UserManagementCSS: React.FC = () => {
         justify-content: center;
         z-index: 10000;
         padding: 1rem;
-        overflow-y: auto;
       }
 
       .modal-container {
@@ -272,17 +251,16 @@ const UserManagementCSS: React.FC = () => {
         overflow-y: auto;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         animation: modalSlideIn 0.3s ease-out;
-        margin: auto;
       }
 
       @keyframes modalSlideIn {
         from {
           opacity: 0;
-          transform: translateY(-20px) scale(0.95);
+          transform: translateY(-20px);
         }
         to {
           opacity: 1;
-          transform: translateY(0) scale(1);
+          transform: translateY(0);
         }
       }
 
@@ -294,9 +272,6 @@ const UserManagementCSS: React.FC = () => {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        position: sticky;
-        top: 0;
-        z-index: 10;
       }
 
       .modal-title {
@@ -304,7 +279,6 @@ const UserManagementCSS: React.FC = () => {
         font-weight: bold;
         margin: 0;
         word-break: break-word;
-        padding-right: 1rem;
       }
 
       .btn-close-custom {
@@ -318,13 +292,12 @@ const UserManagementCSS: React.FC = () => {
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: background 0.2s ease;
         flex-shrink: 0;
       }
 
       .btn-close-custom:hover:not(:disabled) {
         background: rgba(255, 255, 255, 0.3);
-        transform: rotate(90deg);
       }
 
       .btn-close-custom:disabled {
@@ -336,6 +309,9 @@ const UserManagementCSS: React.FC = () => {
         padding: 2rem;
       }
 
+      /* ============================================
+         FORM STYLES
+         ============================================ */
       .form-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -348,50 +324,49 @@ const UserManagementCSS: React.FC = () => {
         gap: 0.5rem;
       }
 
-      .form-label-custom {
+      .form-label {
         font-weight: 600;
         color: #667eea;
         font-size: 0.9rem;
       }
 
-      .form-label-required::after {
-        content: " *";
-        color: #f5576c;
-      }
-
       .form-input,
-      .form-select {
+      select.form-input {
         padding: 0.75rem;
         border: 2px solid #e0e7ff;
         border-radius: 10px;
         font-size: 1rem;
-        transition: all 0.3s ease;
         background: white;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
         width: 100%;
       }
 
       .form-input:focus,
-      .form-select:focus {
+      select.form-input:focus {
         outline: none;
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
       }
 
       .form-input:disabled,
-      .form-select:disabled {
+      select.form-input:disabled {
         background: #f5f5f5;
         cursor: not-allowed;
       }
 
-      .form-input.is-invalid,
-      .form-select.is-invalid {
+      .form-input.is-invalid {
         border-color: #f5576c;
       }
 
-      .invalid-feedback {
+      .error-text {
         color: #f5576c;
         font-size: 0.85rem;
         margin-top: 0.25rem;
+      }
+
+      .helper-text {
+        color: #6c757d;
+        font-size: 0.85rem;
       }
 
       .modal-footer-custom {
@@ -400,10 +375,6 @@ const UserManagementCSS: React.FC = () => {
         display: flex;
         justify-content: flex-end;
         gap: 1rem;
-        position: sticky;
-        bottom: 0;
-        background: white;
-        border-radius: 0 0 20px 20px;
       }
 
       .btn-modal {
@@ -412,11 +383,11 @@ const UserManagementCSS: React.FC = () => {
         border-radius: 10px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
         display: flex;
         align-items: center;
         gap: 0.5rem;
         white-space: nowrap;
+        transition: opacity 0.2s ease, box-shadow 0.2s ease;
       }
 
       .btn-modal:disabled {
@@ -439,30 +410,60 @@ const UserManagementCSS: React.FC = () => {
       }
 
       .btn-save:hover:not(:disabled) {
-        transform: translateY(-2px);
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        opacity: 0.95;
       }
 
       .btn-save:active:not(:disabled) {
-        transform: translateY(0);
+        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
       }
 
-      /* Tablet Responsive */
+      /* ============================================
+         SCROLLBAR STYLES
+         ============================================ */
+      .table-wrapper::-webkit-scrollbar {
+        height: 8px;
+      }
+
+      .table-wrapper::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      .table-wrapper::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 10px;
+      }
+
+      .modal-container::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .modal-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      .modal-container::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 10px;
+      }
+
+      /* ============================================
+         TABLET RESPONSIVE (768px - 1024px)
+         ============================================ */
       @media (max-width: 1024px) {
-        .user-table {
-          min-width: 1000px;
+        .user-management-title {
+          font-size: 1.5rem;
         }
 
         .table-container {
           padding: 1rem;
         }
-
-        .user-management-title {
-          font-size: 1.5rem;
-        }
       }
 
-      /* Mobile Responsive */
+      /* ============================================
+         MOBILE RESPONSIVE (max 768px)
+         ============================================ */
       @media (max-width: 768px) {
         .user-management-wrapper {
           padding: 0 0.5rem;
@@ -490,11 +491,6 @@ const UserManagementCSS: React.FC = () => {
           border-radius: 12px;
         }
 
-        /* Make table cards on mobile */
-        .table-responsive-wrapper {
-          overflow-x: auto;
-        }
-
         .user-table {
           min-width: 900px;
           font-size: 0.85rem;
@@ -520,12 +516,7 @@ const UserManagementCSS: React.FC = () => {
           display: none;
         }
 
-        .action-buttons {
-          flex-direction: row;
-          gap: 0.4rem;
-        }
-
-        /* Modal adjustments */
+        /* Modal */
         .modal-overlay {
           padding: 0.5rem;
         }
@@ -571,7 +562,9 @@ const UserManagementCSS: React.FC = () => {
         }
       }
 
-      /* Small Mobile */
+      /* ============================================
+         SMALL MOBILE (max 480px)
+         ============================================ */
       @media (max-width: 480px) {
         .user-management-title {
           font-size: 1.2rem;
@@ -580,10 +573,6 @@ const UserManagementCSS: React.FC = () => {
         .btn-add-user {
           padding: 0.75rem 1rem;
           font-size: 0.9rem;
-        }
-
-        .btn-add-user-text {
-          display: inline;
         }
 
         .table-container {
@@ -615,7 +604,7 @@ const UserManagementCSS: React.FC = () => {
         }
 
         .form-input,
-        .form-select {
+        select.form-input {
           padding: 0.625rem;
           font-size: 0.95rem;
         }
@@ -629,7 +618,9 @@ const UserManagementCSS: React.FC = () => {
         }
       }
 
-      /* Ultra-wide screens */
+      /* ============================================
+         ULTRA-WIDE SCREENS (min 1400px)
+         ============================================ */
       @media (min-width: 1400px) {
         .table-container {
           padding: 2rem;
@@ -642,60 +633,6 @@ const UserManagementCSS: React.FC = () => {
 
         .form-grid {
           grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        }
-      }
-
-      /* Scrollbar styling */
-      .table-responsive-wrapper::-webkit-scrollbar {
-        height: 8px;
-      }
-
-      .table-responsive-wrapper::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-      }
-
-      .table-responsive-wrapper::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 10px;
-      }
-
-      .table-responsive-wrapper::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(135deg, #5568d3, #663a91);
-      }
-
-      .modal-container::-webkit-scrollbar {
-        width: 8px;
-      }
-
-      .modal-container::-webkit-scrollbar-track {
-        background: #f1f1f1;
-      }
-
-      .modal-container::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 10px;
-      }
-
-      .modal-container::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(135deg, #5568d3, #663a91);
-      }
-
-      /* Print styles */
-      @media print {
-        .btn-add-user,
-        .action-buttons,
-        .modal-overlay {
-          display: none !important;
-        }
-
-        .table-container {
-          box-shadow: none;
-          border: 1px solid #ddd;
-        }
-
-        .user-table {
-          min-width: auto;
         }
       }
     `}</style>

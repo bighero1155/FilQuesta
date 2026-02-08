@@ -190,8 +190,6 @@ const UserManagement: React.FC = () => {
         age: formData.age ? String(formData.age) : "",
       };
 
-      console.log("Sending data:", dataToSend);
-
       if (isAdding) {
         const newUser = await addUser(dataToSend);
         setUsers(prevUsers => [...prevUsers, newUser.user]);
@@ -213,7 +211,6 @@ const UserManagement: React.FC = () => {
       }
     } catch (err: any) {
       console.error("Error saving user:", err);
-      console.error("Error response:", err?.response?.data);
       
       if (err?.response?.data?.errors) {
         const errors = err.response.data.errors;
@@ -311,12 +308,12 @@ const UserManagement: React.FC = () => {
         <h2 className="user-management-title">User Management</h2>
         <button className="btn-add-user" onClick={handleAdd}>
           <UserPlus size={20} />
-          <span className="btn-add-user-text">Add User</span>
+          <span>Add User</span>
         </button>
       </div>
 
       <div className="table-container">
-        <div className="table-responsive-wrapper">
+        <div className="table-wrapper">
           <table className="user-table">
             <thead>
               <tr>
@@ -329,39 +326,36 @@ const UserManagement: React.FC = () => {
                 <th>Section</th>
                 <th>Email</th>
                 <th>Role</th>
-                <th className="actions-header">Actions</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.map((user) => (
                 <tr key={user.user_id}>
-                  <td className="wrap-cell name-cell" data-label="Name">
-                    <div className="name-wrapper">
-                      <div className="name-line">{user.first_name}</div>
-                      {user.middle_name && <div className="name-line middle-name">{user.middle_name}</div>}
-                      <div className="name-line">{user.last_name}</div>
-                    </div>
+                  <td className="name-cell">
+                    <div>{user.first_name}</div>
+                    {user.middle_name && <div className="middle-name">{user.middle_name}</div>}
+                    <div>{user.last_name}</div>
                   </td>
-                  <td className="nowrap-cell" data-label="Age">{user.age}</td>
-                  <td className="wrap-cell" data-label="Address">{user.address}</td>
-                  <td className="wrap-cell" data-label="School">{user.school}</td>
-                  <td className="wrap-cell" data-label="Contact">{user.contact_number}</td>
-                  <td className="wrap-cell" data-label="Username">{user.username}</td>
-                  <td className="wrap-cell" data-label="Section">{user.section}</td>
-                  <td className="wrap-cell" data-label="Email">{user.email}</td>
-                  <td className="nowrap-cell role-cell" data-label="Role">
+                  <td>{user.age}</td>
+                  <td>{user.address}</td>
+                  <td>{user.school}</td>
+                  <td>{user.contact_number}</td>
+                  <td>{user.username}</td>
+                  <td>{user.section}</td>
+                  <td>{user.email}</td>
+                  <td>
                     <span className={`badge-role badge-${user.role}`}>
                       {user.role === 'teacher' && '👨‍🏫 '}
                       {user.role === 'student' && '🎓 '}
                       {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                     </span>
                   </td>
-                  <td className="actions-cell" data-label="Actions">
+                  <td>
                     <div className="action-buttons">
                       <button
                         className="btn-action btn-edit"
                         onClick={() => handleEdit(user)}
-                        title="Edit User"
                       >
                         <Edit size={16} />
                         <span>Edit</span>
@@ -369,7 +363,6 @@ const UserManagement: React.FC = () => {
                       <button
                         className="btn-action btn-delete"
                         onClick={() => handleDelete(user.user_id)}
-                        title="Delete User"
                       >
                         <Trash2 size={16} />
                         <span>Delete</span>
@@ -415,9 +408,8 @@ const UserManagement: React.FC = () => {
               )}
 
               <div className="form-grid">
-                {/* First Name */}
                 <div className="form-group">
-                  <label className="form-label-custom form-label-required">First Name</label>
+                  <label className="form-label">First Name *</label>
                   <input
                     type="text"
                     className={`form-input ${fieldErrors.first_name ? 'is-invalid' : ''}`}
@@ -425,32 +417,26 @@ const UserManagement: React.FC = () => {
                     onChange={(e) => handleFormChange('first_name', e.target.value)}
                     placeholder="Enter first name"
                     disabled={saving}
-                    required
                   />
                   {fieldErrors.first_name && (
-                    <div className="invalid-feedback d-block">{fieldErrors.first_name}</div>
+                    <div className="error-text">{fieldErrors.first_name}</div>
                   )}
                 </div>
 
-                {/* Middle Name */}
                 <div className="form-group">
-                  <label className="form-label-custom">Middle Name</label>
+                  <label className="form-label">Middle Name</label>
                   <input
                     type="text"
-                    className={`form-input ${fieldErrors.middle_name ? 'is-invalid' : ''}`}
+                    className="form-input"
                     value={formData.middle_name || ""}
                     onChange={(e) => handleFormChange('middle_name', e.target.value)}
                     placeholder="Enter middle name"
                     disabled={saving}
                   />
-                  {fieldErrors.middle_name && (
-                    <div className="invalid-feedback d-block">{fieldErrors.middle_name}</div>
-                  )}
                 </div>
 
-                {/* Last Name */}
                 <div className="form-group">
-                  <label className="form-label-custom form-label-required">Last Name</label>
+                  <label className="form-label">Last Name *</label>
                   <input
                     type="text"
                     className={`form-input ${fieldErrors.last_name ? 'is-invalid' : ''}`}
@@ -458,16 +444,14 @@ const UserManagement: React.FC = () => {
                     onChange={(e) => handleFormChange('last_name', e.target.value)}
                     placeholder="Enter last name"
                     disabled={saving}
-                    required
                   />
                   {fieldErrors.last_name && (
-                    <div className="invalid-feedback d-block">{fieldErrors.last_name}</div>
+                    <div className="error-text">{fieldErrors.last_name}</div>
                   )}
                 </div>
 
-                {/* Age */}
                 <div className="form-group">
-                  <label className="form-label-custom form-label-required">Age</label>
+                  <label className="form-label">Age *</label>
                   <input
                     type="number"
                     className={`form-input ${fieldErrors.age ? 'is-invalid' : ''}`}
@@ -477,64 +461,50 @@ const UserManagement: React.FC = () => {
                     min="1"
                     max="150"
                     disabled={saving}
-                    required
                   />
                   {fieldErrors.age && (
-                    <div className="invalid-feedback d-block">{fieldErrors.age}</div>
+                    <div className="error-text">{fieldErrors.age}</div>
                   )}
                 </div>
 
-                {/* Address */}
                 <div className="form-group">
-                  <label className="form-label-custom">Address</label>
+                  <label className="form-label">Address</label>
                   <input
                     type="text"
-                    className={`form-input ${fieldErrors.address ? 'is-invalid' : ''}`}
+                    className="form-input"
                     value={formData.address || ""}
                     onChange={(e) => handleFormChange('address', e.target.value)}
                     placeholder="Enter address"
                     disabled={saving}
                   />
-                  {fieldErrors.address && (
-                    <div className="invalid-feedback d-block">{fieldErrors.address}</div>
-                  )}
                 </div>
 
-                {/* School */}
                 <div className="form-group">
-                  <label className="form-label-custom">School</label>
+                  <label className="form-label">School</label>
                   <input
                     type="text"
-                    className={`form-input ${fieldErrors.school ? 'is-invalid' : ''}`}
+                    className="form-input"
                     value={formData.school || ""}
                     onChange={(e) => handleFormChange('school', e.target.value)}
                     placeholder="Enter school"
                     disabled={saving}
                   />
-                  {fieldErrors.school && (
-                    <div className="invalid-feedback d-block">{fieldErrors.school}</div>
-                  )}
                 </div>
 
-                {/* Contact Number */}
                 <div className="form-group">
-                  <label className="form-label-custom">Contact Number</label>
+                  <label className="form-label">Contact Number</label>
                   <input
                     type="tel"
-                    className={`form-input ${fieldErrors.contact_number ? 'is-invalid' : ''}`}
+                    className="form-input"
                     value={formData.contact_number || ""}
                     onChange={(e) => handleFormChange('contact_number', e.target.value)}
                     placeholder="Enter contact number"
                     disabled={saving}
                   />
-                  {fieldErrors.contact_number && (
-                    <div className="invalid-feedback d-block">{fieldErrors.contact_number}</div>
-                  )}
                 </div>
 
-                {/* Username */}
                 <div className="form-group">
-                  <label className="form-label-custom form-label-required">Username</label>
+                  <label className="form-label">Username *</label>
                   <input
                     type="text"
                     className={`form-input ${fieldErrors.username ? 'is-invalid' : ''}`}
@@ -542,32 +512,26 @@ const UserManagement: React.FC = () => {
                     onChange={(e) => handleFormChange('username', e.target.value)}
                     placeholder="Enter username"
                     disabled={saving}
-                    required
                   />
                   {fieldErrors.username && (
-                    <div className="invalid-feedback d-block">{fieldErrors.username}</div>
+                    <div className="error-text">{fieldErrors.username}</div>
                   )}
                 </div>
 
-                {/* Section */}
                 <div className="form-group">
-                  <label className="form-label-custom">Section</label>
+                  <label className="form-label">Section</label>
                   <input
                     type="text"
-                    className={`form-input ${fieldErrors.section ? 'is-invalid' : ''}`}
+                    className="form-input"
                     value={formData.section || ""}
                     onChange={(e) => handleFormChange('section', e.target.value)}
                     placeholder="Enter section"
                     disabled={saving}
                   />
-                  {fieldErrors.section && (
-                    <div className="invalid-feedback d-block">{fieldErrors.section}</div>
-                  )}
                 </div>
 
-                {/* Email */}
                 <div className="form-group">
-                  <label className="form-label-custom form-label-required">Email</label>
+                  <label className="form-label">Email *</label>
                   <input
                     type="email"
                     className={`form-input ${fieldErrors.email ? 'is-invalid' : ''}`}
@@ -575,35 +539,31 @@ const UserManagement: React.FC = () => {
                     onChange={(e) => handleFormChange('email', e.target.value)}
                     placeholder="Enter email"
                     disabled={saving}
-                    required
                   />
                   {fieldErrors.email && (
-                    <div className="invalid-feedback d-block">{fieldErrors.email}</div>
+                    <div className="error-text">{fieldErrors.email}</div>
                   )}
                 </div>
 
-                {/* Role */}
                 <div className="form-group">
-                  <label className="form-label-custom form-label-required">Role</label>
+                  <label className="form-label">Role *</label>
                   <select
-                    className={`form-select ${fieldErrors.role ? 'is-invalid' : ''}`}
+                    className={`form-input ${fieldErrors.role ? 'is-invalid' : ''}`}
                     value={formData.role || "student"}
                     onChange={(e) => handleFormChange('role', e.target.value)}
                     disabled={saving}
-                    required
                   >
                     <option value="student">🎓 Student</option>
                     <option value="teacher">👨‍🏫 Teacher</option>
                   </select>
                   {fieldErrors.role && (
-                    <div className="invalid-feedback d-block">{fieldErrors.role}</div>
+                    <div className="error-text">{fieldErrors.role}</div>
                   )}
                 </div>
 
-                {/* Password */}
                 {isAdding && (
                   <div className="form-group">
-                    <label className="form-label-custom form-label-required">Password</label>
+                    <label className="form-label">Password *</label>
                     <input
                       type="password"
                       className={`form-input ${fieldErrors.password ? 'is-invalid' : ''}`}
@@ -611,13 +571,12 @@ const UserManagement: React.FC = () => {
                       onChange={(e) => handleFormChange('password', e.target.value)}
                       placeholder="Enter password (min 6 characters)"
                       disabled={saving}
-                      required
                       minLength={6}
                     />
                     {fieldErrors.password ? (
-                      <div className="invalid-feedback d-block">{fieldErrors.password}</div>
+                      <div className="error-text">{fieldErrors.password}</div>
                     ) : (
-                      <small className="text-muted">Minimum 6 characters</small>
+                      <small className="helper-text">Minimum 6 characters</small>
                     )}
                   </div>
                 )}
