@@ -262,7 +262,7 @@ export default class HumanBodyScene extends Phaser.Scene {
 
     // Mobile vs Desktop back button - IMPROVED ROUND VERSION
     const backButtonSize = isMobile ? 70 : 80; // Circle diameter
-    const backY = isMobile ? this.scale.height - 95 : this.scale.height - 50;
+    const backY = isMobile ? this.scale.height - 120 : this.scale.height - 50;
     const backX = 10 + (backButtonSize / 2); // Center the circle properly
 
     // Create shadow effect
