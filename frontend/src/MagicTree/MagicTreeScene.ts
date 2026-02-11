@@ -255,7 +255,7 @@ export default class MagicTree extends Phaser.Scene {
 
     // Left indicator
     this.leftIndicator = this.add
-      .text(width * 0.25, height / 2, "← Tap Left", {
+      .text(width * 0.25, height / 2, "< Left", {
         fontFamily: "Fredoka, Arial Black, sans-serif",
         fontSize: fontSize,
         color: "#ffffff",
@@ -275,7 +275,7 @@ export default class MagicTree extends Phaser.Scene {
 
     // Right indicator
     this.rightIndicator = this.add
-      .text(width * 0.75, height / 2, "Tap Right →", {
+      .text(width * 0.75, height / 2, "Right >", {
         fontFamily: "Fredoka, Arial Black, sans-serif",
         fontSize: fontSize,
         color: "#ffffff",
@@ -529,7 +529,7 @@ export default class MagicTree extends Phaser.Scene {
     };
 
     this.quitButton = this.add
-      .text(0, 0, "← Quit", style)
+      .text(0, 0, "QUIT", style)
       .setInteractive({ useHandCursor: true })
       .setDepth(9999);
 
@@ -576,7 +576,7 @@ export default class MagicTree extends Phaser.Scene {
 
   private positionQuitButton() {
     const isMobile = this.scale.width < 768;
-    const padY = isMobile ? 230 : 180;
+    const padY = isMobile ? 250 : 180;
     const padX = isMobile ? 50 : 100;
     const x = padX;
     const y = this.scale.height - padY;
