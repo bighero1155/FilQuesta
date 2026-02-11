@@ -576,7 +576,7 @@ export default class MagicTree extends Phaser.Scene {
 
   private positionQuitButton() {
     const isMobile = this.scale.width < 768;
-    const padY = isMobile ? 250 : 180;
+    const padY = isMobile ? 200 : 180;
     const padX = isMobile ? 50 : 100;
     const x = padX;
     const y = this.scale.height - padY;
@@ -768,6 +768,22 @@ export default class MagicTree extends Phaser.Scene {
   }
 
   private showRestart() {
+    // Destroy touch zones when game is over to prevent interference
+    if (this.leftTouchZone) {
+      this.leftTouchZone.removeAllListeners();
+      this.leftTouchZone.destroy();
+      this.leftTouchZone = undefined;
+    }
+    if (this.rightTouchZone) {
+      this.rightTouchZone.removeAllListeners();
+      this.rightTouchZone.destroy();
+      this.rightTouchZone = undefined;
+    }
+    
+    // Reset touch states
+    this.isPressingLeft = false;
+    this.isPressingRight = false;
+
     this.ui.restartButton = showRestartButton(this, () => {
       // Properly restart the scene with current level
       this.scene.restart({ 
