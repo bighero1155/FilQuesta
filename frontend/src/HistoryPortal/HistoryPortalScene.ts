@@ -79,6 +79,16 @@ export default class HistoryPortalScene extends Phaser.Scene {
     this.currentLevelInCategory = levelInCategory;
   }
 
+  // ✅ NEW: Fisher-Yates shuffle — returns a new shuffled copy of the array
+  private shuffleArray<T>(array: T[]): T[] {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+
   init(data?: { levelId?: number }) {
     console.log("🎯 INIT - Data received:", data);
     
@@ -368,8 +378,17 @@ export default class HistoryPortalScene extends Phaser.Scene {
     this.items = [];
     this.score = 0;
     
-    // Create item buttons in 2x2 grid
-    let startY, startX, spacingX, spacingY, itemWidth, itemHeight;
+    // ─────────────────────────────────────────────────────────
+    // ✅ RANDOMIZED OPTION POSITIONS
+    // The fixed grid slots are pre-calculated exactly as before.
+    // Then the items array is shuffled so each slot gets a
+    // different option on every load/restart — but the slot
+    // positions and click-zones remain perfectly stable.
+    // ─────────────────────────────────────────────────────────
+
+    // Build grid slot positions (same math as before)
+    let startY: number, startX: number, spacingX: number, spacingY: number;
+    let itemWidth: number, itemHeight: number;
     
     if (isMobile) {
       if (isPortrait) {
@@ -396,22 +415,31 @@ export default class HistoryPortalScene extends Phaser.Scene {
       itemHeight = 60;
     }
 
+    // Pre-build the ordered grid slot coordinates
+    const slots = level.items.map((_: any, i: number) => {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      return {
+        x: startX + col * spacingX,
+        y: startY + row * spacingY,
+      };
+    });
+
+    // ✅ Shuffle only the items, keeping slots in place
+    const shuffledItems = this.shuffleArray(level.items);
+
     const itemStyle = getTextStyle('itemButton', isMobile, isPortrait);
 
     // Log initial visit
     this.logInitialVisit();
     
-    level.items.forEach((item: any, i: number) => {
-      console.log(`📦 Creating item ${i}:`, item.label);
+    shuffledItems.forEach((item: any, i: number) => {
+      // Each shuffled item occupies the i-th fixed slot
+      const { x: itemX, y } = slots[i];
+
+      console.log(`📦 Creating item ${i} ("${item.label}") at slot ${i} → x=${itemX}, y=${y}`);
       
-      // Calculate 2x2 grid position
-      const col = i % 2; // 0 or 1
-      const row = Math.floor(i / 2);
-      
-      const itemX = startX + (col * spacingX);
-      const y = startY + (row * spacingY);
-      
-      // Create container
+      // Create container at the assigned slot position
       const container = this.add.container(itemX, y);
       
       // Text only - no background
@@ -424,7 +452,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
       container.setSize(itemWidth, itemHeight);
       container.setInteractive({ useHandCursor: true });
       
-      // Store item data
+      // Store item data and home position
       (container as any).itemData = item;
       (container as any).originalX = itemX;
       (container as any).originalY = y;
@@ -495,7 +523,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
                 ANIMATIONS.cameraShake.intensity
               );
               
-              // Return to position
+              // Return to its assigned slot position
               this.tweens.add({
                 targets: container,
                 x: (container as any).originalX,
@@ -531,7 +559,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
         });
       }
       
-      console.log(`  ✅ Item created at x=${itemX}, y=${y} (col=${col}, row=${row})`);
+      console.log(`  ✅ Item created at x=${itemX}, y=${y} (slot ${i})`);
     });
   }
 
@@ -793,6 +821,8 @@ export default class HistoryPortalScene extends Phaser.Scene {
         // ✅ FIX: Pass levelId instead of levelKey so init() runs the full
         // category/level parsing. Previously { levelKey } caused init() to
         // skip the else block, leaving currentLevel stuck at 1.
+        // ✅ Because shuffleArray uses Math.random(), every restart also
+        // produces a fresh shuffle automatically — no extra work needed.
         this.scene.restart({ levelId: this.currentLevel });
       }
     });
