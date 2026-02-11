@@ -37,14 +37,14 @@ export default class MagicTree extends Phaser.Scene {
   private fruitScale = 0.1;
   private quitButton?: Phaser.GameObjects.Text;
   private startTime = Date.now();
-  private leftButton?: Phaser.GameObjects.Graphics;
-  private rightButton?: Phaser.GameObjects.Graphics;
   private isPressingLeft = false;
   private isPressingRight = false;
   private fruitLegend: Phaser.GameObjects.Text[] = [];
   private timeRemaining = 60;
   private timerText!: Phaser.GameObjects.Text;
   private countdownTimer?: Phaser.Time.TimerEvent;
+  private leftTouchZone?: Phaser.GameObjects.Zone;
+  private rightTouchZone?: Phaser.GameObjects.Zone;
 
   constructor() {
     super(SCENE_KEY);
@@ -52,20 +52,20 @@ export default class MagicTree extends Phaser.Scene {
 
   async init(data: any) {
     this.score = data?.score ?? 0;
-    
+
     const urlParams = new URLSearchParams(window.location.search);
     const levelParam = urlParams.get("level");
     const categoryParam = urlParams.get("category");
-    
+
     let startLevel = data?.level ?? null;
-    
+
     if (levelParam !== null) {
       const parsed = Number(levelParam);
       if (!Number.isNaN(parsed)) startLevel = parsed + 1;
     }
 
     this.currentLevel = startLevel ?? 1;
-    
+
     if (categoryParam) {
       this.currentCategoryId = categoryParam;
       const categoryIndex = ["BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"].indexOf(categoryParam);
@@ -73,11 +73,11 @@ export default class MagicTree extends Phaser.Scene {
     } else {
       this.calculateCategoryFromGlobalLevel(this.currentLevel);
     }
-    
+
     this.gameActive = true;
     this.currentSum = 0;
     this.timeRemaining = this.getTimeLimitForLevel(this.currentLevel);
-    
+
     try {
       this.time.removeAllEvents();
     } catch (err) {
@@ -100,10 +100,6 @@ export default class MagicTree extends Phaser.Scene {
     const maxUnlockedInCategory = this.categoryProgress[this.currentCategoryId] ?? 0;
     console.log(`🎮 Init: Category=${this.currentCategoryId}, Level=${this.currentLevelInCategory}, MaxUnlocked=${maxUnlockedInCategory}`);
 
-    // ✅ FIX: Level 1 is ALWAYS playable (added `> 1` guard, matching HumanBodyScene)
-    // Before: this.currentLevelInCategory > maxUnlockedInCategory
-    //   → blocked Level 1 whenever progress was 0 (1 > 0 = true)
-    // After: Level 1 bypasses the check entirely, Levels 2-15 still require completing previous
     if (this.currentLevelInCategory > 1 && this.currentLevelInCategory > maxUnlockedInCategory) {
       alert(`🚫 Level ${this.currentLevelInCategory} is locked. Complete previous levels first.`);
       window.location.href = "/MagicTree";
@@ -117,22 +113,22 @@ export default class MagicTree extends Phaser.Scene {
     const categories = ["BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"];
     const categoryIndex = Math.floor((globalLevel - 1) / 15);
     const levelInCategory = ((globalLevel - 1) % 15) + 1;
-    
+
     this.currentCategoryId = categories[categoryIndex] || "BASIC";
     this.currentLevelInCategory = levelInCategory;
   }
 
   private getTimeLimitForLevel(level: number): number {
     const cfg = getLevelConfig(level);
-    
+
     switch (cfg.operation) {
-      case 'addition':
+      case "addition":
         return 60;
-      case 'subtraction':
+      case "subtraction":
         return 60;
-      case 'multiplication':
+      case "multiplication":
         return 75;
-      case 'division':
+      case "division":
         return 90;
       default:
         return 60;
@@ -150,7 +146,7 @@ export default class MagicTree extends Phaser.Scene {
 
   create() {
     const isMobile = this.scale.width < 768;
-    
+
     this.cameras.main.setBackgroundColor("#87CEEB");
     this.add
       .image(this.scale.width / 2, this.scale.height / 2, "background")
@@ -159,13 +155,13 @@ export default class MagicTree extends Phaser.Scene {
 
     const basketScale = isMobile ? 0.5 : 0.7;
     const basketY = isMobile ? this.scale.height - 80 : this.scale.height - 50;
-    
+
     this.basket = this.physics.add
       .sprite(this.scale.width / 2, basketY, "basket")
       .setCollideWorldBounds(true)
       .setScale(basketScale)
       .setImmovable(true);
-    
+
     const body = this.basket.body as Phaser.Physics.Arcade.Body;
     body.setAllowGravity(false);
     body.moves = true;
@@ -173,7 +169,7 @@ export default class MagicTree extends Phaser.Scene {
 
     this.fruits = this.physics.add.group();
     this.fruitScale = isMobile ? 0.10 : 0.15;
-    
+
     this.ground = this.add.rectangle(
       this.scale.width / 2,
       this.scale.height - 10,
@@ -190,14 +186,15 @@ export default class MagicTree extends Phaser.Scene {
     this.createTimerDisplay();
     this.createFruitLegend();
 
+    // Always create touch zones on mobile (replaces buttons)
     if (isMobile) {
-      this.createTouchControls();
+      this.createTouchZones();
     }
 
     this.physics.add.overlap(this.basket, this.fruits, (_b, f) => {
       if (this.gameActive) this.collectFruit(f as Phaser.Physics.Arcade.Sprite);
     });
-    
+
     this.physics.add.overlap(this.fruits, this.ground, (fruit) => {
       (fruit as Phaser.Physics.Arcade.Sprite).destroy();
     });
@@ -209,27 +206,32 @@ export default class MagicTree extends Phaser.Scene {
     this.scale.on("resize", (size: Phaser.Structs.Size) => {
       const resizeIsMobile = size.width < 768;
       this.cameras.resize(size.width, size.height);
-      
+
       const resizeBasketY = resizeIsMobile ? size.height - 80 : size.height - 50;
       this.basket.setX(size.width / 2);
       this.basket.setY(resizeBasketY);
-      
+
       this.ground.setPosition(size.width / 2, size.height - 10);
       if (this.quitButton) this.positionQuitButton();
       this.updateTimerPosition();
       this.updateFruitLegendPosition();
+
+      // Recreate touch zones with updated dimensions
+      if (resizeIsMobile) {
+        this.createTouchZones();
+      }
     });
   }
 
   update() {
     if (!this.gameActive) return;
-    
+
     const isMobile = this.scale.width < 768;
     const speed = isMobile ? 500 : 400;
-    
+
     const movingLeft = this.cursors.left?.isDown || this.isPressingLeft;
     const movingRight = this.cursors.right?.isDown || this.isPressingRight;
-    
+
     if (movingLeft) {
       this.basket.setVelocityX(-speed);
       this.basket.setAngle(-15);
@@ -242,27 +244,61 @@ export default class MagicTree extends Phaser.Scene {
     }
   }
 
+  // ─── Full-screen left/right touch zones (replaces arrow buttons) ───────────
+  private createTouchZones() {
+    const { width, height } = this.scale;
+
+    // Destroy old zones before recreating (handles resize)
+    if (this.leftTouchZone) {
+      this.leftTouchZone.destroy();
+    }
+    if (this.rightTouchZone) {
+      this.rightTouchZone.destroy();
+    }
+
+    // Left half of screen
+    this.leftTouchZone = this.add
+      .zone(0, 0, width / 2, height)
+      .setOrigin(0, 0)
+      .setInteractive()
+      .setDepth(500);
+
+    // Right half of screen
+    this.rightTouchZone = this.add
+      .zone(width / 2, 0, width / 2, height)
+      .setOrigin(0, 0)
+      .setInteractive()
+      .setDepth(500);
+
+    // Left zone listeners
+    this.leftTouchZone.on("pointerdown", () => { this.isPressingLeft = true; });
+    this.leftTouchZone.on("pointerup", () => { this.isPressingLeft = false; });
+    this.leftTouchZone.on("pointerout", () => { this.isPressingLeft = false; });
+
+    // Right zone listeners
+    this.rightTouchZone.on("pointerdown", () => { this.isPressingRight = true; });
+    this.rightTouchZone.on("pointerup", () => { this.isPressingRight = false; });
+    this.rightTouchZone.on("pointerout", () => { this.isPressingRight = false; });
+  }
+
+  // ─── Timer ─────────────────────────────────────────────────────────────────
   private createTimerDisplay() {
     const isMobile = this.scale.width < 768;
     const fontSize = isMobile ? "24px" : "32px";
     const strokeThickness = isMobile ? 4 : 5;
     const xPos = isMobile ? 25 : 35;
     const yPos = this.scale.height * 0.65;
-    
-    this.timerText = this.add.text(
-      xPos,
-      yPos,
-      `⏰ ${this.formatTime(this.timeRemaining)}`,
-      {
+
+    this.timerText = this.add
+      .text(xPos, yPos, `⏰ ${this.formatTime(this.timeRemaining)}`, {
         fontFamily: "Arial Black",
         fontSize: fontSize,
         color: "#00ff00",
         stroke: "#000000",
         strokeThickness: strokeThickness,
-      }
-    )
-    .setOrigin(0, 0.5)
-    .setDepth(100);
+      })
+      .setOrigin(0, 0.5)
+      .setDepth(100);
   }
 
   private updateTimerPosition() {
@@ -270,7 +306,7 @@ export default class MagicTree extends Phaser.Scene {
     const fontSize = isMobile ? "24px" : "32px";
     const xPos = isMobile ? 25 : 35;
     const yPos = this.scale.height * 0.65;
-    
+
     if (this.timerText) {
       this.timerText.setPosition(xPos, yPos);
       this.timerText.setFontSize(fontSize);
@@ -280,7 +316,7 @@ export default class MagicTree extends Phaser.Scene {
   private formatTime(seconds: number): string {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   }
 
   private startCountdownTimer() {
@@ -303,7 +339,7 @@ export default class MagicTree extends Phaser.Scene {
               scale: 1.2,
               duration: 200,
               yoyo: true,
-              ease: 'Sine.easeInOut'
+              ease: "Sine.easeInOut",
             });
           } else if (this.timeRemaining <= 30) {
             this.timerText.setColor("#ffaa00");
@@ -326,7 +362,7 @@ export default class MagicTree extends Phaser.Scene {
   private async handleTimeOut() {
     this.stopFruits();
     this.stopCountdown();
-    
+
     if (this.userId) {
       await logGameOver(this.userId, SCENE_KEY);
     }
@@ -344,6 +380,7 @@ export default class MagicTree extends Phaser.Scene {
     }
   }
 
+  // ─── Fruit Legend ──────────────────────────────────────────────────────────
   private createFruitLegend() {
     const cfg = getLevelConfig(this.currentLevel);
     const isMobile = this.scale.width < 768;
@@ -367,20 +404,16 @@ export default class MagicTree extends Phaser.Scene {
     const baseY = this.scale.height * 0.35 - blockHeight / 2;
 
     this.fruitLegend = legendData.map((item, index) => {
-      return this.add.text(
-        startX,
-        baseY + index * spacing,
-        `${item.emoji} ${item.text}`,
-        {
+      return this.add
+        .text(startX, baseY + index * spacing, `${item.emoji} ${item.text}`, {
           fontFamily: "Arial Black",
           fontSize,
           color: "#ffffff",
           stroke: "#000000",
           strokeThickness: isMobile ? 3 : 4,
-        }
-      )
-      .setOrigin(0, 0.5)
-      .setDepth(100);
+        })
+        .setOrigin(0, 0.5)
+        .setDepth(100);
     });
   }
 
@@ -399,112 +432,12 @@ export default class MagicTree extends Phaser.Scene {
     });
   }
 
-  private createTouchControls() {
-    const btnSize = 100;
-    const btnY = this.scale.height - 150;
-    const padding = 30;
-
-    this.leftButton = this.add.graphics();
-    this.leftButton.fillStyle(0x4a90e2, 0.3);
-    this.leftButton.fillRoundedRect(padding, btnY, btnSize, btnSize, 15);
-    this.leftButton.lineStyle(4, 0xffffff, 0.5);
-    this.leftButton.strokeRoundedRect(padding, btnY, btnSize, btnSize, 15);
-    this.leftButton.setDepth(1000);
-
-    this.add.text(padding + btnSize / 2, btnY + btnSize / 2, "◀", {
-      fontSize: "48px",
-      color: "#ffffff",
-      fontStyle: "bold",
-    })
-    .setOrigin(0.5)
-    .setDepth(1001);
-
-    this.rightButton = this.add.graphics();
-    this.rightButton.fillStyle(0x4a90e2, 0.3);
-    this.rightButton.fillRoundedRect(
-      this.scale.width - btnSize - padding,
-      btnY,
-      btnSize,
-      btnSize,
-      15
-    );
-    this.rightButton.lineStyle(4, 0xffffff, 0.5);
-    this.rightButton.strokeRoundedRect(
-      this.scale.width - btnSize - padding,
-      btnY,
-      btnSize,
-      btnSize,
-      15
-    );
-    this.rightButton.setDepth(1000);
-
-    this.add.text(
-      this.scale.width - btnSize - padding + btnSize / 2,
-      btnY + btnSize / 2,
-      "▶",
-      {
-        fontSize: "48px",
-        color: "#ffffff",
-        fontStyle: "bold",
-      }
-    )
-    .setOrigin(0.5)
-    .setDepth(1001);
-
-    const leftZone = this.add.zone(
-      padding + btnSize / 2,
-      btnY + btnSize / 2,
-      btnSize,
-      btnSize
-    )
-    .setInteractive()
-    .setDepth(1002);
-
-    const rightZone = this.add.zone(
-      this.scale.width - btnSize - padding + btnSize / 2,
-      btnY + btnSize / 2,
-      btnSize,
-      btnSize
-    )
-    .setInteractive()
-    .setDepth(1002);
-
-    leftZone.on("pointerdown", () => {
-      this.isPressingLeft = true;
-      this.leftButton?.setAlpha(0.8);
-    });
-
-    leftZone.on("pointerup", () => {
-      this.isPressingLeft = false;
-      this.leftButton?.setAlpha(1);
-    });
-
-    leftZone.on("pointerout", () => {
-      this.isPressingLeft = false;
-      this.leftButton?.setAlpha(1);
-    });
-
-    rightZone.on("pointerdown", () => {
-      this.isPressingRight = true;
-      this.rightButton?.setAlpha(0.8);
-    });
-
-    rightZone.on("pointerup", () => {
-      this.isPressingRight = false;
-      this.rightButton?.setAlpha(1);
-    });
-
-    rightZone.on("pointerout", () => {
-      this.isPressingRight = false;
-      this.rightButton?.setAlpha(1);
-    });
-  }
-
+  // ─── Quit Button ───────────────────────────────────────────────────────────
   private createQuitButton() {
     const isMobile = this.scale.width < 768;
     const fontSize = isMobile ? "22px" : "26px";
     const strokeThickness = isMobile ? 3 : 4;
-    
+
     const style = {
       fontFamily: "Arial Black",
       fontSize: fontSize,
@@ -512,7 +445,7 @@ export default class MagicTree extends Phaser.Scene {
       stroke: "#000066",
       strokeThickness: strokeThickness,
     };
-    
+
     this.quitButton = this.add
       .text(0, 0, "Quit", style)
       .setInteractive({ useHandCursor: true })
@@ -541,15 +474,16 @@ export default class MagicTree extends Phaser.Scene {
     const padX = isMobile ? 50 : 100;
     const x = padX;
     const y = this.scale.height - padY;
-    
+
     if (this.quitButton) this.quitButton.setPosition(x, y);
   }
 
+  // ─── Fruit Spawning ────────────────────────────────────────────────────────
   private startFruitTimer() {
     if (this.fruitTimer) this.fruitTimer.remove(false);
     const cfg = getLevelConfig(this.currentLevel);
     const spawnDelay = (cfg as any).spawnDelay ?? 1200;
-    
+
     this.fruitTimer = this.time.addEvent({
       delay: spawnDelay,
       loop: true,
@@ -563,35 +497,35 @@ export default class MagicTree extends Phaser.Scene {
     this.currentSum = 0;
     this.ui.sumText.setText("Current: 0");
     const cfg = getLevelConfig(this.currentLevel);
-    
+
     let a = Phaser.Math.Between(cfg.minNumber, cfg.maxNumber);
     let b = Phaser.Math.Between(cfg.minNumber, cfg.maxNumber);
     let questionText = "";
-    
+
     switch (cfg.operation) {
-      case 'addition':
+      case "addition":
         this.targetAnswer = a + b;
         questionText = `${a} + ${b} = ?`;
         break;
-        
-      case 'subtraction':
+
+      case "subtraction":
         if (a < b) [a, b] = [b, a];
         this.targetAnswer = a - b;
         questionText = `${a} - ${b} = ?`;
         break;
-        
-      case 'multiplication':
-        this.targetAnswer = a * b; 
+
+      case "multiplication":
+        this.targetAnswer = a * b;
         questionText = `${a} × ${b} = ?`;
         break;
-        
-      case 'division':
+
+      case "division":
         this.targetAnswer = Phaser.Math.Between(cfg.minNumber / 10, cfg.maxNumber / 10);
         a = this.targetAnswer * b;
         questionText = `${a} ÷ ${b} = ?`;
         break;
-        
-      case 'mixed': {
+
+      case "mixed": {
         const useMult = Math.random() > 0.5;
         if (useMult && cfg.maxNumber >= 10) {
           a = Phaser.Math.Between(2, Math.min(12, cfg.maxNumber));
@@ -611,26 +545,24 @@ export default class MagicTree extends Phaser.Scene {
         }
         break;
       }
-        
-      case 'fixed': {
+
+      case "fixed": {
         if (cfg.questions && cfg.questions.length > 0) {
           const randomIndex = Phaser.Math.Between(0, cfg.questions.length - 1);
           const selectedQuestion = cfg.questions[randomIndex];
           questionText = selectedQuestion.question;
           this.targetAnswer = selectedQuestion.answer;
-        } 
-        else if (cfg.question && cfg.answer !== undefined) {
+        } else if (cfg.question && cfg.answer !== undefined) {
           questionText = cfg.question;
           this.targetAnswer = cfg.answer;
-        } 
-        else {
+        } else {
           this.targetAnswer = a + b;
           questionText = `${a} + ${b} = ?`;
         }
         break;
       }
     }
-    
+
     this.ui.questionText.setText(questionText);
   }
 
@@ -640,7 +572,7 @@ export default class MagicTree extends Phaser.Scene {
     let key = "fruit1";
     let value = 1;
     let rotten = false;
-    
+
     const roll = Math.random();
     if (roll < 0.3) {
       key = "fruit1";
@@ -656,26 +588,27 @@ export default class MagicTree extends Phaser.Scene {
 
     const f = this.fruits.create(x, 0, key) as Phaser.Physics.Arcade.Sprite;
     (f as any).fruitValue = value;
-    
+
     const isMobile = this.scale.width < 768;
     const rottenScale = isMobile ? this.fruitScale * 1.3 : this.fruitScale * 1.5;
     f.setScale(rotten ? rottenScale : this.fruitScale);
     f.setCollideWorldBounds(false);
-    
+
     const body = f.body as Phaser.Physics.Arcade.Body;
     body.setAllowGravity(true);
     body.moves = true;
-    
+
     const fallSpeed = isMobile ? 200 : 180;
     f.setVelocityY(fallSpeed * (this.scale.height / 600));
-    
+
     const rotationSpeed = Phaser.Math.Between(-3, 3);
     f.setAngularVelocity(rotationSpeed * 100);
-    
+
     const horizontalDrift = Phaser.Math.Between(-20, 20);
     f.setVelocityX(horizontalDrift);
   }
 
+  // ─── Fruit Collection ──────────────────────────────────────────────────────
   private async collectFruit(fruit: Phaser.Physics.Arcade.Sprite) {
     const val = (fruit as any).fruitValue;
     fruit.destroy();
@@ -686,15 +619,12 @@ export default class MagicTree extends Phaser.Scene {
     if (this.currentSum === this.targetAnswer) {
       this.stopFruits();
       this.stopCountdown();
-      
-      // Add score first
+
       await this.addScore(10);
-      
-      // Then unlock next level (using same pattern as score)
       await this.unlockNextLevel();
-      
+
       const hasNextLevel = this.currentLevelInCategory < 15;
-      
+
       showNextLevelUI(
         this,
         this.ui,
@@ -702,12 +632,14 @@ export default class MagicTree extends Phaser.Scene {
         15,
         () => {
           if (hasNextLevel) {
-            const categoryIndex = ["BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"].indexOf(this.currentCategoryId);
-            const nextGlobalLevel = (categoryIndex * 15) + (this.currentLevelInCategory + 1);
-            
-            this.scene.restart({ 
-              score: this.score, 
-              level: nextGlobalLevel 
+            const categoryIndex = ["BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"].indexOf(
+              this.currentCategoryId
+            );
+            const nextGlobalLevel = categoryIndex * 15 + (this.currentLevelInCategory + 1);
+
+            this.scene.restart({
+              score: this.score,
+              level: nextGlobalLevel,
             });
           } else {
             window.location.href = "/MagicTree";
@@ -735,29 +667,26 @@ export default class MagicTree extends Phaser.Scene {
     );
   }
 
-  // ✅ WORKING - Same pattern as score
+  // ─── Score & Level Unlock ──────────────────────────────────────────────────
   private async addScore(points: number) {
     this.score += points;
     this.ui.scoreText.setText("Score: " + this.score);
-    
+
     if (!this.userId) return;
-    
+
     try {
-      // Update score in backend
       await updateUserProgress(this.userId, points);
-      
-      // Refresh local user data
+
       const updated = await getUserProfile(this.userId);
       localStorage.setItem("user", JSON.stringify(updated));
       localStorage.setItem("score", String(this.score));
-      
+
       console.log("✅ Score updated successfully");
     } catch (e) {
       console.error("❌ Error updating score:", e);
     }
   }
 
-  // ✅ FIXED - Same exact pattern as addScore
   private async unlockNextLevel() {
     if (!this.userId) return;
 
@@ -768,21 +697,19 @@ export default class MagicTree extends Phaser.Scene {
     console.log(`🔓 Unlocking Level ${nextLevel} in ${this.currentCategoryId}`);
 
     try {
-      // Save to backend (same way score is saved)
       await saveLevel(this.userId, gameName, nextLevel);
-      
-      // Update local cache (same way score updates local)
+
       this.categoryProgress[this.currentCategoryId] = nextLevel;
-      
-      // Notify map to refresh
+
       window.dispatchEvent(new CustomEvent("levels:updated"));
-      
+
       console.log(`✅ Level ${nextLevel} unlocked successfully`);
     } catch (e) {
       console.error("❌ Error unlocking level:", e);
     }
   }
 
+  // ─── Analytics ────────────────────────────────────────────────────────────
   private async logSessionTime() {
     if (!this.userId) return;
     const end = Date.now();
@@ -794,6 +721,7 @@ export default class MagicTree extends Phaser.Scene {
     }
   }
 
+  // ─── Helpers ───────────────────────────────────────────────────────────────
   private getUserId(): number | null {
     try {
       const id = localStorage.getItem("user_id");

@@ -24,7 +24,7 @@ export default class IntroductionScene extends Phaser.Scene {
     
     // Also check URL parameters
     const urlParams = new URLSearchParams(window.location.search);
-    const levelParam = urlParams.get("level");
+    const levelParam = urlParams.get("level"); 
     if (levelParam !== null) {
       const parsed = Number(levelParam);
       if (!Number.isNaN(parsed)) {
