@@ -353,11 +353,14 @@ export default class HumanBodyScene extends Phaser.Scene {
       },
     });
 
-    const seenInstructions = localStorage.getItem("humanBodyInstructionsSeen");
-    if (!seenInstructions) {
+    const instructionKey = `humanBodyInstructionsSeen_${this.currentCategoryId}`;
+    const seenInstructions = localStorage.getItem(instructionKey);
+    const isFirstLevelOfCategory = this.currentLevelInCategory === 1;
+
+    if (isFirstLevelOfCategory && !seenInstructions) {
       const instructions = new Instruction(this);
       instructions.show(() => {
-        localStorage.setItem("humanBodyInstructionsSeen", "true");
+        localStorage.setItem(instructionKey, "true");
         this.startGame(centerX, centerY);
       });
     } else {
