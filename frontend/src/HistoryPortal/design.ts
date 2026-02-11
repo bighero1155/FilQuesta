@@ -645,8 +645,8 @@ export const LAYOUT = {
     itemStartY: 0.5,
     itemSpacing: 70,
     titleY: 30,
-    questionY: 90,
-    hintButtonY: 140,
+    questionY: 500,
+    hintButtonY: 540,
     navButtonY: 30,
     indicatorY: 0.4
   }

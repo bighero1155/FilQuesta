@@ -388,10 +388,10 @@ export default class HistoryPortalScene extends Phaser.Scene {
         itemHeight = 50;
       }
     } else {
-      startY = 100;
+      startY = 300;
       startX = width * 0.1;
-      spacingX = width * 0.10;
-      spacingY = 90;
+      spacingX = width * 0.23;
+      spacingY = 150;
       itemWidth = 300;
       itemHeight = 60;
     }
