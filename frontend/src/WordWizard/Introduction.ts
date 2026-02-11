@@ -1,4 +1,4 @@
-// src/WordWizard/Introduction.ts - FIXED LEVEL & SCORE DISPLAY
+// src/WordWizard/Introduction.ts - FIXED: Only show intro on level 1 of each category
 import Phaser from "phaser";
 
 const INTRO_SCENE_KEY = "WordWizardIntro";
@@ -44,6 +44,23 @@ export default class WordWizardIntro extends Phaser.Scene {
     }
     if (urlScore > 0 && this.currentScore === 0) {
       this.currentScore = urlScore;
+    }
+
+    // ✅ Check if this is level 1 of a category (levels 1, 16, 31, 46, 61)
+    // These are the first levels of BASIC, NORMAL, HARD, ADVANCED, EXPERT
+    const isFirstLevelOfCategory = 
+      this.currentLevel === 0 ||   // Level 1 (BASIC)
+      this.currentLevel === 15 ||  // Level 16 (NORMAL)
+      this.currentLevel === 30 ||  // Level 31 (HARD)
+      this.currentLevel === 45 ||  // Level 46 (ADVANCED)
+      this.currentLevel === 60;    // Level 61 (EXPERT)
+
+    // If NOT first level of category, skip intro and go straight to game
+    if (!isFirstLevelOfCategory) {
+      this.scene.start(MAIN_SCENE_KEY, { 
+        levelId: this.currentLevel + 1,
+        score: this.currentScore 
+      });
     }
   }
 
@@ -249,7 +266,7 @@ export default class WordWizardIntro extends Phaser.Scene {
       this.cameras.main.fadeOut(600, 0, 0, 0);
       this.time.delayedCall(600, () => {
         this.scene.start(MAIN_SCENE_KEY, { 
-          level: this.currentLevel,
+          levelId: this.currentLevel + 1,
           score: this.currentScore 
         });
       });
