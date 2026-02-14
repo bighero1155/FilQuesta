@@ -18,6 +18,16 @@ const HISTORY_CATEGORIES = ["BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"];
 
 export default class HistoryPortalScene extends Phaser.Scene {
   private portalImage?: Phaser.GameObjects.Image;
+
+  // ── BLUR EFFECT ──────────────────────────────────────────────────────────────
+  // Two extra semi-transparent copies of the portal image are stacked on top.
+  // Together they make the portal look frosted / blurred.
+  // On first correct answer all three tweens fade them out simultaneously,
+  // giving the player a satisfying "reveal" reward.
+  private blurLayers: Phaser.GameObjects.GameObject[] = [];
+  private portalRevealed = false;
+  // ─────────────────────────────────────────────────────────────────────────────
+
   private currentLevelKey = "history-1";
   private items: Array<Phaser.GameObjects.Container> = [];
   private correctItemsPlaced = 0;
@@ -99,13 +109,6 @@ export default class HistoryPortalScene extends Phaser.Scene {
       return;
     }
 
-    // ✅ FIX: Removed the levelKey shortcut path entirely.
-    // Previously, restart passed { levelKey } which caused init() to skip
-    // all category/level parsing. currentLevel, currentCategoryId, and
-    // currentLevelInCategory would all stay at their defaults (1, "BASIC", 1).
-    // Now restart passes { levelId } so this block always runs and everything
-    // is recalculated correctly — same pattern as HumanBodyScene.
-
     const urlParams = new URLSearchParams(window.location.search);
     const levelParam = urlParams.get("level");
     const categoryParam = urlParams.get("category");
@@ -140,6 +143,10 @@ export default class HistoryPortalScene extends Phaser.Scene {
     // Initialize analytics tracking
     this.sceneStartTime = Date.now();
     this.hasLoggedVisit = false;
+
+    // Reset blur state on every init (covers restarts too)
+    this.blurLayers = [];
+    this.portalRevealed = false;
   }
 
   preload() {
@@ -194,7 +201,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
       this.categoryProgress = { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
     }
 
-    // ✅ Level 1 is ALWAYS playable (same guard as HumanBodyScene and fixed MagicTree)
+    // ✅ Level 1 is ALWAYS playable
     // ✅ Levels 2-15: Must complete previous level in THIS category
     const unlockedInCategory = this.categoryProgress[this.currentCategoryId] || 0;
     
@@ -335,26 +342,23 @@ export default class HistoryPortalScene extends Phaser.Scene {
       }
     }
     
-    // Create portal image - KEEP ORIGINAL POSITIONING EXACTLY AS IS
+    // ── PORTAL IMAGE + BLUR LAYERS ────────────────────────────────────────────
     const textureExists = this.textures.exists("portal-image");
     console.log("🖼️ Texture exists?", textureExists);
     
-    let portalX, portalY, portalSize;
+    let portalX: number, portalY: number, portalSize: number;
     
     if (isMobile) {
       if (isPortrait) {
-        // Portrait mobile: portal at top
         portalX = width / 2;
         portalY = height * 0.25;
         portalSize = 200;
       } else {
-        // Landscape mobile: portal on right
         portalX = width * 0.75;
         portalY = height * 0.4;
         portalSize = 250;
       }
     } else {
-      // Desktop: portal on right
       portalX = width * 0.7;
       portalY = height / 2;
       portalSize = 400;
@@ -363,25 +367,60 @@ export default class HistoryPortalScene extends Phaser.Scene {
     if (textureExists) {
       console.log("✅ Creating portal image...");
       
+      // Base portal image (fully visible at all times)
       this.portalImage = this.add.image(portalX, portalY, "portal-image");
       this.portalImage.setDisplaySize(portalSize, portalSize);
+      this.portalImage.setDepth(5);
+
+      // ── Fake-blur overlay layers ──────────────────────────────────────────
+      // Layer 1: white tint at moderate alpha — washes out colour
+      const blurBase = this.add.image(portalX, portalY, "portal-image")
+        .setDisplaySize(portalSize, portalSize)
+        .setTint(0xffffff)
+        .setAlpha(0.55)
+        .setDepth(6);
+
+      // Layer 2-3: slightly offset copies — creates soft double-vision blur
+      const blurOffset1 = this.add.image(portalX + 3, portalY + 3, "portal-image")
+        .setDisplaySize(portalSize, portalSize)
+        .setAlpha(0.30)
+        .setDepth(7);
+
+      const blurOffset2 = this.add.image(portalX - 3, portalY - 3, "portal-image")
+        .setDisplaySize(portalSize, portalSize)
+        .setAlpha(0.30)
+        .setDepth(7);
+
+      // Layer 4: extra heavy tint to ensure the image is clearly obscured
+      const blurHeavy = this.add.image(portalX, portalY, "portal-image")
+        .setDisplaySize(portalSize, portalSize)
+        .setTint(0x222244)        // dark cool tint
+        .setAlpha(0.45)
+        .setDepth(8);
+
+      this.blurLayers = [blurBase, blurOffset1, blurOffset2, blurHeavy];
+
+      // Add a "?" label on the blurred portal so the intent is clear
+      // alpha must be set via .setAlpha(), not inside TextStyle
+      const blurLabel = this.add.text(portalX, portalY, "?", {
+        fontSize: isMobile ? "48px" : "80px",
+        color: "#ffffff",
+        fontStyle: "bold",
+        stroke: "#000000",
+        strokeThickness: 6,
+      })
+        .setOrigin(0.5)
+        .setDepth(9)
+        .setAlpha(0.9);
+
+      // Keep a direct reference so revealPortal() can tween it out
+      this.blurLayers.push(blurLabel);
       
-      // 🔑 Enable PostFX pipeline for blur effects
-      // Try to set the pipeline, but don't crash if it fails
-      try {
-        if (this.game.renderer.type === Phaser.WEBGL) {
-          this.portalImage.setPipeline('PostFXPipeline');
-        }
-        console.log("PostFX pipeline enabled");
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (e) {
-        console.warn("PostFX not available, will use alternative blur method");
-      }
-      
-      console.log("✅ Portal image created!");
+      console.log("✅ Portal image + blur layers created!");
     } else {
       console.error("❌ Portal image texture not found!");
     }
+    // ─────────────────────────────────────────────────────────────────────────
     
     // Calculate total correct items
     this.totalCorrectItems = level.items.filter((item: any) => item.is_correct).length;
@@ -389,16 +428,8 @@ export default class HistoryPortalScene extends Phaser.Scene {
     this.gameEnded = false;
     this.items = [];
     this.score = 0;
-    
-    // ─────────────────────────────────────────────────────────
-    // ✅ RANDOMIZED OPTION POSITIONS
-    // The fixed grid slots are pre-calculated exactly as before.
-    // Then the items array is shuffled so each slot gets a
-    // different option on every load/restart — but the slot
-    // positions and click-zones remain perfectly stable.
-    // ─────────────────────────────────────────────────────────
 
-    // Build grid slot positions (same math as before)
+    // Build grid slot positions
     let startY: number, startX: number, spacingX: number, spacingY: number;
     let itemWidth: number, itemHeight: number;
     
@@ -446,15 +477,12 @@ export default class HistoryPortalScene extends Phaser.Scene {
     this.logInitialVisit();
     
     shuffledItems.forEach((item: any, i: number) => {
-      // Each shuffled item occupies the i-th fixed slot
       const { x: itemX, y } = slots[i];
 
       console.log(`📦 Creating item ${i} ("${item.label}") at slot ${i} → x=${itemX}, y=${y}`);
       
-      // Create container at the assigned slot position
       const container = this.add.container(itemX, y);
       
-      // Text only - no background
       const text = this.add.text(0, 0, item.label, {
         ...itemStyle,
         wordWrap: { width: itemWidth - 20 }
@@ -464,7 +492,6 @@ export default class HistoryPortalScene extends Phaser.Scene {
       container.setSize(itemWidth, itemHeight);
       container.setInteractive({ useHandCursor: true });
       
-      // Store item data and home position
       (container as any).itemData = item;
       (container as any).originalX = itemX;
       (container as any).originalY = y;
@@ -494,6 +521,12 @@ export default class HistoryPortalScene extends Phaser.Scene {
               this.items = this.items.filter(c => c !== container);
               this.correctItemsPlaced++;
               this.score += this.scorePerCorrectItem;
+
+              // ── REVEAL PORTAL on first correct answer ──────────────────
+              if (!this.portalRevealed) {
+                this.revealPortal();
+              }
+              // ────────────────────────────────────────────────────────────
               
               // Show success effect
               this.showSuccessEffect(this.portalImage!.x, this.portalImage!.y);
@@ -574,6 +607,45 @@ export default class HistoryPortalScene extends Phaser.Scene {
       console.log(`  ✅ Item created at x=${itemX}, y=${y} (slot ${i})`);
     });
   }
+
+  // ── PORTAL REVEAL ──────────────────────────────────────────────────────────
+  /**
+   * Fade out all blur layers so the portal image is fully revealed.
+   * Called the first time the player selects a correct answer.
+   * Safe to call multiple times (guarded by portalRevealed flag).
+   */
+  private revealPortal(): void {
+    if (this.portalRevealed) return;
+    this.portalRevealed = true;
+
+    console.log("✨ Revealing portal image…");
+
+    this.blurLayers.forEach((layer) => {
+      if (!layer || !layer.active) return;
+
+      this.tweens.add({
+        targets: layer,
+        alpha: 0,
+        duration: 600,
+        ease: "Sine.easeOut",
+        onComplete: () => layer.destroy(),
+      });
+    });
+
+    this.blurLayers = [];
+
+    // Pulse the base portal image as a reward cue
+    this.tweens.add({
+      targets: this.portalImage,
+      scaleX: 1.06,
+      scaleY: 1.06,
+      duration: 200,
+      yoyo: true,
+      repeat: 1,
+      ease: "Sine.easeInOut",
+    });
+  }
+  // ──────────────────────────────────────────────────────────────────────────
 
   // ---------- Analytics Methods ----------
   private async logInitialVisit() {
@@ -694,112 +766,11 @@ export default class HistoryPortalScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const isMobile = width < 768;
 
-    // ✅ Add visual effects to portal image when player wins - appears then disappears
-    if (won && this.portalImage) {
-      // Try using PostFX blur if available, otherwise use alternative effects
-      const hasPostFX = this.portalImage.postFX && typeof this.portalImage.postFX.addBlur === 'function';
-      
-      if (hasPostFX) {
-        // Use PostFX blur (Phaser 3.60+)
-        const blurStrength = 10;
-        const blur = this.portalImage.postFX.addBlur(0, 0, 0, 1, 0xffffff, 0);
-        
-        this.tweens.add({
-          targets: blur,
-          strength: blurStrength,
-          duration: 500,
-          ease: 'Sine.easeIn',
-          onComplete: () => {
-            this.tweens.add({
-              targets: blur,
-              strength: 0,
-              duration: 600,
-              ease: 'Sine.easeOut',
-              delay: 200
-            });
-          }
-        });
-        console.log("✅ PostFX blur effect applied");
-      } else {
-        // Alternative effect: Create a blurred duplicate overlay
-        console.log("Using alternative blur effect");
-        
-        // Create multiple semi-transparent copies at slight offsets for blur effect
-        const blurLayers: Phaser.GameObjects.Image[] = [];
-        const offsets = [
-          { x: -2, y: -2 }, { x: 2, y: -2 }, { x: -2, y: 2 }, { x: 2, y: 2 },
-          { x: -4, y: 0 }, { x: 4, y: 0 }, { x: 0, y: -4 }, { x: 0, y: 4 }
-        ];
-        
-        offsets.forEach(offset => {
-          const blurLayer = this.add.image(
-            this.portalImage!.x + offset.x,
-            this.portalImage!.y + offset.y,
-            this.portalImage!.texture.key
-          );
-          blurLayer.setDisplaySize(this.portalImage!.displayWidth, this.portalImage!.displayHeight);
-          blurLayer.setAlpha(0);
-          blurLayer.setDepth(this.portalImage!.depth - 1);
-          blurLayers.push(blurLayer);
-        });
-        
-        // Animate blur layers appearing
-        this.tweens.add({
-          targets: blurLayers,
-          alpha: 0.15,
-          duration: 500,
-          ease: 'Sine.easeIn',
-          onComplete: () => {
-            // Then fade them out
-            this.tweens.add({
-              targets: blurLayers,
-              alpha: 0,
-              duration: 600,
-              ease: 'Sine.easeOut',
-              delay: 200,
-              onComplete: () => {
-                blurLayers.forEach(layer => layer.destroy());
-              }
-            });
-          }
-        });
-      }
-      
-      // Common effects for both methods
-      
-      // Fade the main portal
-      this.tweens.add({
-        targets: this.portalImage,
-        alpha: 0.4,
-        duration: 500,
-        ease: 'Sine.easeIn',
-        onComplete: () => {
-          this.tweens.add({
-            targets: this.portalImage,
-            alpha: 1,
-            duration: 600,
-            ease: 'Sine.easeOut',
-            delay: 200
-          });
-        }
-      });
-      
-      // Add scale pulse effect for extra visual impact
-      this.tweens.add({
-        targets: this.portalImage,
-        scale: 1.05,
-        yoyo: true,
-        repeat: 1,
-        duration: 200,
-        ease: 'Back.easeOut'
-      });
-    }
-
     if (won) {
-      // ✅ Update score first (same pattern as HumanBody)
+      // ✅ Update score first
       await this.addScore(this.score);
       
-      // ✅ Then unlock next level (same pattern as HumanBody)
+      // ✅ Then unlock next level
       await this.unlockNextLevel();
     } else {
       await this.logGameOverEvent();
@@ -908,15 +879,9 @@ export default class HistoryPortalScene extends Phaser.Scene {
     
     button.on("pointerdown", () => {
       if (won) {
-        // ✅ FIX: Removed the `currentLevelInCategory % 5 === 0` check that
-        // was forcing a return to the map at levels 5 and 10.
-        // HumanBody and MagicTree don't have this — levels should flow
-        // continuously 1→2→3...→15, then return to map only at 15.
-
         const hasNextLevel = this.currentLevelInCategory < 15;
         
         if (hasNextLevel) {
-          // Go to next level in same category
           const nextGlobalLevel = this.currentLevel + 1;
           const nextCategoryId = this.currentCategoryId;
           this.cameras.main.fadeOut(400);
@@ -924,18 +889,12 @@ export default class HistoryPortalScene extends Phaser.Scene {
             window.location.href = `/history-portal?level=${nextGlobalLevel - 1}&category=${nextCategoryId}`;
           });
         } else {
-          // Completed all levels in category, return to map
           this.cameras.main.fadeOut(400);
           this.time.delayedCall(400, () => {
             window.location.href = "/historymap";
           });
         }
       } else {
-        // ✅ FIX: Pass levelId instead of levelKey so init() runs the full
-        // category/level parsing. Previously { levelKey } caused init() to
-        // skip the else block, leaving currentLevel stuck at 1.
-        // ✅ Because shuffleArray uses Math.random(), every restart also
-        // produces a fresh shuffle automatically — no extra work needed.
         this.scene.restart({ levelId: this.currentLevel });
       }
     });
@@ -946,10 +905,8 @@ export default class HistoryPortalScene extends Phaser.Scene {
     if (!this.userId) return;
     
     try {
-      // Update score in backend
       await updateUserProgress(this.userId, points);
       
-      // Refresh local user data
       const updated = await getUserProfile(this.userId);
       if (updated?.total_score !== undefined) {
         localStorage.setItem("totalScore", updated.total_score.toString());
@@ -971,13 +928,10 @@ export default class HistoryPortalScene extends Phaser.Scene {
     console.log(`🔓 Unlocking Level ${nextLevel} in ${this.currentCategoryId}`);
 
     try {
-      // Save to backend (same way score is saved)
       await saveCategoryLevel(this.userId, "History", this.currentCategoryId, nextLevel);
       
-      // Update local cache (same way score updates local)
       this.categoryProgress[this.currentCategoryId] = nextLevel;
       
-      // Notify map to refresh
       window.dispatchEvent(new CustomEvent("levels:updated"));
       
       console.log(`✅ Level ${nextLevel} unlocked successfully`);
