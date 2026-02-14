@@ -374,27 +374,27 @@ export default class HistoryPortalScene extends Phaser.Scene {
 
       // ── Optimised fake-blur (3 draw calls, no dark tint) ─────────────────
       // blurSize is slightly larger than the portal so the blur "bleeds" out
-      const blurSize = portalSize * 1.18;
+      const blurSize = portalSize * 1.20;
 
       // Layer 1: offset copy — creates double-vision smear
       const blurOffset = this.add.image(portalX + 9, portalY + 9, "portal-image")
         .setDisplaySize(blurSize, blurSize)
-        .setAlpha(0.55)
+        .setAlpha(0.65)
         .setDepth(6);
 
       // Layer 2: white-tinted copy centered — washes out colour without darkening
       const blurWash = this.add.image(portalX, portalY, "portal-image")
         .setDisplaySize(blurSize, blurSize)
         .setTint(0xdddddd)   // light grey tint — blurs without blackening
-        .setAlpha(0.70)
+        .setAlpha(0.80)
         .setDepth(7);
 
       // Layer 3: frosted-glass rectangle — single Graphics call, very cheap
       const frost = this.add.graphics().setDepth(8);
-      frost.fillStyle(0xffffff, 0.35);
+      frost.fillStyle(0xffffff, 0.60);
       frost.fillRect(
-        portalX - blurSize / 2,
-        portalY - blurSize / 2,
+        portalX - blurSize / 3,
+        portalY - blurSize / 3,
         blurSize,
         blurSize
       );
@@ -404,14 +404,14 @@ export default class HistoryPortalScene extends Phaser.Scene {
       // Add a "?" label on the blurred portal so the intent is clear
       // alpha must be set via .setAlpha(), not inside TextStyle
       const blurLabel = this.add.text(portalX, portalY, "?", {
-        fontSize: isMobile ? "48px" : "80px",
+        fontSize: isMobile ? "48px" : "100px",
         color: "#ffffff",
         fontStyle: "bold",
         stroke: "#000000",
         strokeThickness: 6,
       })
         .setOrigin(0.5)
-        .setDepth(9)    // above all blur layers (6-8), below items (15)
+        .setDepth(10)    // above all blur layers (6-8), below items (15)
         .setAlpha(0.9);
 
       // Keep a direct reference so revealPortal() can tween it out
