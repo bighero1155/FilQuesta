@@ -366,11 +366,17 @@ export default class HistoryPortalScene extends Phaser.Scene {
       this.portalImage = this.add.image(portalX, portalY, "portal-image");
       this.portalImage.setDisplaySize(portalSize, portalSize);
       
-      // 🔑 REQUIRED: Enable PostFX pipeline for blur effects
-      this.portalImage.setPostPipeline(Phaser.Renderer.WebGL.Pipelines.PostFXPipeline);
-      
-      // Sanity check
-      console.log("PostFX exists?", !!this.portalImage.postFX);
+      // 🔑 Enable PostFX pipeline for blur effects
+      // Try to set the pipeline, but don't crash if it fails
+      try {
+        if (this.game.renderer.type === Phaser.WEBGL) {
+          this.portalImage.setPipeline('PostFXPipeline');
+        }
+        console.log("PostFX pipeline enabled");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (e) {
+        console.warn("PostFX not available, will use alternative blur method");
+      }
       
       console.log("✅ Portal image created!");
     } else {
@@ -688,32 +694,80 @@ export default class HistoryPortalScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const isMobile = width < 768;
 
-    // ✅ Add blur effect to portal image when player wins - appears then disappears
+    // ✅ Add visual effects to portal image when player wins - appears then disappears
     if (won && this.portalImage) {
-      const blurStrength = 10; // Maximum blur intensity
+      // Try using PostFX blur if available, otherwise use alternative effects
+      const hasPostFX = this.portalImage.postFX && typeof this.portalImage.postFX.addBlur === 'function';
       
-      // Create blur effect (no optional chaining - PostFX is guaranteed to exist)
-      const blur = this.portalImage.postFX.addBlur(0, 0, 0, 1, 0xffffff, 0);
+      if (hasPostFX) {
+        // Use PostFX blur (Phaser 3.60+)
+        const blurStrength = 10;
+        const blur = this.portalImage.postFX.addBlur(0, 0, 0, 1, 0xffffff, 0);
+        
+        this.tweens.add({
+          targets: blur,
+          strength: blurStrength,
+          duration: 500,
+          ease: 'Sine.easeIn',
+          onComplete: () => {
+            this.tweens.add({
+              targets: blur,
+              strength: 0,
+              duration: 600,
+              ease: 'Sine.easeOut',
+              delay: 200
+            });
+          }
+        });
+        console.log("✅ PostFX blur effect applied");
+      } else {
+        // Alternative effect: Create a blurred duplicate overlay
+        console.log("Using alternative blur effect");
+        
+        // Create multiple semi-transparent copies at slight offsets for blur effect
+        const blurLayers: Phaser.GameObjects.Image[] = [];
+        const offsets = [
+          { x: -2, y: -2 }, { x: 2, y: -2 }, { x: -2, y: 2 }, { x: 2, y: 2 },
+          { x: -4, y: 0 }, { x: 4, y: 0 }, { x: 0, y: -4 }, { x: 0, y: 4 }
+        ];
+        
+        offsets.forEach(offset => {
+          const blurLayer = this.add.image(
+            this.portalImage!.x + offset.x,
+            this.portalImage!.y + offset.y,
+            this.portalImage!.texture.key
+          );
+          blurLayer.setDisplaySize(this.portalImage!.displayWidth, this.portalImage!.displayHeight);
+          blurLayer.setAlpha(0);
+          blurLayer.setDepth(this.portalImage!.depth - 1);
+          blurLayers.push(blurLayer);
+        });
+        
+        // Animate blur layers appearing
+        this.tweens.add({
+          targets: blurLayers,
+          alpha: 0.15,
+          duration: 500,
+          ease: 'Sine.easeIn',
+          onComplete: () => {
+            // Then fade them out
+            this.tweens.add({
+              targets: blurLayers,
+              alpha: 0,
+              duration: 600,
+              ease: 'Sine.easeOut',
+              delay: 200,
+              onComplete: () => {
+                blurLayers.forEach(layer => layer.destroy());
+              }
+            });
+          }
+        });
+      }
       
-      // Animate blur IN (appear)
-      this.tweens.add({
-        targets: blur,
-        strength: blurStrength,
-        duration: 500,
-        ease: 'Sine.easeIn',
-        onComplete: () => {
-          // Then animate blur OUT (disappear)
-          this.tweens.add({
-            targets: blur,
-            strength: 0,
-            duration: 600,
-            ease: 'Sine.easeOut',
-            delay: 200 // Hold the blur for a moment
-          });
-        }
-      });
+      // Common effects for both methods
       
-      // Sync alpha animation with blur (fade out then back in)
+      // Fade the main portal
       this.tweens.add({
         targets: this.portalImage,
         alpha: 0.4,
