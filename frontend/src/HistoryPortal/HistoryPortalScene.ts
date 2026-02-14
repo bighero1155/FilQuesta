@@ -372,36 +372,34 @@ export default class HistoryPortalScene extends Phaser.Scene {
       this.portalImage.setDisplaySize(portalSize, portalSize);
       this.portalImage.setDepth(5);
 
-      // ── Fake-blur overlay layers ─────────────────────────────────────────
-      // All layers sit at depth 6-8, BELOW items (depth 15).
-      // Heavier alphas + wider offsets = stronger blur illusion.
+      // ── Optimised fake-blur (3 draw calls, no dark tint) ─────────────────
+      // blurSize is slightly larger than the portal so the blur "bleeds" out
+      const blurSize = portalSize * 1.18;
 
-      // Layer 1: white wash — kills colour clarity
-      const blurBase = this.add.image(portalX, portalY, "portal-image")
-        .setDisplaySize(portalSize, portalSize)
-        .setTint(0xffffff)
-        .setAlpha(0.75)
+      // Layer 1: offset copy — creates double-vision smear
+      const blurOffset = this.add.image(portalX + 9, portalY + 9, "portal-image")
+        .setDisplaySize(blurSize, blurSize)
+        .setAlpha(0.55)
         .setDepth(6);
 
-      // Layer 2-3: wide offset copies — strong double-vision blur
-      const blurOffset1 = this.add.image(portalX + 7, portalY + 7, "portal-image")
-        .setDisplaySize(portalSize, portalSize)
-        .setAlpha(0.50)
-        .setDepth(7);
-
-      const blurOffset2 = this.add.image(portalX - 7, portalY - 7, "portal-image")
-        .setDisplaySize(portalSize, portalSize)
-        .setAlpha(0.50)
-        .setDepth(7);
-
-      // Layer 4: dark overlay — makes image unreadable
-      const blurHeavy = this.add.image(portalX, portalY, "portal-image")
-        .setDisplaySize(portalSize, portalSize)
-        .setTint(0x111133)
+      // Layer 2: white-tinted copy centered — washes out colour without darkening
+      const blurWash = this.add.image(portalX, portalY, "portal-image")
+        .setDisplaySize(blurSize, blurSize)
+        .setTint(0xdddddd)   // light grey tint — blurs without blackening
         .setAlpha(0.70)
-        .setDepth(8);
+        .setDepth(7);
 
-      this.blurLayers = [blurBase, blurOffset1, blurOffset2, blurHeavy];
+      // Layer 3: frosted-glass rectangle — single Graphics call, very cheap
+      const frost = this.add.graphics().setDepth(8);
+      frost.fillStyle(0xffffff, 0.35);
+      frost.fillRect(
+        portalX - blurSize / 2,
+        portalY - blurSize / 2,
+        blurSize,
+        blurSize
+      );
+
+      this.blurLayers = [blurOffset, blurWash, frost];
 
       // Add a "?" label on the blurred portal so the intent is clear
       // alpha must be set via .setAlpha(), not inside TextStyle
