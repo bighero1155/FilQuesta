@@ -682,30 +682,48 @@ export default class HistoryPortalScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const isMobile = width < 768;
 
-    // ✅ Add blur effect to portal image when player wins
+    // ✅ Add blur effect to portal image when player wins - appears then disappears
     if (won && this.portalImage) {
-      // Apply blur using PostFX pipeline (Phaser 3.60+)
-      const blurStrength = 8; // Adjust blur intensity (higher = more blur)
+      const blurStrength = 10; // Maximum blur intensity
       
       // Create blur effect
-      const blur = this.portalImage.postFX?.addBlur(0, 1, 1, 0.5, 0xffffff, blurStrength);
+      const blur = this.portalImage.postFX?.addBlur(0, 1, 1, 0.5, 0xffffff, 0);
       
-      // Animate the blur effect
       if (blur) {
+        // Animate blur IN (appear)
         this.tweens.add({
           targets: blur,
           strength: blurStrength,
-          duration: 800,
-          ease: 'Sine.easeInOut'
+          duration: 500,
+          ease: 'Sine.easeIn',
+          onComplete: () => {
+            // Then animate blur OUT (disappear)
+            this.tweens.add({
+              targets: blur,
+              strength: 0,
+              duration: 600,
+              ease: 'Sine.easeOut',
+              delay: 200 // Hold the blur for a moment
+            });
+          }
         });
       }
       
-      // Also fade out the portal slightly for dramatic effect
+      // Sync alpha animation with blur (fade out then back in)
       this.tweens.add({
         targets: this.portalImage,
-        alpha: 0.6,
-        duration: 800,
-        ease: 'Sine.easeInOut'
+        alpha: 0.4,
+        duration: 500,
+        ease: 'Sine.easeIn',
+        onComplete: () => {
+          this.tweens.add({
+            targets: this.portalImage,
+            alpha: 1,
+            duration: 600,
+            ease: 'Sine.easeOut',
+            delay: 200
+          });
+        }
       });
     }
 
