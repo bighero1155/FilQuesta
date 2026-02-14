@@ -366,6 +366,12 @@ export default class HistoryPortalScene extends Phaser.Scene {
       this.portalImage = this.add.image(portalX, portalY, "portal-image");
       this.portalImage.setDisplaySize(portalSize, portalSize);
       
+      // 🔑 REQUIRED: Enable PostFX pipeline for blur effects
+      this.portalImage.setPostPipeline(Phaser.Renderer.WebGL.Pipelines.PostFXPipeline);
+      
+      // Sanity check
+      console.log("PostFX exists?", !!this.portalImage.postFX);
+      
       console.log("✅ Portal image created!");
     } else {
       console.error("❌ Portal image texture not found!");
@@ -686,28 +692,26 @@ export default class HistoryPortalScene extends Phaser.Scene {
     if (won && this.portalImage) {
       const blurStrength = 10; // Maximum blur intensity
       
-      // Create blur effect
-      const blur = this.portalImage.postFX?.addBlur(0, 1, 1, 0.5, 0xffffff, 0);
+      // Create blur effect (no optional chaining - PostFX is guaranteed to exist)
+      const blur = this.portalImage.postFX.addBlur(0, 0, 0, 1, 0xffffff, 0);
       
-      if (blur) {
-        // Animate blur IN (appear)
-        this.tweens.add({
-          targets: blur,
-          strength: blurStrength,
-          duration: 500,
-          ease: 'Sine.easeIn',
-          onComplete: () => {
-            // Then animate blur OUT (disappear)
-            this.tweens.add({
-              targets: blur,
-              strength: 0,
-              duration: 600,
-              ease: 'Sine.easeOut',
-              delay: 200 // Hold the blur for a moment
-            });
-          }
-        });
-      }
+      // Animate blur IN (appear)
+      this.tweens.add({
+        targets: blur,
+        strength: blurStrength,
+        duration: 500,
+        ease: 'Sine.easeIn',
+        onComplete: () => {
+          // Then animate blur OUT (disappear)
+          this.tweens.add({
+            targets: blur,
+            strength: 0,
+            duration: 600,
+            ease: 'Sine.easeOut',
+            delay: 200 // Hold the blur for a moment
+          });
+        }
+      });
       
       // Sync alpha animation with blur (fade out then back in)
       this.tweens.add({
@@ -724,6 +728,16 @@ export default class HistoryPortalScene extends Phaser.Scene {
             delay: 200
           });
         }
+      });
+      
+      // Add scale pulse effect for extra visual impact
+      this.tweens.add({
+        targets: this.portalImage,
+        scale: 1.05,
+        yoyo: true,
+        repeat: 1,
+        duration: 200,
+        ease: 'Back.easeOut'
       });
     }
 
