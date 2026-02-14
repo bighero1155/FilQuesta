@@ -372,30 +372,33 @@ export default class HistoryPortalScene extends Phaser.Scene {
       this.portalImage.setDisplaySize(portalSize, portalSize);
       this.portalImage.setDepth(5);
 
-      // ── Fake-blur overlay layers ──────────────────────────────────────────
-      // Layer 1: white tint at moderate alpha — washes out colour
+      // ── Fake-blur overlay layers ─────────────────────────────────────────
+      // All layers sit at depth 6-8, BELOW items (depth 15).
+      // Heavier alphas + wider offsets = stronger blur illusion.
+
+      // Layer 1: white wash — kills colour clarity
       const blurBase = this.add.image(portalX, portalY, "portal-image")
         .setDisplaySize(portalSize, portalSize)
         .setTint(0xffffff)
-        .setAlpha(0.55)
+        .setAlpha(0.75)
         .setDepth(6);
 
-      // Layer 2-3: slightly offset copies — creates soft double-vision blur
-      const blurOffset1 = this.add.image(portalX + 3, portalY + 3, "portal-image")
+      // Layer 2-3: wide offset copies — strong double-vision blur
+      const blurOffset1 = this.add.image(portalX + 7, portalY + 7, "portal-image")
         .setDisplaySize(portalSize, portalSize)
-        .setAlpha(0.30)
+        .setAlpha(0.50)
         .setDepth(7);
 
-      const blurOffset2 = this.add.image(portalX - 3, portalY - 3, "portal-image")
+      const blurOffset2 = this.add.image(portalX - 7, portalY - 7, "portal-image")
         .setDisplaySize(portalSize, portalSize)
-        .setAlpha(0.30)
+        .setAlpha(0.50)
         .setDepth(7);
 
-      // Layer 4: extra heavy tint to ensure the image is clearly obscured
+      // Layer 4: dark overlay — makes image unreadable
       const blurHeavy = this.add.image(portalX, portalY, "portal-image")
         .setDisplaySize(portalSize, portalSize)
-        .setTint(0x222244)        // dark cool tint
-        .setAlpha(0.45)
+        .setTint(0x111133)
+        .setAlpha(0.70)
         .setDepth(8);
 
       this.blurLayers = [blurBase, blurOffset1, blurOffset2, blurHeavy];
@@ -410,7 +413,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
         strokeThickness: 6,
       })
         .setOrigin(0.5)
-        .setDepth(9)
+        .setDepth(9)    // above all blur layers (6-8), below items (15)
         .setAlpha(0.9);
 
       // Keep a direct reference so revealPortal() can tween it out
@@ -490,6 +493,8 @@ export default class HistoryPortalScene extends Phaser.Scene {
       
       container.add([text]);
       container.setSize(itemWidth, itemHeight);
+      // Depth 15 — always above blur layers (6-9) and "?" label (9)
+      container.setDepth(15);
       container.setInteractive({ useHandCursor: true });
       
       (container as any).itemData = item;
@@ -501,7 +506,10 @@ export default class HistoryPortalScene extends Phaser.Scene {
       // Click handler
       container.on("pointerdown", () => {
         if (this.gameEnded || !this.portalImage) return;
-        
+
+        // Lift above everything while in flight so blur never hides it
+        container.setDepth(30);
+
         console.log("🖱️ Clicked item:", item.label);
         
         // Animate to portal
@@ -575,7 +583,8 @@ export default class HistoryPortalScene extends Phaser.Scene {
                 y: (container as any).originalY,
                 scale: 1,
                 duration: ANIMATIONS.itemReturn.duration,
-                ease: ANIMATIONS.itemReturn.ease
+                ease: ANIMATIONS.itemReturn.ease,
+                onComplete: () => container.setDepth(15),
               });
               
               // End game
@@ -620,30 +629,11 @@ export default class HistoryPortalScene extends Phaser.Scene {
 
     console.log("✨ Revealing portal image…");
 
+    // Instantly destroy all blur layers — no animation, clean and snappy
     this.blurLayers.forEach((layer) => {
-      if (!layer || !layer.active) return;
-
-      this.tweens.add({
-        targets: layer,
-        alpha: 0,
-        duration: 600,
-        ease: "Sine.easeOut",
-        onComplete: () => layer.destroy(),
-      });
+      if (layer && layer.active) layer.destroy();
     });
-
     this.blurLayers = [];
-
-    // Pulse the base portal image as a reward cue
-    this.tweens.add({
-      targets: this.portalImage,
-      scaleX: 1.06,
-      scaleY: 1.06,
-      duration: 200,
-      yoyo: true,
-      repeat: 1,
-      ease: "Sine.easeInOut",
-    });
   }
   // ──────────────────────────────────────────────────────────────────────────
 
