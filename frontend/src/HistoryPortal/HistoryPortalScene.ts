@@ -682,6 +682,33 @@ export default class HistoryPortalScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const isMobile = width < 768;
 
+    // ✅ Add blur effect to portal image when player wins
+    if (won && this.portalImage) {
+      // Apply blur using PostFX pipeline (Phaser 3.60+)
+      const blurStrength = 8; // Adjust blur intensity (higher = more blur)
+      
+      // Create blur effect
+      const blur = this.portalImage.postFX?.addBlur(0, 1, 1, 0.5, 0xffffff, blurStrength);
+      
+      // Animate the blur effect
+      if (blur) {
+        this.tweens.add({
+          targets: blur,
+          strength: blurStrength,
+          duration: 800,
+          ease: 'Sine.easeInOut'
+        });
+      }
+      
+      // Also fade out the portal slightly for dramatic effect
+      this.tweens.add({
+        targets: this.portalImage,
+        alpha: 0.6,
+        duration: 800,
+        ease: 'Sine.easeInOut'
+      });
+    }
+
     if (won) {
       // ✅ Update score first (same pattern as HumanBody)
       await this.addScore(this.score);
