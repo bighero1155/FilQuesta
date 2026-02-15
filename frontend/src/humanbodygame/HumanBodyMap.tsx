@@ -196,8 +196,14 @@ const HumanBodyMap: React.FC = () => {
     >
 
 
-      {/* Back Button - Top Left */}
-      <div style={{ position: "absolute", top: "20px", left: "20px", zIndex: 100 }}>
+      {/* Back Button - Top Left (Desktop only, hidden on mobile) */}
+      <div style={{ 
+        position: "absolute", 
+        top: "20px", 
+        left: "20px", 
+        zIndex: 100,
+        display: window.innerWidth < 768 ? "none" : "block",
+      }}>
         <button
           onClick={() => (window.location.href = "/Science")}
           style={{
@@ -413,10 +419,10 @@ const HumanBodyMap: React.FC = () => {
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(5, 1fr)",
-            gap: "clamp(6px, 1.5vw, 10px)",
+            gap: "clamp(8px, 2vw, 14px)",
             marginBottom: "20px",
-            padding: "0 clamp(5px, 2vw, 15px)",
-            maxWidth: "clamp(280px, 90%, 450px)",
+            padding: "0 clamp(10px, 3vw, 20px)",
+            maxWidth: "clamp(320px, 95%, 550px)",
             margin: "0 auto 20px auto",
           }}>
             {Array.from({ length: LEVELS_PER_CATEGORY }, (_, i) => {
@@ -442,12 +448,12 @@ const HumanBodyMap: React.FC = () => {
                       : "radial-gradient(circle at top left, #555, #333)",
                     color: "white",
                     fontWeight: "bold",
-                    fontSize: "clamp(11px, 2.5vw, 14px)",
-                    border: isUnlocked ? "2px solid #fff" : "2px solid #444",
+                    fontSize: "clamp(13px, 3vw, 16px)",
+                    border: isUnlocked ? "3px solid #fff" : "2px solid #444",
                     cursor: isUnlocked ? "pointer" : "not-allowed",
                     boxShadow: isUnlocked
-                      ? `0 3px 10px ${currentSection.color}80`
-                      : "0 2px 5px rgba(0,0,0,0.5)",
+                      ? `0 4px 12px ${currentSection.color}80`
+                      : "0 2px 6px rgba(0,0,0,0.5)",
                     transition: "all 0.2s ease",
                     opacity: isUnlocked ? 1 : 0.4,
                     padding: "0",
@@ -457,14 +463,14 @@ const HumanBodyMap: React.FC = () => {
                   onMouseOver={(e) => {
                     if (isUnlocked) {
                       e.currentTarget.style.transform = "scale(1.15)";
-                      e.currentTarget.style.boxShadow = `0 5px 15px ${currentSection.color}`;
+                      e.currentTarget.style.boxShadow = `0 6px 18px ${currentSection.color}`;
                     }
                   }}
                   onMouseOut={(e) => {
                     e.currentTarget.style.transform = "scale(1)";
                     e.currentTarget.style.boxShadow = isUnlocked
-                      ? `0 3px 10px ${currentSection.color}80`
-                      : "0 2px 5px rgba(0,0,0,0.5)";
+                      ? `0 4px 12px ${currentSection.color}80`
+                      : "0 2px 6px rgba(0,0,0,0.5)";
                   }}
                 >
                   {levelNumber}
@@ -615,6 +621,44 @@ const HumanBodyMap: React.FC = () => {
             onClick={() => setCurrentCategoryIndex(i)}
           />
         ))}
+      </div>
+
+      {/* Back Button - Bottom (Mobile only, hidden on desktop) */}
+      <div style={{
+        display: window.innerWidth < 768 ? "flex" : "none",
+        justifyContent: "center",
+        marginBottom: "20px",
+      }}>
+        <button
+          onClick={() => (window.location.href = "/Science")}
+          style={{
+            padding: "clamp(12px, 3vw, 16px) clamp(30px, 8vw, 50px)",
+            background: "linear-gradient(135deg, #334155, #1e293b)",
+            color: "#fff",
+            border: "4px solid #fff",
+            borderRadius: "15px",
+            cursor: "pointer",
+            fontWeight: "bold",
+            fontSize: "clamp(1rem, 4vw, 1.2rem)",
+            boxShadow: "0 5px 15px rgba(0,0,0,0.5)",
+            transition: "all 0.2s ease-in-out",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            textTransform: "uppercase",
+            letterSpacing: "1px",
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.transform = "scale(1.05)";
+            e.currentTarget.style.boxShadow = "0 8px 25px rgba(0,0,0,0.7)";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
+            e.currentTarget.style.boxShadow = "0 5px 15px rgba(0,0,0,0.5)";
+          }}
+        >
+          ◀ Back to Science
+        </button>
       </div>
     </div>
   );
