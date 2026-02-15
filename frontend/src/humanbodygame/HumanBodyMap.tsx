@@ -272,33 +272,7 @@ const HumanBodyMap: React.FC = () => {
         </button>
       </div>
 
-      {/* Top Decorative Bars */}
-      <div style={{
-        display: "flex",
-        gap: "10px",
-        justifyContent: "center",
-        marginTop: "10px",
-        marginBottom: "20px",
-      }}>
-        {LEVEL_SECTIONS.map((section, i) => (
-          <div
-            key={i}
-            style={{
-              width: "clamp(40px, 8vw, 80px)",
-              height: "clamp(15px, 3vw, 25px)",
-              background: i === currentCategoryIndex ? section.color : "#444",
-              borderRadius: "10px",
-              border: "3px solid #fff",
-              boxShadow: i === currentCategoryIndex 
-                ? `0 4px 15px ${section.color}80` 
-                : "0 2px 8px rgba(0,0,0,0.5)",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-            }}
-            onClick={() => setCurrentCategoryIndex(i)}
-          />
-        ))}
-      </div>
+
 
       {/* Player Card */}
       <div style={{
@@ -453,35 +427,66 @@ const HumanBodyMap: React.FC = () => {
               </div>
             </div>
 
-            {/* Stars */}
-            <div style={{
-              display: "flex",
-              gap: "8px",
-            }}>
-              {[1, 2, 3].map((star) => (
-                <div
-                  key={star}
+            {/* Stars - REMOVED */}
+          </div>
+
+          {/* Level Grid (1-15) */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(5, 1fr)",
+            gap: "clamp(8px, 2vw, 12px)",
+            marginBottom: "20px",
+            padding: "0 10px",
+          }}>
+            {Array.from({ length: LEVELS_PER_CATEGORY }, (_, i) => {
+              const levelNumber = i + 1;
+              const isUnlocked = levelNumber === 1 || levelNumber <= unlockedInCategory;
+              const categoryIndex = LEVEL_SECTIONS.findIndex(s => s.categoryId === currentSection.categoryId);
+              const globalLevelId = (categoryIndex * LEVELS_PER_CATEGORY) + levelNumber;
+
+              return (
+                <button
+                  key={levelNumber}
+                  disabled={!isUnlocked}
+                  onClick={() => {
+                    if (isUnlocked) {
+                      window.location.href = `/body-systems?level=${globalLevelId - 1}&category=${currentSection.categoryId}`;
+                    }
+                  }}
                   style={{
-                    width: "clamp(35px, 6vw, 45px)",
-                    height: "clamp(35px, 6vw, 45px)",
-                    background: star * 5 <= unlockedInCategory 
-                      ? "linear-gradient(135deg, #FFD700, #FFA500)" 
-                      : "#555",
+                    aspectRatio: "1",
                     borderRadius: "50%",
-                    border: "4px solid #fff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "clamp(18px, 4vw, 24px)",
-                    boxShadow: star * 5 <= unlockedInCategory
-                      ? "0 4px 15px rgba(255, 215, 0, 0.7)"
-                      : "0 2px 8px rgba(0,0,0,0.5)",
+                    background: isUnlocked
+                      ? `linear-gradient(135deg, ${currentSection.color}, ${currentSection.darkColor})`
+                      : "radial-gradient(circle at top left, #555, #333)",
+                    color: "white",
+                    fontWeight: "bold",
+                    fontSize: "clamp(14px, 3vw, 18px)",
+                    border: isUnlocked ? "3px solid #fff" : "2px solid #444",
+                    cursor: isUnlocked ? "pointer" : "not-allowed",
+                    boxShadow: isUnlocked
+                      ? `0 4px 12px ${currentSection.color}80`
+                      : "0 2px 6px rgba(0,0,0,0.5)",
+                    transition: "all 0.2s ease",
+                    opacity: isUnlocked ? 1 : 0.4,
+                  }}
+                  onMouseOver={(e) => {
+                    if (isUnlocked) {
+                      e.currentTarget.style.transform = "scale(1.15)";
+                      e.currentTarget.style.boxShadow = `0 6px 18px ${currentSection.color}`;
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = "scale(1)";
+                    e.currentTarget.style.boxShadow = isUnlocked
+                      ? `0 4px 12px ${currentSection.color}80`
+                      : "0 2px 6px rgba(0,0,0,0.5)";
                   }}
                 >
-                  ⭐
-                </div>
-              ))}
-            </div>
+                  {levelNumber}
+                </button>
+              );
+            })}
           </div>
 
           {/* Progress Bar */}
@@ -519,13 +524,13 @@ const HumanBodyMap: React.FC = () => {
             </div>
           </div>
 
-          {/* Level Count & Play Button */}
+          {/* Level Count & Play/Continue Button */}
           <div style={{
             textAlign: "center",
           }}>
             <div style={{
-              marginBottom: "20px",
-              fontSize: "clamp(1rem, 3vw, 1.3rem)",
+              marginBottom: "15px",
+              fontSize: "clamp(1rem, 3vw, 1.2rem)",
               color: "#fff",
               fontWeight: "bold",
               textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
@@ -533,7 +538,7 @@ const HumanBodyMap: React.FC = () => {
               {unlockedInCategory} / {LEVELS_PER_CATEGORY} LEVELS
             </div>
 
-            {/* Play Button */}
+            {/* Play/Continue Button - Dynamic Text */}
             <button
               onClick={() => {
                 const categoryIndex = LEVEL_SECTIONS.findIndex(s => s.categoryId === currentSection.categoryId);
@@ -564,7 +569,7 @@ const HumanBodyMap: React.FC = () => {
                 e.currentTarget.style.boxShadow = `0 6px 25px ${currentSection.color}80`;
               }}
             >
-              ▶ PLAY
+              ▶ {unlockedInCategory > 1 ? "CONTINUE" : "PLAY"}
             </button>
           </div>
         </div>
