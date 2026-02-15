@@ -328,7 +328,7 @@ const HumanBodyMap: React.FC = () => {
         margin: "0 auto",
         width: "100%",
       }}>
-        {/* LEFT ARROW */}
+        {/* LEFT ARROW - Desktop only */}
         <button
           onClick={goToPrevious}
           style={{
@@ -338,7 +338,7 @@ const HumanBodyMap: React.FC = () => {
             border: "clamp(3px, 0.5vw, 5px) solid #000",
             borderRadius: "clamp(10px, 2vw, 15px)",
             cursor: "pointer",
-            display: "flex",
+            display: window.innerWidth < 768 ? "none" : "flex",
             alignItems: "center",
             justifyContent: "center",
             fontSize: "clamp(24px, 5vw, 40px)",
@@ -515,7 +515,7 @@ const HumanBodyMap: React.FC = () => {
             </div>
           </div>
 
-          {/* Level Count & Play/Continue Button */}
+          {/* Level Count & Navigation Buttons */}
           <div style={{
             textAlign: "center",
           }}>
@@ -529,43 +529,97 @@ const HumanBodyMap: React.FC = () => {
               {unlockedInCategory} / {LEVELS_PER_CATEGORY} LEVELS
             </div>
 
-            {/* Play/Continue Button - Dynamic Text */}
-            <button
-              onClick={() => {
-                const categoryIndex = LEVEL_SECTIONS.findIndex(s => s.categoryId === currentSection.categoryId);
-                const firstLevelId = categoryIndex * LEVELS_PER_CATEGORY;
-                window.location.href = `/body-systems?level=${firstLevelId}&category=${currentSection.categoryId}`;
-              }}
-              style={{
-                padding: "clamp(10px, 2.5vw, 18px) clamp(25px, 6vw, 50px)",
-                background: `linear-gradient(135deg, ${currentSection.color}, ${currentSection.darkColor})`,
-                color: "#fff",
-                border: "clamp(3px, 0.6vw, 4px) solid #fff",
-                borderRadius: "clamp(15px, 3vw, 20px)",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "clamp(1rem, 4vw, 1.6rem)",
-                textTransform: "uppercase",
-                letterSpacing: "clamp(1px, 0.3vw, 2px)",
-                boxShadow: `0 6px 25px ${currentSection.color}80`,
-                transition: "all 0.2s ease",
-                textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = "scale(1.05)";
-                e.currentTarget.style.boxShadow = `0 8px 35px ${currentSection.color}`;
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.boxShadow = `0 6px 25px ${currentSection.color}80`;
-              }}
-            >
-              ▶ {unlockedInCategory > 1 ? "CONTINUE" : "PLAY"}
-            </button>
+            {/* Button Container - Desktop: single button, Mobile: 3 buttons */}
+            <div style={{
+              display: "flex",
+              gap: "clamp(10px, 2vw, 15px)",
+              justifyContent: "center",
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}>
+              {/* LEFT ARROW - Mobile only */}
+              <button
+                onClick={goToPrevious}
+                style={{
+                  display: window.innerWidth < 768 ? "flex" : "none",
+                  width: "clamp(50px, 12vw, 60px)",
+                  height: "clamp(50px, 12vw, 60px)",
+                  background: "linear-gradient(135deg, #fff, #ddd)",
+                  border: "3px solid #000",
+                  borderRadius: "12px",
+                  cursor: "pointer",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "clamp(20px, 5vw, 24px)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.6)",
+                  transition: "all 0.2s",
+                  flexShrink: 0,
+                }}
+              >
+                ◀
+              </button>
+
+              {/* Play/Continue Button */}
+              <button
+                onClick={() => {
+                  const categoryIndex = LEVEL_SECTIONS.findIndex(s => s.categoryId === currentSection.categoryId);
+                  const firstLevelId = categoryIndex * LEVELS_PER_CATEGORY;
+                  window.location.href = `/body-systems?level=${firstLevelId}&category=${currentSection.categoryId}`;
+                }}
+                style={{
+                  padding: "clamp(10px, 2.5vw, 18px) clamp(25px, 6vw, 50px)",
+                  background: `linear-gradient(135deg, ${currentSection.color}, ${currentSection.darkColor})`,
+                  color: "#fff",
+                  border: "clamp(3px, 0.6vw, 4px) solid #fff",
+                  borderRadius: "clamp(15px, 3vw, 20px)",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  fontSize: "clamp(1rem, 4vw, 1.6rem)",
+                  textTransform: "uppercase",
+                  letterSpacing: "clamp(1px, 0.3vw, 2px)",
+                  boxShadow: `0 6px 25px ${currentSection.color}80`,
+                  transition: "all 0.2s ease",
+                  textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
+                  flexShrink: 0,
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = "scale(1.05)";
+                  e.currentTarget.style.boxShadow = `0 8px 35px ${currentSection.color}`;
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.boxShadow = `0 6px 25px ${currentSection.color}80`;
+                }}
+              >
+                ▶ {unlockedInCategory > 1 ? "CONTINUE" : "PLAY"}
+              </button>
+
+              {/* RIGHT ARROW - Mobile only */}
+              <button
+                onClick={goToNext}
+                style={{
+                  display: window.innerWidth < 768 ? "flex" : "none",
+                  width: "clamp(50px, 12vw, 60px)",
+                  height: "clamp(50px, 12vw, 60px)",
+                  background: "linear-gradient(135deg, #fff, #ddd)",
+                  border: "3px solid #000",
+                  borderRadius: "12px",
+                  cursor: "pointer",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "clamp(20px, 5vw, 24px)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.6)",
+                  transition: "all 0.2s",
+                  flexShrink: 0,
+                }}
+              >
+                ▶
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* RIGHT ARROW */}
+        {/* RIGHT ARROW - Desktop only */}
         <button
           onClick={goToNext}
           style={{
@@ -575,7 +629,7 @@ const HumanBodyMap: React.FC = () => {
             border: "clamp(3px, 0.5vw, 5px) solid #000",
             borderRadius: "clamp(10px, 2vw, 15px)",
             cursor: "pointer",
-            display: "flex",
+            display: window.innerWidth < 768 ? "none" : "flex",
             alignItems: "center",
             justifyContent: "center",
             fontSize: "clamp(24px, 5vw, 40px)",
