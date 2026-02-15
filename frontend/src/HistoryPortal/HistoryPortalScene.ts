@@ -1,4 +1,4 @@
-// src/HistoryPortal/HistoryPortalScene.ts - With Design System
+// src/HistoryPortal/HistoryPortalScene.ts - With Enhanced Blur
 import Phaser from "phaser";
 import { HISTORY_LEVELS } from "./levels";
 import { logPageVisit, logGameOver } from "../services/pageVisitService";
@@ -19,11 +19,9 @@ const HISTORY_CATEGORIES = ["BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"];
 export default class HistoryPortalScene extends Phaser.Scene {
   private portalImage?: Phaser.GameObjects.Image;
 
-  // ── BLUR EFFECT ──────────────────────────────────────────────────────────────
-  // Two extra semi-transparent copies of the portal image are stacked on top.
-  // Together they make the portal look frosted / blurred.
-  // On first correct answer all three tweens fade them out simultaneously,
-  // giving the player a satisfying "reveal" reward.
+  // ── ENHANCED BLUR EFFECT ─────────────────────────────────────────────────
+  // Multiple heavy overlay layers create an almost completely obscured image.
+  // On first correct answer, all layers fade out simultaneously for a dramatic reveal.
   private blurLayers: Phaser.GameObjects.GameObject[] = [];
   private portalRevealed = false;
   // ─────────────────────────────────────────────────────────────────────────────
@@ -342,7 +340,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
       }
     }
     
-    // ── PORTAL IMAGE + BLUR LAYERS ────────────────────────────────────────────
+    // ── PORTAL IMAGE + ENHANCED BLUR LAYERS ──────────────────────────────────
     const textureExists = this.textures.exists("portal-image");
     console.log("🖼️ Texture exists?", textureExists);
     
@@ -365,61 +363,27 @@ export default class HistoryPortalScene extends Phaser.Scene {
     }
     
     if (textureExists) {
-      console.log("✅ Creating portal image...");
+      console.log("✅ Creating portal image with real Gaussian blur...");
       
-      // Base portal image (fully visible at all times)
+      // Base portal image (clear, always visible)
       this.portalImage = this.add.image(portalX, portalY, "portal-image");
       this.portalImage.setDisplaySize(portalSize, portalSize);
       this.portalImage.setDepth(5);
 
-      // ── Fake-blur overlay layers ─────────────────────────────────────────
-      // All layers sit at depth 6-8, BELOW items (depth 15).
-      // Heavier alphas + wider offsets = stronger blur illusion.
-
-      // Layer 1: white wash — kills colour clarity
-      const blurBase = this.add.image(portalX, portalY, "portal-image")
+      // ── REAL GAUSSIAN BLUR with postFX ──────────────────────────────────
+      // Create a blurred copy that sits on top
+      const portalBlurred = this.add.image(portalX, portalY, "portal-image")
         .setDisplaySize(portalSize, portalSize)
-        .setTint(0xffffff)
-        .setAlpha(0.75)
         .setDepth(6);
 
-      // Layer 2-3: wide offset copies — strong double-vision blur
-      const blurOffset1 = this.add.image(portalX + 7, portalY + 7, "portal-image")
-        .setDisplaySize(portalSize, portalSize)
-        .setAlpha(0.50)
-        .setDepth(7);
+      // Apply very heavy Gaussian blur for maximum obscurity
+      portalBlurred.postFX.addBlur(0, 0, 1, 10);
 
-      const blurOffset2 = this.add.image(portalX - 7, portalY - 7, "portal-image")
-        .setDisplaySize(portalSize, portalSize)
-        .setAlpha(0.50)
-        .setDepth(7);
-
-      // Layer 4: dark overlay — makes image unreadable
-      const blurHeavy = this.add.image(portalX, portalY, "portal-image")
-        .setDisplaySize(portalSize, portalSize)
-        .setTint(0x111133)
-        .setAlpha(0.70)
-        .setDepth(8);
-
-      this.blurLayers = [blurBase, blurOffset1, blurOffset2, blurHeavy];
-
-      // Add a "?" label on the blurred portal so the intent is clear
-      // alpha must be set via .setAlpha(), not inside TextStyle
-      const blurLabel = this.add.text(portalX, portalY, "?", {
-        fontSize: isMobile ? "48px" : "80px",
-        color: "#ffffff",
-        fontStyle: "bold",
-        stroke: "#000000",
-        strokeThickness: 6,
-      })
-        .setOrigin(0.5)
-        .setDepth(9)    // above all blur layers (6-8), below items (15)
-        .setAlpha(0.9);
-
-      // Keep a direct reference so revealPortal() can tween it out
-      this.blurLayers.push(blurLabel);
+      this.blurLayers = [portalBlurred];
       
-      console.log("✅ Portal image + blur layers created!");
+      console.log("✅ Portal image + real Gaussian blur created!");
+      
+      console.log("✅ Portal image + enhanced blur layers created!");
     } else {
       console.error("❌ Portal image texture not found!");
     }
@@ -493,7 +457,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
       
       container.add([text]);
       container.setSize(itemWidth, itemHeight);
-      // Depth 15 — always above blur layers (6-9) and "?" label (9)
+      // Depth 15 — always above blur layers (6-10)
       container.setDepth(15);
       container.setInteractive({ useHandCursor: true });
       
@@ -507,7 +471,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
       container.on("pointerdown", () => {
         if (this.gameEnded || !this.portalImage) return;
 
-        // Lift above everything while in flight so blur never hides it
+        // Lift above everything while in flight
         container.setDepth(30);
 
         console.log("🖱️ Clicked item:", item.label);
@@ -619,7 +583,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
 
   // ── PORTAL REVEAL ──────────────────────────────────────────────────────────
   /**
-   * Fade out all blur layers so the portal image is fully revealed.
+   * Instantly destroy all blur layers so the portal image is fully revealed.
    * Called the first time the player selects a correct answer.
    * Safe to call multiple times (guarded by portalRevealed flag).
    */
@@ -629,7 +593,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
 
     console.log("✨ Revealing portal image…");
 
-    // Instantly destroy all blur layers — no animation, clean and snappy
+    // Instantly destroy all blur layers — clean and snappy
     this.blurLayers.forEach((layer) => {
       if (layer && layer.active) layer.destroy();
     });
@@ -782,31 +746,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
       duration: 300,
     });
     
-    // Modal background
-    const modalWidth = isMobile ? width * 0.85 : 400;
-    const modalHeight = isMobile ? 200 : 250;
-    
-    const modal = this.add.graphics().setDepth(101);
-    
-    modal.fillStyle(won ? UI_COLORS.success.modal : UI_COLORS.failure.modal, 1);
-    modal.fillRoundedRect(
-      width / 2 - modalWidth / 2,
-      height / 2 - modalHeight / 2,
-      modalWidth,
-      modalHeight,
-      20
-    );
-    modal.lineStyle(4, 0xffffff, 1);
-    modal.strokeRoundedRect(
-      width / 2 - modalWidth / 2,
-      height / 2 - modalHeight / 2,
-      modalWidth,
-      modalHeight,
-      20
-    );
-    modal.setAlpha(0).setScale(0.8);
-    
-    // Title
+    // Title - Simple text, no glow
     const modalTitleStyle = getTextStyle('modalTitle', isMobile, false);
     
     const title = this.add.text(
@@ -816,31 +756,41 @@ export default class HistoryPortalScene extends Phaser.Scene {
       modalTitleStyle
     ).setOrigin(0.5).setDepth(102).setAlpha(0);
     
-    // Button
-    const buttonText = won ? "Sunod na Antas →" : "Ulitin";
+    // Button with pill/oval background
+    const buttonText = won ? "Sunod na Antas" : "Ulitin";
     const modalBtnStyle = getTextStyle('modalButton', isMobile, false);
     
+    // Create pill-shaped background
+    const buttonBg = this.add.graphics().setDepth(102).setAlpha(0);
+    const buttonWidth = isMobile ? 200 : 250;
+    const buttonHeight = 50;
+    const buttonX = width / 2;
+    const buttonY = height / 2 + 50;
+    
+    buttonBg.fillStyle(won ? 0x007744 : 0x991122, 1);
+    buttonBg.fillRoundedRect(
+      buttonX - buttonWidth / 2,
+      buttonY - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+      25  // Large border radius for pill shape
+    );
+    
     const button = this.add.text(
-      width / 2,
-      height / 2 + 50,
+      buttonX,
+      buttonY,
       buttonText,
       {
-        ...modalBtnStyle,
-        backgroundColor: won ? "#007744" : "#991122"
+        fontSize: modalBtnStyle.fontSize,
+        fontFamily: modalBtnStyle.fontFamily,
+        color: "#FFFFFF",  // White text on colored background
+        fontStyle: "bold",
       }
-    ).setOrigin(0.5).setDepth(102).setAlpha(0).setInteractive({ useHandCursor: true });
+    ).setOrigin(0.5).setDepth(103).setAlpha(0).setInteractive({ useHandCursor: true });
 
-    // Animate modal in
+    // Animate text in (no modal background)
     this.tweens.add({
-      targets: modal,
-      alpha: 1,
-      scale: 1,
-      duration: ANIMATIONS.fadeIn.duration,
-      ease: ANIMATIONS.fadeIn.ease,
-    });
-
-    this.tweens.add({
-      targets: [title, button],
+      targets: [title, buttonBg, button],
       alpha: 1,
       y: "-=10",
       duration: ANIMATIONS.fadeIn.duration,
