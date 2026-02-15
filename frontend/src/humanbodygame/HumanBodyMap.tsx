@@ -60,6 +60,7 @@ const HumanBodyMap: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<number | null>(null);
   const [gameScore, setGameScore] = useState(0);
+  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
 
   // Get userId from auth or localStorage
   useEffect(() => {
@@ -130,6 +131,15 @@ const HumanBodyMap: React.FC = () => {
     };
   }, [userId]);
 
+  // Navigation functions
+  const goToPrevious = () => {
+    setCurrentCategoryIndex((prev) => (prev === 0 ? LEVEL_SECTIONS.length - 1 : prev - 1));
+  };
+
+  const goToNext = () => {
+    setCurrentCategoryIndex((prev) => (prev === LEVEL_SECTIONS.length - 1 ? 0 : prev + 1));
+  };
+
   if (!userId) {
     return (
       <div style={{
@@ -167,6 +177,10 @@ const HumanBodyMap: React.FC = () => {
   const totalLevelsUnlocked = Object.values(categoryProgress).reduce((sum, val) => sum + val, 0);
   const totalLevels = LEVEL_SECTIONS.length * LEVELS_PER_CATEGORY;
 
+  const currentSection = LEVEL_SECTIONS[currentCategoryIndex];
+  const unlockedInCategory = categoryProgress[currentSection.categoryId] || 0;
+  const progressPercent = Math.round((unlockedInCategory / LEVELS_PER_CATEGORY) * 100);
+
   return (
     <div
       style={{
@@ -176,6 +190,8 @@ const HumanBodyMap: React.FC = () => {
         fontFamily: "Fredoka, Arial Black, sans-serif",
         position: "relative",
         overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {/* Decorative Background Elements */}
@@ -203,21 +219,11 @@ const HumanBodyMap: React.FC = () => {
         boxShadow: "0 4px 20px rgba(233, 30, 99, 0.5)",
       }} />
 
-      {/* Container */}
-      <div style={{
-        maxWidth: "900px",
-        margin: "0 auto",
-        position: "relative",
-        zIndex: 1,
-      }}>
-        
-        {/* Back Button - Top Left */}
+      {/* Back Button - Top Left */}
+      <div style={{ position: "absolute", top: "20px", left: "20px", zIndex: 100 }}>
         <button
           onClick={() => (window.location.href = "/Science")}
           style={{
-            position: "absolute",
-            top: "0",
-            left: "0",
             width: "50px",
             height: "50px",
             background: "linear-gradient(135deg, #334155, #1e293b)",
@@ -228,6 +234,7 @@ const HumanBodyMap: React.FC = () => {
             alignItems: "center",
             justifyContent: "center",
             fontSize: "24px",
+            color: "#fff",
             boxShadow: "0 4px 15px rgba(0,0,0,0.5)",
             transition: "transform 0.2s",
           }}
@@ -236,13 +243,12 @@ const HumanBodyMap: React.FC = () => {
         >
           ◀
         </button>
+      </div>
 
-        {/* Info Button - Top Right */}
+      {/* Info Button - Top Right */}
+      <div style={{ position: "absolute", top: "20px", right: "20px", zIndex: 100 }}>
         <button
           style={{
-            position: "absolute",
-            top: "0",
-            right: "0",
             width: "50px",
             height: "50px",
             background: "linear-gradient(135deg, #2196F3, #1976D2)",
@@ -264,236 +270,362 @@ const HumanBodyMap: React.FC = () => {
         >
           ℹ️
         </button>
+      </div>
 
-        {/* Player Card */}
+      {/* Top Decorative Bars */}
+      <div style={{
+        display: "flex",
+        gap: "10px",
+        justifyContent: "center",
+        marginTop: "10px",
+        marginBottom: "20px",
+      }}>
+        {LEVEL_SECTIONS.map((section, i) => (
+          <div
+            key={i}
+            style={{
+              width: "clamp(40px, 8vw, 80px)",
+              height: "clamp(15px, 3vw, 25px)",
+              background: i === currentCategoryIndex ? section.color : "#444",
+              borderRadius: "10px",
+              border: "3px solid #fff",
+              boxShadow: i === currentCategoryIndex 
+                ? `0 4px 15px ${section.color}80` 
+                : "0 2px 8px rgba(0,0,0,0.5)",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+            }}
+            onClick={() => setCurrentCategoryIndex(i)}
+          />
+        ))}
+      </div>
+
+      {/* Player Card */}
+      <div style={{
+        background: "linear-gradient(135deg, #2d1f3d, #1a1a2e)",
+        borderRadius: "20px",
+        border: "5px solid #fff",
+        padding: "20px",
+        marginBottom: "30px",
+        boxShadow: "0 8px 30px rgba(0,0,0,0.8)",
+        display: "flex",
+        alignItems: "center",
+        gap: "20px",
+        maxWidth: "600px",
+        margin: "0 auto 30px auto",
+      }}>
+        {/* Player Icon */}
         <div style={{
-          background: "linear-gradient(135deg, #2d1f3d, #1a1a2e)",
-          borderRadius: "20px",
-          border: "5px solid #fff",
-          padding: "20px",
-          marginTop: "80px",
-          marginBottom: "30px",
-          boxShadow: "0 8px 30px rgba(0,0,0,0.8)",
+          width: "80px",
+          height: "80px",
+          background: "linear-gradient(135deg, #E91E63, #9C27B0)",
+          borderRadius: "50%",
+          border: "4px solid #fff",
           display: "flex",
           alignItems: "center",
-          gap: "20px",
+          justifyContent: "center",
+          fontSize: "40px",
+          flexShrink: 0,
+          boxShadow: "0 4px 20px rgba(233, 30, 99, 0.6)",
         }}>
-          {/* Player Icon */}
+          🫀
+        </div>
+
+        {/* Player Info */}
+        <div style={{ flex: 1 }}>
           <div style={{
-            width: "80px",
-            height: "80px",
-            background: "linear-gradient(135deg, #E91E63, #9C27B0)",
-            borderRadius: "50%",
-            border: "4px solid #fff",
+            fontSize: "clamp(1.5rem, 4vw, 2rem)",
+            fontWeight: "bold",
+            color: "#fff",
+            textShadow: "3px 3px 6px rgba(0,0,0,0.8)",
+            marginBottom: "8px",
+          }}>
+            BODY EXPLORER
+          </div>
+          
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "15px",
+            fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)",
+            color: "#fff",
+          }}>
+            <span style={{ color: "#4CAF50", fontWeight: "bold" }}>
+              {totalLevelsUnlocked}/{totalLevels} ⭐
+            </span>
+            <span style={{ color: "#FFD700", fontWeight: "bold" }}>
+              🎯 {gameScore}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Carousel Container */}
+      <div style={{
+        flex: 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "20px",
+        maxWidth: "1200px",
+        margin: "0 auto",
+        width: "100%",
+      }}>
+        {/* LEFT ARROW */}
+        <button
+          onClick={goToPrevious}
+          style={{
+            width: "clamp(60px, 8vw, 80px)",
+            height: "clamp(60px, 8vw, 80px)",
+            background: "linear-gradient(135deg, #fff, #ddd)",
+            border: "5px solid #000",
+            borderRadius: "15px",
+            cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "40px",
+            fontSize: "clamp(30px, 5vw, 40px)",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.6)",
+            transition: "all 0.2s",
             flexShrink: 0,
-            boxShadow: "0 4px 20px rgba(233, 30, 99, 0.6)",
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.transform = "scale(1.1)";
+            e.currentTarget.style.boxShadow = "0 12px 30px rgba(0,0,0,0.8)";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
+            e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.6)";
+          }}
+        >
+          ◀
+        </button>
+
+        {/* CATEGORY CARD */}
+        <div
+          style={{
+            background: `linear-gradient(135deg, ${currentSection.darkColor}, #1a1a2e)`,
+            borderRadius: "25px",
+            border: "6px solid #fff",
+            padding: "30px",
+            boxShadow: `0 12px 40px ${currentSection.color}60`,
+            maxWidth: "600px",
+            width: "100%",
+            minHeight: "400px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
+          {/* Category Header */}
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "20px",
           }}>
-            🫀
-          </div>
-
-          {/* Player Info */}
-          <div style={{ flex: 1 }}>
-            <div style={{
-              fontSize: "clamp(1.5rem, 4vw, 2rem)",
-              fontWeight: "bold",
-              color: "#fff",
-              textShadow: "3px 3px 6px rgba(0,0,0,0.8)",
-              marginBottom: "8px",
-            }}>
-              BODY EXPLORER
-            </div>
-            
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "15px",
-              fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)",
-              color: "#fff",
-            }}>
-              <span style={{ color: "#4CAF50", fontWeight: "bold" }}>
-                {totalLevelsUnlocked}/{totalLevels} ⭐
-              </span>
-              <span style={{ color: "#FFD700", fontWeight: "bold" }}>
-                🎯 {gameScore}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Category Cards */}
-        {LEVEL_SECTIONS.map((section) => {
-          const unlockedInCategory = categoryProgress[section.categoryId] || 0;
-          const progressPercent = Math.round((unlockedInCategory / LEVELS_PER_CATEGORY) * 100);
-
-          return (
-            <div
-              key={section.categoryId}
-              style={{
-                background: `linear-gradient(135deg, ${section.darkColor}, #1a1a2e)`,
-                borderRadius: "20px",
-                border: "5px solid #fff",
-                padding: "25px",
-                marginBottom: "20px",
-                boxShadow: `0 8px 30px ${section.color}40`,
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = "translateY(-5px)";
-                e.currentTarget.style.boxShadow = `0 12px 40px ${section.color}60`;
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = `0 8px 30px ${section.color}40`;
-              }}
-              onClick={() => {
-                // Navigate to first level of category
-                const categoryIndex = LEVEL_SECTIONS.findIndex(s => s.categoryId === section.categoryId);
-                const firstLevelId = categoryIndex * LEVELS_PER_CATEGORY;
-                window.location.href = `/body-systems?level=${firstLevelId}&category=${section.categoryId}`;
-              }}
-            >
-              {/* Category Header */}
+            <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
               <div style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "15px",
+                fontSize: "clamp(2.5rem, 6vw, 4rem)",
+                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.5))",
               }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-                  <div style={{
-                    fontSize: "clamp(2rem, 5vw, 3rem)",
-                    filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.5))",
-                  }}>
-                    {section.emoji}
-                  </div>
-                  
-                  <div>
-                    <div style={{
-                      fontSize: "clamp(1.5rem, 4vw, 2rem)",
-                      fontWeight: "bold",
-                      color: "#fff",
-                      textShadow: "3px 3px 6px rgba(0,0,0,0.8)",
-                      textTransform: "uppercase",
-                      letterSpacing: "2px",
-                    }}>
-                      {section.name}
-                    </div>
-                    <div style={{
-                      fontSize: "clamp(0.8rem, 2vw, 1rem)",
-                      color: "#bbb",
-                      fontStyle: "italic",
-                    }}>
-                      {section.subtitle}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Stars */}
-                <div style={{
-                  display: "flex",
-                  gap: "5px",
-                }}>
-                  {[1, 2, 3].map((star) => (
-                    <div
-                      key={star}
-                      style={{
-                        width: "clamp(30px, 5vw, 40px)",
-                        height: "clamp(30px, 5vw, 40px)",
-                        background: star * 5 <= unlockedInCategory 
-                          ? "linear-gradient(135deg, #FFD700, #FFA500)" 
-                          : "#555",
-                        borderRadius: "50%",
-                        border: "3px solid #fff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "clamp(16px, 3vw, 20px)",
-                        boxShadow: star * 5 <= unlockedInCategory
-                          ? "0 4px 15px rgba(255, 215, 0, 0.6)"
-                          : "0 2px 8px rgba(0,0,0,0.5)",
-                      }}
-                    >
-                      ⭐
-                    </div>
-                  ))}
-                </div>
+                {currentSection.emoji}
               </div>
-
-              {/* Progress Bar */}
-              <div style={{
-                background: "rgba(0,0,0,0.4)",
-                borderRadius: "20px",
-                height: "40px",
-                border: "3px solid #fff",
-                overflow: "hidden",
-                position: "relative",
-              }}>
-                <div
-                  style={{
-                    height: "100%",
-                    width: `${progressPercent}%`,
-                    background: `linear-gradient(90deg, ${section.color}, ${section.darkColor})`,
-                    transition: "width 0.5s ease",
-                    boxShadow: `inset 0 -5px 15px rgba(0,0,0,0.3)`,
-                  }}
-                />
-                
+              
+              <div>
                 <div style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  fontSize: "clamp(1rem, 3vw, 1.3rem)",
+                  fontSize: "clamp(1.8rem, 5vw, 2.5rem)",
                   fontWeight: "bold",
                   color: "#fff",
-                  textShadow: "2px 2px 4px rgba(0,0,0,0.9)",
-                  pointerEvents: "none",
+                  textShadow: "3px 3px 6px rgba(0,0,0,0.8)",
+                  textTransform: "uppercase",
+                  letterSpacing: "2px",
                 }}>
-                  {progressPercent}%
+                  {currentSection.name}
+                </div>
+                <div style={{
+                  fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)",
+                  color: "#bbb",
+                  fontStyle: "italic",
+                }}>
+                  {currentSection.subtitle}
                 </div>
               </div>
-
-              {/* Level Count */}
-              <div style={{
-                marginTop: "12px",
-                fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)",
-                color: "#fff",
-                textAlign: "center",
-                fontWeight: "bold",
-                textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
-              }}>
-                {unlockedInCategory} / {LEVELS_PER_CATEGORY} LEVELS
-              </div>
             </div>
-          );
-        })}
 
-        {/* Decorative Bottom Bars */}
-        <div style={{
-          display: "flex",
-          gap: "10px",
-          marginTop: "30px",
-          justifyContent: "center",
-        }}>
-          {LEVEL_SECTIONS.map((section, i) => (
+            {/* Stars */}
+            <div style={{
+              display: "flex",
+              gap: "8px",
+            }}>
+              {[1, 2, 3].map((star) => (
+                <div
+                  key={star}
+                  style={{
+                    width: "clamp(35px, 6vw, 45px)",
+                    height: "clamp(35px, 6vw, 45px)",
+                    background: star * 5 <= unlockedInCategory 
+                      ? "linear-gradient(135deg, #FFD700, #FFA500)" 
+                      : "#555",
+                    borderRadius: "50%",
+                    border: "4px solid #fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "clamp(18px, 4vw, 24px)",
+                    boxShadow: star * 5 <= unlockedInCategory
+                      ? "0 4px 15px rgba(255, 215, 0, 0.7)"
+                      : "0 2px 8px rgba(0,0,0,0.5)",
+                  }}
+                >
+                  ⭐
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div style={{
+            background: "rgba(0,0,0,0.5)",
+            borderRadius: "25px",
+            height: "50px",
+            border: "4px solid #fff",
+            overflow: "hidden",
+            position: "relative",
+            marginBottom: "20px",
+          }}>
             <div
-              key={i}
               style={{
-                width: "clamp(40px, 8vw, 60px)",
-                height: "clamp(15px, 3vw, 20px)",
-                background: i === 0 ? section.color : "#444",
-                borderRadius: "10px",
-                border: "3px solid #fff",
-                boxShadow: i === 0 ? `0 4px 15px ${section.color}80` : "0 2px 8px rgba(0,0,0,0.5)",
+                height: "100%",
+                width: `${progressPercent}%`,
+                background: `linear-gradient(90deg, ${currentSection.color}, ${currentSection.darkColor})`,
+                transition: "width 0.5s ease",
+                boxShadow: `inset 0 -5px 15px rgba(0,0,0,0.4)`,
               }}
             />
-          ))}
+            
+            <div style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              fontSize: "clamp(1.2rem, 3.5vw, 1.6rem)",
+              fontWeight: "bold",
+              color: "#fff",
+              textShadow: "3px 3px 6px rgba(0,0,0,0.9)",
+              pointerEvents: "none",
+            }}>
+              {progressPercent}%
+            </div>
+          </div>
+
+          {/* Level Count & Play Button */}
+          <div style={{
+            textAlign: "center",
+          }}>
+            <div style={{
+              marginBottom: "20px",
+              fontSize: "clamp(1rem, 3vw, 1.3rem)",
+              color: "#fff",
+              fontWeight: "bold",
+              textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
+            }}>
+              {unlockedInCategory} / {LEVELS_PER_CATEGORY} LEVELS
+            </div>
+
+            {/* Play Button */}
+            <button
+              onClick={() => {
+                const categoryIndex = LEVEL_SECTIONS.findIndex(s => s.categoryId === currentSection.categoryId);
+                const firstLevelId = categoryIndex * LEVELS_PER_CATEGORY;
+                window.location.href = `/body-systems?level=${firstLevelId}&category=${currentSection.categoryId}`;
+              }}
+              style={{
+                padding: "clamp(12px, 3vw, 18px) clamp(30px, 6vw, 50px)",
+                background: `linear-gradient(135deg, ${currentSection.color}, ${currentSection.darkColor})`,
+                color: "#fff",
+                border: "4px solid #fff",
+                borderRadius: "20px",
+                cursor: "pointer",
+                fontWeight: "bold",
+                fontSize: "clamp(1.2rem, 3.5vw, 1.6rem)",
+                textTransform: "uppercase",
+                letterSpacing: "2px",
+                boxShadow: `0 6px 25px ${currentSection.color}80`,
+                transition: "all 0.2s ease",
+                textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = "scale(1.05)";
+                e.currentTarget.style.boxShadow = `0 8px 35px ${currentSection.color}`;
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = `0 6px 25px ${currentSection.color}80`;
+              }}
+            >
+              ▶ PLAY
+            </button>
+          </div>
         </div>
+
+        {/* RIGHT ARROW */}
+        <button
+          onClick={goToNext}
+          style={{
+            width: "clamp(60px, 8vw, 80px)",
+            height: "clamp(60px, 8vw, 80px)",
+            background: "linear-gradient(135deg, #fff, #ddd)",
+            border: "5px solid #000",
+            borderRadius: "15px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "clamp(30px, 5vw, 40px)",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.6)",
+            transition: "all 0.2s",
+            flexShrink: 0,
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.transform = "scale(1.1)";
+            e.currentTarget.style.boxShadow = "0 12px 30px rgba(0,0,0,0.8)";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
+            e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.6)";
+          }}
+        >
+          ▶
+        </button>
+      </div>
+
+      {/* Bottom Decorative Bars */}
+      <div style={{
+        display: "flex",
+        gap: "10px",
+        marginTop: "30px",
+        marginBottom: "20px",
+        justifyContent: "center",
+      }}>
+        {LEVEL_SECTIONS.map((section, i) => (
+          <div
+            key={i}
+            style={{
+              width: "clamp(40px, 8vw, 80px)",
+              height: "clamp(15px, 3vw, 25px)",
+              background: i === currentCategoryIndex ? section.color : "#444",
+              borderRadius: "10px",
+              border: "3px solid #fff",
+              boxShadow: i === currentCategoryIndex 
+                ? `0 4px 15px ${section.color}80` 
+                : "0 2px 8px rgba(0,0,0,0.5)",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+            }}
+            onClick={() => setCurrentCategoryIndex(i)}
+          />
+        ))}
       </div>
     </div>
   );
