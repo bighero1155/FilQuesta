@@ -563,8 +563,11 @@ const HumanBodyMap: React.FC = () => {
               <button
                 onClick={() => {
                   const categoryIndex = LEVEL_SECTIONS.findIndex(s => s.categoryId === currentSection.categoryId);
-                  const firstLevelId = categoryIndex * LEVELS_PER_CATEGORY;
-                  window.location.href = `/body-systems?level=${firstLevelId}&category=${currentSection.categoryId}`;
+                  // If no progress (0), start at level 1 (index 0)
+                  // If there's progress, go to the current level (last unlocked level)
+                  const targetLevelNumber = unlockedInCategory === 0 ? 1 : unlockedInCategory;
+                  const globalLevelId = (categoryIndex * LEVELS_PER_CATEGORY) + targetLevelNumber;
+                  window.location.href = `/body-systems?level=${globalLevelId - 1}&category=${currentSection.categoryId}`;
                 }}
                 style={{
                   padding: "clamp(10px, 2.5vw, 18px) clamp(25px, 6vw, 50px)",
@@ -591,7 +594,7 @@ const HumanBodyMap: React.FC = () => {
                   e.currentTarget.style.boxShadow = `0 6px 25px ${currentSection.color}80`;
                 }}
               >
-                ▶ {unlockedInCategory > 1 ? "RESUME" : "PLAY"}
+                ▶ {unlockedInCategory > 1 ? "CONTINUE" : "PLAY"}
               </button>
 
               {/* RIGHT ARROW - Mobile only */}
