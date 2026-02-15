@@ -591,7 +591,7 @@ const HumanBodyMap: React.FC = () => {
                   e.currentTarget.style.boxShadow = `0 6px 25px ${currentSection.color}80`;
                 }}
               >
-                ▶ {unlockedInCategory > 1 ? "CONTINUE" : "PLAY"}
+                ▶ {unlockedInCategory > 1 ? "RESUME" : "PLAY"}
               </button>
 
               {/* RIGHT ARROW - Mobile only */}
