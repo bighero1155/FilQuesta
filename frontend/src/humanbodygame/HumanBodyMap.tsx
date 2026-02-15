@@ -256,26 +256,26 @@ const HumanBodyMap: React.FC = () => {
         background: "linear-gradient(135deg, #2d1f3d, #1a1a2e)",
         borderRadius: "20px",
         border: "5px solid #fff",
-        padding: "20px",
+        padding: "clamp(15px, 3vw, 20px)",
         marginBottom: "30px",
         boxShadow: "0 8px 30px rgba(0,0,0,0.8)",
         display: "flex",
         alignItems: "center",
-        gap: "20px",
-        maxWidth: "600px",
+        gap: "clamp(10px, 3vw, 20px)",
+        maxWidth: "clamp(320px, 90%, 600px)",
         margin: "0 auto 30px auto",
       }}>
         {/* Player Icon */}
         <div style={{
-          width: "80px",
-          height: "80px",
+          width: "clamp(60px, 15vw, 80px)",
+          height: "clamp(60px, 15vw, 80px)",
           background: "linear-gradient(135deg, #E91E63, #9C27B0)",
           borderRadius: "50%",
           border: "4px solid #fff",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: "40px",
+          fontSize: "clamp(30px, 8vw, 40px)",
           flexShrink: 0,
           boxShadow: "0 4px 20px rgba(233, 30, 99, 0.6)",
         }}>
@@ -326,16 +326,16 @@ const HumanBodyMap: React.FC = () => {
         <button
           onClick={goToPrevious}
           style={{
-            width: "clamp(60px, 8vw, 80px)",
-            height: "clamp(60px, 8vw, 80px)",
+            width: "clamp(50px, 10vw, 80px)",
+            height: "clamp(50px, 10vw, 80px)",
             background: "linear-gradient(135deg, #fff, #ddd)",
-            border: "5px solid #000",
-            borderRadius: "15px",
+            border: "clamp(3px, 0.5vw, 5px) solid #000",
+            borderRadius: "clamp(10px, 2vw, 15px)",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "clamp(30px, 5vw, 40px)",
+            fontSize: "clamp(24px, 5vw, 40px)",
             boxShadow: "0 8px 20px rgba(0,0,0,0.6)",
             transition: "all 0.2s",
             flexShrink: 0,
@@ -356,13 +356,13 @@ const HumanBodyMap: React.FC = () => {
         <div
           style={{
             background: `linear-gradient(135deg, ${currentSection.darkColor}, #1a1a2e)`,
-            borderRadius: "25px",
-            border: "6px solid #fff",
-            padding: "30px",
+            borderRadius: "clamp(15px, 3vw, 25px)",
+            border: "clamp(4px, 0.8vw, 6px) solid #fff",
+            padding: "clamp(20px, 4vw, 30px)",
             boxShadow: `0 12px 40px ${currentSection.color}60`,
-            maxWidth: "800px",
+            maxWidth: "clamp(320px, 90%, 800px)",
             width: "100%",
-            minHeight: "400px",
+            minHeight: "clamp(350px, 60vh, 450px)",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
@@ -373,11 +373,13 @@ const HumanBodyMap: React.FC = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            marginBottom: "20px",
+            marginBottom: "clamp(10px, 2vw, 20px)",
+            flexWrap: "wrap",
+            gap: "10px",
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "clamp(10px, 2vw, 15px)" }}>
               <div style={{
-                fontSize: "clamp(2.5rem, 6vw, 4rem)",
+                fontSize: "clamp(2rem, 8vw, 4rem)",
                 filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.5))",
               }}>
                 {currentSection.emoji}
@@ -385,17 +387,17 @@ const HumanBodyMap: React.FC = () => {
               
               <div>
                 <div style={{
-                  fontSize: "clamp(1.8rem, 5vw, 2.5rem)",
+                  fontSize: "clamp(1.5rem, 6vw, 2.5rem)",
                   fontWeight: "bold",
                   color: "#fff",
                   textShadow: "3px 3px 6px rgba(0,0,0,0.8)",
                   textTransform: "uppercase",
-                  letterSpacing: "2px",
+                  letterSpacing: "clamp(1px, 0.3vw, 2px)",
                 }}>
                   {currentSection.name}
                 </div>
                 <div style={{
-                  fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)",
+                  fontSize: "clamp(0.8rem, 2.5vw, 1.1rem)",
                   color: "#bbb",
                   fontStyle: "italic",
                 }}>
@@ -411,9 +413,11 @@ const HumanBodyMap: React.FC = () => {
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(5, 1fr)",
-            gap: "clamp(8px, 2vw, 12px)",
+            gap: "clamp(6px, 1.5vw, 10px)",
             marginBottom: "20px",
-            padding: "0 10px",
+            padding: "0 clamp(5px, 2vw, 15px)",
+            maxWidth: "clamp(280px, 90%, 450px)",
+            margin: "0 auto 20px auto",
           }}>
             {Array.from({ length: LEVELS_PER_CATEGORY }, (_, i) => {
               const levelNumber = i + 1;
@@ -438,26 +442,29 @@ const HumanBodyMap: React.FC = () => {
                       : "radial-gradient(circle at top left, #555, #333)",
                     color: "white",
                     fontWeight: "bold",
-                    fontSize: "clamp(14px, 3vw, 18px)",
-                    border: isUnlocked ? "3px solid #fff" : "2px solid #444",
+                    fontSize: "clamp(11px, 2.5vw, 14px)",
+                    border: isUnlocked ? "2px solid #fff" : "2px solid #444",
                     cursor: isUnlocked ? "pointer" : "not-allowed",
                     boxShadow: isUnlocked
-                      ? `0 4px 12px ${currentSection.color}80`
-                      : "0 2px 6px rgba(0,0,0,0.5)",
+                      ? `0 3px 10px ${currentSection.color}80`
+                      : "0 2px 5px rgba(0,0,0,0.5)",
                     transition: "all 0.2s ease",
                     opacity: isUnlocked ? 1 : 0.4,
+                    padding: "0",
+                    minWidth: "0",
+                    width: "100%",
                   }}
                   onMouseOver={(e) => {
                     if (isUnlocked) {
                       e.currentTarget.style.transform = "scale(1.15)";
-                      e.currentTarget.style.boxShadow = `0 6px 18px ${currentSection.color}`;
+                      e.currentTarget.style.boxShadow = `0 5px 15px ${currentSection.color}`;
                     }
                   }}
                   onMouseOut={(e) => {
                     e.currentTarget.style.transform = "scale(1)";
                     e.currentTarget.style.boxShadow = isUnlocked
-                      ? `0 4px 12px ${currentSection.color}80`
-                      : "0 2px 6px rgba(0,0,0,0.5)";
+                      ? `0 3px 10px ${currentSection.color}80`
+                      : "0 2px 5px rgba(0,0,0,0.5)";
                   }}
                 >
                   {levelNumber}
@@ -469,12 +476,12 @@ const HumanBodyMap: React.FC = () => {
           {/* Progress Bar */}
           <div style={{
             background: "rgba(0,0,0,0.5)",
-            borderRadius: "25px",
-            height: "50px",
-            border: "4px solid #fff",
+            borderRadius: "clamp(15px, 3vw, 25px)",
+            height: "clamp(40px, 8vw, 50px)",
+            border: "clamp(3px, 0.6vw, 4px) solid #fff",
             overflow: "hidden",
             position: "relative",
-            marginBottom: "20px",
+            marginBottom: "clamp(15px, 3vw, 20px)",
           }}>
             <div
               style={{
@@ -491,7 +498,7 @@ const HumanBodyMap: React.FC = () => {
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
-              fontSize: "clamp(1.2rem, 3.5vw, 1.6rem)",
+              fontSize: "clamp(1rem, 4vw, 1.6rem)",
               fontWeight: "bold",
               color: "#fff",
               textShadow: "3px 3px 6px rgba(0,0,0,0.9)",
@@ -506,8 +513,8 @@ const HumanBodyMap: React.FC = () => {
             textAlign: "center",
           }}>
             <div style={{
-              marginBottom: "15px",
-              fontSize: "clamp(1rem, 3vw, 1.2rem)",
+              marginBottom: "clamp(10px, 2vw, 15px)",
+              fontSize: "clamp(0.9rem, 3vw, 1.2rem)",
               color: "#fff",
               fontWeight: "bold",
               textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
@@ -523,16 +530,16 @@ const HumanBodyMap: React.FC = () => {
                 window.location.href = `/body-systems?level=${firstLevelId}&category=${currentSection.categoryId}`;
               }}
               style={{
-                padding: "clamp(12px, 3vw, 18px) clamp(30px, 6vw, 50px)",
+                padding: "clamp(10px, 2.5vw, 18px) clamp(25px, 6vw, 50px)",
                 background: `linear-gradient(135deg, ${currentSection.color}, ${currentSection.darkColor})`,
                 color: "#fff",
-                border: "4px solid #fff",
-                borderRadius: "20px",
+                border: "clamp(3px, 0.6vw, 4px) solid #fff",
+                borderRadius: "clamp(15px, 3vw, 20px)",
                 cursor: "pointer",
                 fontWeight: "bold",
-                fontSize: "clamp(1.2rem, 3.5vw, 1.6rem)",
+                fontSize: "clamp(1rem, 4vw, 1.6rem)",
                 textTransform: "uppercase",
-                letterSpacing: "2px",
+                letterSpacing: "clamp(1px, 0.3vw, 2px)",
                 boxShadow: `0 6px 25px ${currentSection.color}80`,
                 transition: "all 0.2s ease",
                 textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
@@ -555,16 +562,16 @@ const HumanBodyMap: React.FC = () => {
         <button
           onClick={goToNext}
           style={{
-            width: "clamp(60px, 8vw, 80px)",
-            height: "clamp(60px, 8vw, 80px)",
+            width: "clamp(50px, 10vw, 80px)",
+            height: "clamp(50px, 10vw, 80px)",
             background: "linear-gradient(135deg, #fff, #ddd)",
-            border: "5px solid #000",
-            borderRadius: "15px",
+            border: "clamp(3px, 0.5vw, 5px) solid #000",
+            borderRadius: "clamp(10px, 2vw, 15px)",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "clamp(30px, 5vw, 40px)",
+            fontSize: "clamp(24px, 5vw, 40px)",
             boxShadow: "0 8px 20px rgba(0,0,0,0.6)",
             transition: "all 0.2s",
             flexShrink: 0,
