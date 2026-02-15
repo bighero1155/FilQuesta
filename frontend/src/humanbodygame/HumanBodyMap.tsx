@@ -194,30 +194,7 @@ const HumanBodyMap: React.FC = () => {
         flexDirection: "column",
       }}
     >
-      {/* Decorative Background Elements */}
-      <div style={{
-        position: "absolute",
-        top: "20px",
-        left: "20px",
-        width: "60px",
-        height: "60px",
-        background: "linear-gradient(135deg, #4CAF50, #2196F3)",
-        borderRadius: "10px",
-        border: "4px solid #fff",
-        boxShadow: "0 4px 20px rgba(76, 175, 80, 0.5)",
-      }} />
-      
-      <div style={{
-        position: "absolute",
-        top: "20px",
-        right: "20px",
-        width: "60px",
-        height: "60px",
-        background: "linear-gradient(135deg, #E91E63, #9C27B0)",
-        borderRadius: "50%",
-        border: "4px solid #fff",
-        boxShadow: "0 4px 20px rgba(233, 30, 99, 0.5)",
-      }} />
+
 
       {/* Back Button - Top Left */}
       <div style={{ position: "absolute", top: "20px", left: "20px", zIndex: 100 }}>
@@ -341,7 +318,7 @@ const HumanBodyMap: React.FC = () => {
         alignItems: "center",
         justifyContent: "center",
         gap: "20px",
-        maxWidth: "1200px",
+        maxWidth: "1400px",
         margin: "0 auto",
         width: "100%",
       }}>
@@ -383,7 +360,7 @@ const HumanBodyMap: React.FC = () => {
             border: "6px solid #fff",
             padding: "30px",
             boxShadow: `0 12px 40px ${currentSection.color}60`,
-            maxWidth: "600px",
+            maxWidth: "800px",
             width: "100%",
             minHeight: "400px",
             display: "flex",
