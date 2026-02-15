@@ -553,8 +553,11 @@ const MagicTreeMap: React.FC = () => {
               <button
                 onClick={() => {
                   const categoryIndex = LEVEL_SECTIONS.findIndex(s => s.categoryId === currentSection.categoryId);
-                  const firstLevelId = categoryIndex * LEVELS_PER_CATEGORY;
-                  window.location.href = `/magictreescene?level=${firstLevelId}&category=${currentSection.categoryId}`;
+                  // If no progress (0), start at level 1 (index 0)
+                  // If there's progress, go to the current level (last unlocked level)
+                  const targetLevelNumber = unlockedInCategory === 0 ? 1 : unlockedInCategory;
+                  const globalLevelId = (categoryIndex * LEVELS_PER_CATEGORY) + targetLevelNumber;
+                  window.location.href = `/magictreescene?level=${globalLevelId - 1}&category=${currentSection.categoryId}`;
                 }}
                 style={{
                   padding: "clamp(10px, 2.5vw, 18px) clamp(25px, 6vw, 50px)",
