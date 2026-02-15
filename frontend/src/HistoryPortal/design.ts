@@ -377,7 +377,7 @@ export const TEXT_STYLES = {
     } as TextStyleConfig
   },
 
-  // Back Button Styles
+  // Back Button Styles - NO BACKGROUND
   backButton: {
     desktop: {
       fontSize: "20px",
@@ -387,7 +387,7 @@ export const TEXT_STYLES = {
       stroke: "#000000",
       strokeThickness: 3,
       padding: { x: 20, y: 10 },
-      backgroundColor: "#ff6b6b",
+      // No backgroundColor - text only
       shadow: {
         offsetX: 2,
         offsetY: 2,
@@ -405,7 +405,7 @@ export const TEXT_STYLES = {
       stroke: "#000000",
       strokeThickness: 2,
       padding: { x: 15, y: 8 },
-      backgroundColor: "#ff6b6b",
+      // No backgroundColor - text only
       shadow: {
         offsetX: 1,
         offsetY: 1,
@@ -538,8 +538,8 @@ export const UI_COLORS = {
     backgroundHex: "#4a5568"
   },
   backButton: {
-    background: 0xff6b6b,
-    backgroundHex: "#ff6b6b"
+    background: null, // No background
+    backgroundHex: null
   },
   hintBackground: "#2a1810",
   overlayDark: 0x000000,
