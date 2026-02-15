@@ -239,16 +239,27 @@ export default class HistoryPortalScene extends Phaser.Scene {
       wordWrap: { width: width * 0.85 }
     }).setOrigin(0.5).setDepth(10);
 
-    // BACK button - text only, no background, left side top
+    // BACK TO MAP button - pill/oval shape on left side top
     const backBtnY = isMobile ? (isPortrait ? 30 : 20) : 30;
     const backBtnX = isMobile ? 80 : 100;
+    const backBtnWidth = isMobile ? 140 : 180;
+    const backBtnHeight = 40;
+    
+    // Create pill-shaped background for back button
+    const backBtnBg = this.add.graphics().setDepth(10);
+    backBtnBg.fillStyle(0x2D1B4E, 0.8);
+    backBtnBg.fillRoundedRect(
+      backBtnX - backBtnWidth / 2,
+      backBtnY - backBtnHeight / 2,
+      backBtnWidth,
+      backBtnHeight,
+      20  // Large border radius for pill shape
+    );
     
     const backBtnStyle = getTextStyle('backButton', isMobile, isPortrait);
     const backBtn = this.add.text(backBtnX, backBtnY, "← BACK", {
       ...backBtnStyle,
-      color: "#FFD700",
-      stroke: "#2D1B4E",
-      strokeThickness: isMobile ? 4 : 5
+      color: "#FFD700"
     })
       .setOrigin(0.5)
       .setDepth(11)
@@ -262,15 +273,15 @@ export default class HistoryPortalScene extends Phaser.Scene {
     if (!isMobile) {
       backBtn.on("pointerover", () => {
         this.tweens.add({ 
-          targets: backBtn, 
-          scale: 1.1, 
+          targets: [backBtn, backBtnBg], 
+          scale: 1.05, 
           duration: ANIMATIONS.buttonHover.duration 
         });
       });
 
       backBtn.on("pointerout", () => {
         this.tweens.add({ 
-          targets: backBtn, 
+          targets: [backBtn, backBtnBg], 
           scale: 1, 
           duration: ANIMATIONS.buttonHover.duration 
         });
