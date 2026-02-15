@@ -415,15 +415,15 @@ const HumanBodyMap: React.FC = () => {
             {/* Stars - REMOVED */}
           </div>
 
-          {/* Level Grid (1-15) */}
+          {/* Level Grid (1-15) - BIGGER BUTTONS */}
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(5, 1fr)",
-            gap: "clamp(8px, 2vw, 14px)",
-            marginBottom: "20px",
-            padding: "0 clamp(10px, 3vw, 20px)",
-            maxWidth: "clamp(320px, 95%, 550px)",
-            margin: "0 auto 20px auto",
+            gap: "clamp(10px, 2.5vw, 16px)",
+            marginBottom: "25px",
+            padding: "0 clamp(15px, 4vw, 25px)",
+            maxWidth: "clamp(350px, 95%, 650px)",
+            margin: "0 auto 25px auto",
           }}>
             {Array.from({ length: LEVELS_PER_CATEGORY }, (_, i) => {
               const levelNumber = i + 1;
@@ -448,29 +448,30 @@ const HumanBodyMap: React.FC = () => {
                       : "radial-gradient(circle at top left, #555, #333)",
                     color: "white",
                     fontWeight: "bold",
-                    fontSize: "clamp(13px, 3vw, 16px)",
-                    border: isUnlocked ? "3px solid #fff" : "2px solid #444",
+                    fontSize: "clamp(16px, 4vw, 20px)",
+                    border: isUnlocked ? "4px solid #fff" : "3px solid #444",
                     cursor: isUnlocked ? "pointer" : "not-allowed",
                     boxShadow: isUnlocked
-                      ? `0 4px 12px ${currentSection.color}80`
-                      : "0 2px 6px rgba(0,0,0,0.5)",
+                      ? `0 5px 15px ${currentSection.color}80`
+                      : "0 3px 8px rgba(0,0,0,0.5)",
                     transition: "all 0.2s ease",
                     opacity: isUnlocked ? 1 : 0.4,
                     padding: "0",
-                    minWidth: "0",
+                    minWidth: "44px",
+                    minHeight: "44px",
                     width: "100%",
                   }}
                   onMouseOver={(e) => {
                     if (isUnlocked) {
                       e.currentTarget.style.transform = "scale(1.15)";
-                      e.currentTarget.style.boxShadow = `0 6px 18px ${currentSection.color}`;
+                      e.currentTarget.style.boxShadow = `0 8px 20px ${currentSection.color}`;
                     }
                   }}
                   onMouseOut={(e) => {
                     e.currentTarget.style.transform = "scale(1)";
                     e.currentTarget.style.boxShadow = isUnlocked
-                      ? `0 4px 12px ${currentSection.color}80`
-                      : "0 2px 6px rgba(0,0,0,0.5)";
+                      ? `0 5px 15px ${currentSection.color}80`
+                      : "0 3px 8px rgba(0,0,0,0.5)";
                   }}
                 >
                   {levelNumber}
