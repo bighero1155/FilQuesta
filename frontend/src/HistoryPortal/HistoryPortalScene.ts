@@ -239,11 +239,30 @@ export default class HistoryPortalScene extends Phaser.Scene {
       wordWrap: { width: width * 0.85 }
     }).setOrigin(0.5).setDepth(10);
 
-    // BACK TO MAP button at the top
-    const backBtnY = isMobile ? (isPortrait ? 600 : 15) : 20;
+    // BACK TO MAP button - pill/oval shape on left side top
+    const backBtnY = isMobile ? (isPortrait ? 30 : 20) : 30;
+    const backBtnX = isMobile ? 80 : 100;
+    const backBtnWidth = isMobile ? 140 : 180;
+    const backBtnHeight = 40;
+    
+    // Create pill-shaped background for back button
+    const backBtnBg = this.add.graphics().setDepth(10);
+    backBtnBg.fillStyle(0x2D1B4E, 0.8);
+    backBtnBg.fillRoundedRect(
+      backBtnX - backBtnWidth / 2,
+      backBtnY - backBtnHeight / 2,
+      backBtnWidth,
+      backBtnHeight,
+      20  // Large border radius for pill shape
+    );
+    
     const backBtnStyle = getTextStyle('backButton', isMobile, isPortrait);
-    const backBtn = this.add.text(width - (isMobile ? 120 : 30), backBtnY, "BACK TO MAP", backBtnStyle)
-      .setOrigin(1, 0)
+    const backBtn = this.add.text(backBtnX, backBtnY, "← BACK", {
+      ...backBtnStyle,
+      color: "#FFD700"
+    })
+      .setOrigin(0.5)
+      .setDepth(11)
       .setInteractive({ useHandCursor: true });
     
     backBtn.on("pointerdown", async () => {
@@ -254,7 +273,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
     if (!isMobile) {
       backBtn.on("pointerover", () => {
         this.tweens.add({ 
-          targets: backBtn, 
+          targets: [backBtn, backBtnBg], 
           scale: 1.05, 
           duration: ANIMATIONS.buttonHover.duration 
         });
@@ -262,7 +281,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
 
       backBtn.on("pointerout", () => {
         this.tweens.add({ 
-          targets: backBtn, 
+          targets: [backBtn, backBtnBg], 
           scale: 1, 
           duration: ANIMATIONS.buttonHover.duration 
         });
@@ -363,25 +382,90 @@ export default class HistoryPortalScene extends Phaser.Scene {
     }
     
     if (textureExists) {
-      console.log("✅ Creating portal image with real Gaussian blur...");
+      console.log("✅ Creating portal image with enhanced blur...");
       
-      // Base portal image (clear, always visible)
+      // Base portal image (fully visible at all times)
       this.portalImage = this.add.image(portalX, portalY, "portal-image");
       this.portalImage.setDisplaySize(portalSize, portalSize);
       this.portalImage.setDepth(5);
 
-      // ── REAL GAUSSIAN BLUR with postFX ──────────────────────────────────
-      // Create a blurred copy that sits on top
-      const portalBlurred = this.add.image(portalX, portalY, "portal-image")
+      // ── Enhanced Fake-blur overlay layers ────────────────────────────────
+      // Multiple heavy layers at depths 6-9, BELOW items (depth 15).
+      // This creates an almost completely obscured, unreadable image.
+
+      // Layer 1: Very strong white wash — kills almost all color
+      const blurBase = this.add.image(portalX, portalY, "portal-image")
         .setDisplaySize(portalSize, portalSize)
+        .setTint(0xffffff)
+        .setAlpha(0.92)
         .setDepth(6);
 
-      // Apply very heavy Gaussian blur for maximum obscurity
-      portalBlurred.postFX.addBlur(0, 0, 1, 10);
+      // Layers 2-5: Multiple offset copies at various angles — extreme blur
+      const blurOffset1 = this.add.image(portalX + 15, portalY + 15, "portal-image")
+        .setDisplaySize(portalSize, portalSize)
+        .setAlpha(0.80)
+        .setDepth(7);
 
-      this.blurLayers = [portalBlurred];
-      
-      console.log("✅ Portal image + real Gaussian blur created!");
+      const blurOffset2 = this.add.image(portalX - 15, portalY - 15, "portal-image")
+        .setDisplaySize(portalSize, portalSize)
+        .setAlpha(0.80)
+        .setDepth(7);
+
+      const blurOffset3 = this.add.image(portalX + 15, portalY - 15, "portal-image")
+        .setDisplaySize(portalSize, portalSize)
+        .setAlpha(0.75)
+        .setDepth(7);
+
+      const blurOffset4 = this.add.image(portalX - 15, portalY + 15, "portal-image")
+        .setDisplaySize(portalSize, portalSize)
+        .setAlpha(0.75)
+        .setDepth(7);
+
+      // Layer 6: Very dark overlay — makes image almost completely unreadable
+      const blurHeavy = this.add.image(portalX, portalY, "portal-image")
+        .setDisplaySize(portalSize, portalSize)
+        .setTint(0x0a0a1a)
+        .setAlpha(0.88)
+        .setDepth(8);
+
+      // Layer 7: Final frosted glass effect with blue-ish tint
+      const blurFrosted = this.add.image(portalX, portalY, "portal-image")
+        .setDisplaySize(portalSize, portalSize)
+        .setTint(0x3a3a55)
+        .setAlpha(0.80)
+        .setDepth(8);
+
+      // Layer 8: Additional gray layer for complete obscurity
+      const blurGray = this.add.image(portalX, portalY, "portal-image")
+        .setDisplaySize(portalSize, portalSize)
+        .setTint(0x808080)
+        .setAlpha(0.70)
+        .setDepth(9);
+
+      this.blurLayers = [
+        blurBase, 
+        blurOffset1, 
+        blurOffset2, 
+        blurOffset3, 
+        blurOffset4, 
+        blurHeavy, 
+        blurFrosted,
+        blurGray
+      ];
+
+      // Add a large "?" label on the blurred portal
+      const blurLabel = this.add.text(portalX, portalY, "?", {
+        fontSize: isMobile ? "64px" : "100px",
+        color: "#ffffff",
+        fontStyle: "bold",
+        stroke: "#000000",
+        strokeThickness: 8,
+      })
+        .setOrigin(0.5)
+        .setDepth(10)    // above all blur layers, below items
+        .setAlpha(0.95);
+
+      this.blurLayers.push(blurLabel);
       
       console.log("✅ Portal image + enhanced blur layers created!");
     } else {
@@ -746,7 +830,31 @@ export default class HistoryPortalScene extends Phaser.Scene {
       duration: 300,
     });
     
-    // Title - Simple text, no glow
+    // Modal background
+    const modalWidth = isMobile ? width * 0.85 : 400;
+    const modalHeight = isMobile ? 200 : 250;
+    
+    const modal = this.add.graphics().setDepth(101);
+    
+    modal.fillStyle(won ? UI_COLORS.success.modal : UI_COLORS.failure.modal, 1);
+    modal.fillRoundedRect(
+      width / 2 - modalWidth / 2,
+      height / 2 - modalHeight / 2,
+      modalWidth,
+      modalHeight,
+      20
+    );
+    modal.lineStyle(4, 0xffffff, 1);
+    modal.strokeRoundedRect(
+      width / 2 - modalWidth / 2,
+      height / 2 - modalHeight / 2,
+      modalWidth,
+      modalHeight,
+      20
+    );
+    modal.setAlpha(0).setScale(0.8);
+    
+    // Title
     const modalTitleStyle = getTextStyle('modalTitle', isMobile, false);
     
     const title = this.add.text(
@@ -756,41 +864,31 @@ export default class HistoryPortalScene extends Phaser.Scene {
       modalTitleStyle
     ).setOrigin(0.5).setDepth(102).setAlpha(0);
     
-    // Button with pill/oval background
-    const buttonText = won ? "Sunod na Antas" : "Ulitin";
+    // Button
+    const buttonText = won ? "Sunod na Antas →" : "Ulitin";
     const modalBtnStyle = getTextStyle('modalButton', isMobile, false);
     
-    // Create pill-shaped background
-    const buttonBg = this.add.graphics().setDepth(102).setAlpha(0);
-    const buttonWidth = isMobile ? 200 : 250;
-    const buttonHeight = 50;
-    const buttonX = width / 2;
-    const buttonY = height / 2 + 50;
-    
-    buttonBg.fillStyle(won ? 0x007744 : 0x991122, 1);
-    buttonBg.fillRoundedRect(
-      buttonX - buttonWidth / 2,
-      buttonY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-      25  // Large border radius for pill shape
-    );
-    
     const button = this.add.text(
-      buttonX,
-      buttonY,
+      width / 2,
+      height / 2 + 50,
       buttonText,
       {
-        fontSize: modalBtnStyle.fontSize,
-        fontFamily: modalBtnStyle.fontFamily,
-        color: "#FFFFFF",  // White text on colored background
-        fontStyle: "bold",
+        ...modalBtnStyle,
+        backgroundColor: won ? "#007744" : "#991122"
       }
-    ).setOrigin(0.5).setDepth(103).setAlpha(0).setInteractive({ useHandCursor: true });
+    ).setOrigin(0.5).setDepth(102).setAlpha(0).setInteractive({ useHandCursor: true });
 
-    // Animate text in (no modal background)
+    // Animate modal in
     this.tweens.add({
-      targets: [title, buttonBg, button],
+      targets: modal,
+      alpha: 1,
+      scale: 1,
+      duration: ANIMATIONS.fadeIn.duration,
+      ease: ANIMATIONS.fadeIn.ease,
+    });
+
+    this.tweens.add({
+      targets: [title, button],
       alpha: 1,
       y: "-=10",
       duration: ANIMATIONS.fadeIn.duration,
