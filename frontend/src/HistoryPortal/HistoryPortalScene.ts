@@ -239,11 +239,12 @@ export default class HistoryPortalScene extends Phaser.Scene {
       wordWrap: { width: width * 0.85 }
     }).setOrigin(0.5).setDepth(10);
 
-    // BACK TO MAP button at the top
-    const backBtnY = isMobile ? (isPortrait ? 600 : 15) : 20;
+    // BACK TO MAP button at the top-left
+    const backBtnY = isMobile ? (isPortrait ? 15 : 15) : 20;
+    const backBtnX = isMobile ? 20 : 30;
     const backBtnStyle = getTextStyle('backButton', isMobile, isPortrait);
-    const backBtn = this.add.text(width - (isMobile ? 120 : 30), backBtnY, "BACK TO MAP", backBtnStyle)
-      .setOrigin(1, 0)
+    const backBtn = this.add.text(backBtnX, backBtnY, "BACK TO MAP", backBtnStyle)
+      .setOrigin(0, 0)
       .setInteractive({ useHandCursor: true });
     
     backBtn.on("pointerdown", async () => {
