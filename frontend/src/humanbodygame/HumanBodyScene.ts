@@ -232,14 +232,12 @@ export default class HumanBodyScene extends Phaser.Scene {
       shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 2, fill: true },
     });
 
-    // Level info text (placed under timer)
+    // Level info text (left side, below score)
     const levelInfoFontSize = isMobile ? "28px" : "38px";
-    const levelInfoY = isMobile ? 55 : 18;
-    const levelInfoX = isMobile ? this.cameras.main.width - 130 : this.cameras.main.width - 350;
     
     this.add.text(
-      levelInfoX, 
-      levelInfoY, 
+      20,
+      isMobile ? 55 : 60,
       `Level ${this.currentLevelInCategory}`, 
       {
         fontSize: levelInfoFontSize,
