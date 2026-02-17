@@ -72,17 +72,6 @@ export default class HumanBodyScene extends Phaser.Scene {
   }
 
   // Get category display name with emoji
-  private getCategoryDisplayName(): string {
-    const categoryEmojis: Record<string, string> = {
-      BASIC: "🟢 BASIC",
-      NORMAL: "🔵 NORMAL",
-      HARD: "🔴 HARD",
-      ADVANCED: "🟠 ADVANCED",
-      EXPERT: "💀 EXPERT"
-    };
-    return categoryEmojis[this.currentCategoryId] || this.currentCategoryId;
-  }
-
   // Get background image based on category
   private getBackgroundImage(): string {
     if (this.currentCategoryId === "BASIC" || this.currentCategoryId === "NORMAL") {
@@ -241,22 +230,28 @@ export default class HumanBodyScene extends Phaser.Scene {
     });
 
     // Level info text (placed under timer)
-    const levelInfoFontSize = isMobile ? "16px" : "22px";
+    const levelInfoFontSize = isMobile ? "22px" : "30px";
     const levelInfoY = isMobile ? 55 : 18; // Position below timer
     const levelInfoX = isMobile ? this.cameras.main.width - 130 : this.cameras.main.width - 350;
     
     this.add.text(
       levelInfoX, 
       levelInfoY, 
-      `${this.getCategoryDisplayName()}\nLevel ${this.currentLevelInCategory}`, 
+      `Level ${this.currentLevelInCategory}`, 
       {
         fontSize: levelInfoFontSize,
+        fontFamily: "Poppins, sans-serif",
         fontStyle: "bold",
         color: "#ffffff",
-        backgroundColor: "#4a5568dd",
-        padding: isMobile ? { x: 8, y: 4 } : { x: 12, y: 6 },
-        align: "center",
-        lineSpacing: isMobile ? 2 : 4,
+        stroke: "#000000",
+        strokeThickness: isMobile ? 3 : 4,
+        shadow: {
+          offsetX: 1,
+          offsetY: 1,
+          color: "#000000",
+          blur: 2,
+          fill: true,
+        },
       }
     );
 
