@@ -638,7 +638,7 @@ export default class HumanBodyScene extends Phaser.Scene {
     part.colorCircle.fillCircle(labelX, labelY + 10, circleRadius);
 
     // Mobile vs Desktop text sizes
-    const nameFontSize = isMobile ? "14px" : "20px";
+    const nameFontSize = isMobile ? "12px" : "17px";
     const descFontSize = isMobile ? "12px" : "17px";
     const descWrapWidth = isMobile ? 130 : 240;
     const textOffsetX = isMobile ? 15 : 25;
@@ -662,9 +662,10 @@ export default class HumanBodyScene extends Phaser.Scene {
 
     // Description text — student-friendly with Poppins,
     // white fill with a solid black outline for easy readability
+    const descOffsetY = isMobile ? 26 : 32;
     part.descriptionText = this.add.text(
       labelX + textOffsetX,
-      labelY + 20,
+      labelY + descOffsetY,
       part.description,
       {
         fontSize: descFontSize,
@@ -753,7 +754,7 @@ export default class HumanBodyScene extends Phaser.Scene {
         part.colorCircle.fillCircle(newLabelX, newLabelY + 10, circleRadius);
         
         part.text.setPosition(newLabelX + textOffsetX, newLabelY);
-        part.descriptionText.setPosition(newLabelX + textOffsetX, newLabelY + 20);
+        part.descriptionText.setPosition(newLabelX + textOffsetX, newLabelY + (isMobile ? 26 : 32));
       }
     });
 
@@ -794,8 +795,8 @@ export default class HumanBodyScene extends Phaser.Scene {
         (image.body as Phaser.Physics.Arcade.Body).setVelocity(velocityX, velocityY);
         (image.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
 
-        // Show glow again when item is not placed correctly
-        glowCircle.setVisible(true);
+        // Keep glow hidden — organ is now under physics/bouncing
+        glowCircle.setVisible(false);
         glowCircle.setPosition(x, y);
 
         // Reset labels
@@ -808,7 +809,7 @@ export default class HumanBodyScene extends Phaser.Scene {
           part.colorCircle.fillCircle(resetLabelX, resetLabelY + 10, circleRadius);
           
           part.text.setPosition(resetLabelX + textOffsetX, resetLabelY);
-          part.descriptionText.setPosition(resetLabelX + textOffsetX, resetLabelY + 20);
+          part.descriptionText.setPosition(resetLabelX + textOffsetX, resetLabelY + (isMobile ? 26 : 32));
           
           // Hide color circle, name AND description again when drag ends on mobile
           if (isMobile) {
