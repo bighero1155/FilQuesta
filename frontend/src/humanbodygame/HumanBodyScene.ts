@@ -639,7 +639,7 @@ export default class HumanBodyScene extends Phaser.Scene {
 
     // Mobile vs Desktop text sizes
     const nameFontSize = isMobile ? "14px" : "20px";
-    const descFontSize = isMobile ? "11px" : "16px";
+    const descFontSize = isMobile ? "12px" : "17px";
     const descWrapWidth = isMobile ? 130 : 240;
     const textOffsetX = isMobile ? 15 : 25;
 
@@ -650,13 +650,30 @@ export default class HumanBodyScene extends Phaser.Scene {
       color: "#003344",
     });
 
-    // Description text
-    part.descriptionText = this.add.text(labelX + textOffsetX, labelY + 20, part.description, {
-      fontSize: descFontSize,
-      fontStyle: "bold",
-      color: "#333333",
-      wordWrap: { width: descWrapWidth },
-    });
+    // Description text — student-friendly: rounded/bubbly feel,
+    // white fill with a solid black outline for easy readability
+    part.descriptionText = this.add.text(
+      labelX + textOffsetX,
+      labelY + 20,
+      part.description,
+      {
+        fontSize: descFontSize,
+        fontFamily: "Fredoka One, Nunito, Comic Sans MS, Arial Rounded MT Bold, sans-serif",
+        fontStyle: "bold",
+        color: "#ffffff",         // White text fill
+        stroke: "#000000",        // Black outline
+        strokeThickness: isMobile ? 3 : 4,
+        wordWrap: { width: descWrapWidth },
+        lineSpacing: isMobile ? 2 : 4,
+        shadow: {
+          offsetX: 1,
+          offsetY: 1,
+          color: "#000000",
+          blur: 2,
+          fill: true,
+        },
+      }
+    );
     
     // Hide color circle, name AND description on mobile initially
     if (isMobile) {

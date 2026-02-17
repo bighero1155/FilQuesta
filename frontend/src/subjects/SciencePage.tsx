@@ -70,10 +70,10 @@ const SciencePage: React.FC = () => {
                   🫀
                 </div>
                 <h4 className="fw-bold mb-2" style={{ fontSize: "1.8rem" }}>
-                  Internal Human Body
+                  Human Body
                 </h4>
                 <p className="mb-4 px-4" style={{ fontSize: "1.1rem" }}>
-                  Explore organs and internal systems!
+                  Explore organs and systems!
                 </p>
                 <button 
                   className="btn btn-light fw-semibold px-5 py-3 play-btn"
