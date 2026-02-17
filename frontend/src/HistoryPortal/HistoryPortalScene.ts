@@ -378,7 +378,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
         .setDepth(6);
 
       // Apply very heavy Gaussian blur for maximum obscurity
-      portalBlurred.postFX.addBlur(0, 0, 1, 10);
+      portalBlurred.postFX.addBlur(0, 0, 1, 3);
 
       this.blurLayers = [portalBlurred];
       
