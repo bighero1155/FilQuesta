@@ -192,7 +192,7 @@ const StudentRegisterModal: React.FC<StudentRegisterModalProps> = ({
                     </div>
 
                     <div className="sr-form-group">
-                      <label className="sr-label">Middle Name</label>
+                      <label className="sr-label">Middle Name (Optional)</label>
                       <input
                         className="sr-input"
                         name="middle_name"
