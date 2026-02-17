@@ -207,10 +207,11 @@ export default class HumanBodyScene extends Phaser.Scene {
     const bodyScaleY = isMobile ? 1.1 : 1.4;  
     this.add.image(centerX, centerY, "body").setScale(bodyScaleX, bodyScaleY).setAlpha(1.3);
 
-    // Mobile vs Desktop score text
+    // Score and Level on the same horizontal row, shifted right to avoid organs
     const scoreFontSize = isMobile ? "20px" : "28px";
-    
-    this.scoreText = this.add.text(20, 20, "Score: 0", {
+    const topRowX = isMobile ? 150 : 170;
+
+    this.scoreText = this.add.text(topRowX, 20, "Score: 0", {
       fontSize: scoreFontSize,
       fontFamily: "Poppins, sans-serif",
       fontStyle: "bold",
@@ -220,25 +221,14 @@ export default class HumanBodyScene extends Phaser.Scene {
       shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 2, fill: true },
     });
 
-    // Mobile vs Desktop timer text
-    const timerX = isMobile ? this.cameras.main.width - 130 : this.cameras.main.width - 175;
-    this.timerText = this.add.text(timerX, 20, `Time: ${this.timeLeft}`, {
-      fontSize: scoreFontSize,
-      fontFamily: "Poppins, sans-serif",
-      fontStyle: "bold",
-      color: "#ffffff",
-      stroke: "#000000",
-      strokeThickness: isMobile ? 3 : 4,
-      shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 2, fill: true },
-    });
-
-    // Level info text (left side, below score)
+    // Level info text — same row as score, right of it
     const levelInfoFontSize = isMobile ? "28px" : "38px";
-    
+    const levelX = isMobile ? topRowX + 130 : topRowX + 180;
+
     this.add.text(
-      20,
-      isMobile ? 55 : 60,
-      `Level ${this.currentLevelInCategory}`, 
+      levelX,
+      12,
+      `Level ${this.currentLevelInCategory}`,
       {
         fontSize: levelInfoFontSize,
         fontFamily: "Poppins, sans-serif",
@@ -255,6 +245,19 @@ export default class HumanBodyScene extends Phaser.Scene {
         },
       }
     );
+
+    // Timer text — stays on the right side
+    const timerX = isMobile ? this.cameras.main.width - 130 : this.cameras.main.width - 175;
+    this.timerText = this.add.text(timerX, 20, `Time: ${this.timeLeft}`, {
+      fontSize: scoreFontSize,
+      fontFamily: "Poppins, sans-serif",
+      fontStyle: "bold",
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: isMobile ? 3 : 4,
+      shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 2, fill: true },
+    });
+
 
     // Mobile vs Desktop back button - IMPROVED ROUND VERSION
     const backButtonSize = isMobile ? 70 : 80; // Circle diameter
