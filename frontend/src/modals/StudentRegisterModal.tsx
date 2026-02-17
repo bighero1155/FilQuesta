@@ -359,7 +359,7 @@ const StudentRegisterModal: React.FC<StudentRegisterModalProps> = ({
                     className="sr-btn sr-btn-success"
                     disabled={submitting}
                   >
-                    {submitting ? "CREATING..." : "BEGIN QUEST"}
+                    {submitting ? "CREATING..." : "BEGIN"}
                   </button>
                 )}
               </div>
