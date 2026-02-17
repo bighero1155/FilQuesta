@@ -209,29 +209,32 @@ export default class HumanBodyScene extends Phaser.Scene {
 
     // Mobile vs Desktop score text
     const scoreFontSize = isMobile ? "20px" : "28px";
-    const scorePadding = isMobile ? { x: 10, y: 6 } : { x: 16, y: 8 };
     
     this.scoreText = this.add.text(20, 20, "Score: 0", {
       fontSize: scoreFontSize,
+      fontFamily: "Poppins, sans-serif",
       fontStyle: "bold",
-      color: "#003344",
-      backgroundColor: "#aaffffcc",
-      padding: scorePadding,
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: isMobile ? 3 : 4,
+      shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 2, fill: true },
     });
 
     // Mobile vs Desktop timer text
     const timerX = isMobile ? this.cameras.main.width - 130 : this.cameras.main.width - 175;
     this.timerText = this.add.text(timerX, 20, `Time: ${this.timeLeft}`, {
       fontSize: scoreFontSize,
+      fontFamily: "Poppins, sans-serif",
       fontStyle: "bold",
-      color: "#333300",
-      backgroundColor: "#ffffaa",
-      padding: scorePadding,
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: isMobile ? 3 : 4,
+      shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 2, fill: true },
     });
 
     // Level info text (placed under timer)
-    const levelInfoFontSize = isMobile ? "22px" : "30px";
-    const levelInfoY = isMobile ? 55 : 18; // Position below timer
+    const levelInfoFontSize = isMobile ? "28px" : "38px";
+    const levelInfoY = isMobile ? 55 : 18;
     const levelInfoX = isMobile ? this.cameras.main.width - 130 : this.cameras.main.width - 350;
     
     this.add.text(
