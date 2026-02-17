@@ -207,7 +207,7 @@ export default class HumanBodyScene extends Phaser.Scene {
     const bodyScaleY = isMobile ? 1.1 : 1.4;  
     this.add.image(centerX, centerY, "body").setScale(bodyScaleX, bodyScaleY).setAlpha(1.3);
 
-    // Score and Level on the same horizontal row, shifted right to avoid organs
+    // Score and Level positioning — mobile: level top-left, score shifted right; desktop: inline
     const scoreFontSize = isMobile ? "20px" : "28px";
     const topRowX = isMobile ? 150 : 170;
 
@@ -221,13 +221,14 @@ export default class HumanBodyScene extends Phaser.Scene {
       shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 2, fill: true },
     });
 
-    // Level info text — same row as score, right of it
+    // Level info text — mobile: top-left corner; desktop: inline next to score
     const levelInfoFontSize = isMobile ? "28px" : "38px";
-    const levelX = isMobile ? topRowX + 130 : topRowX + 180;
+    const levelX = isMobile ? 10 : topRowX + 180;
+    const levelY = isMobile ? 10 : 12;
 
     this.add.text(
       levelX,
-      12,
+      levelY,
       `Level ${this.currentLevelInCategory}`,
       {
         fontSize: levelInfoFontSize,
