@@ -646,11 +646,21 @@ export default class HumanBodyScene extends Phaser.Scene {
     // Name text
     part.text = this.add.text(labelX + textOffsetX, labelY, part.name, {
       fontSize: nameFontSize,
+      fontFamily: "Poppins, sans-serif",
       fontStyle: "bold",
-      color: "#003344",
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: isMobile ? 3 : 4,
+      shadow: {
+        offsetX: 1,
+        offsetY: 1,
+        color: "#000000",
+        blur: 2,
+        fill: true,
+      },
     });
 
-    // Description text — student-friendly: rounded/bubbly feel,
+    // Description text — student-friendly with Poppins,
     // white fill with a solid black outline for easy readability
     part.descriptionText = this.add.text(
       labelX + textOffsetX,
@@ -658,7 +668,7 @@ export default class HumanBodyScene extends Phaser.Scene {
       part.description,
       {
         fontSize: descFontSize,
-        fontFamily: "Fredoka One, Nunito, Comic Sans MS, Arial Rounded MT Bold, sans-serif",
+        fontFamily: "Poppins, sans-serif",
         fontStyle: "bold",
         color: "#ffffff",         // White text fill
         stroke: "#000000",        // Black outline
