@@ -40,9 +40,26 @@ import TeacherQuizReview from "./components/Quizzes/TeacherQuizReview";
 import HumanBodyMap from "./humanbodygame/HumanBodyMap";
 
 // ---------------------------
+// ROUTE LOADING MESSAGES
+// ---------------------------
+const ROUTE_LOADING_MESSAGES: Record<string, string> = {
+  "/humanbodymap": "Starting...",
+  "/MagicTree": "Starting...",
+  "/wordwizardmap": "Starting...",
+  "/historymap": "Starting...",
+};
+
+const getLoadingMessage = (): string => {
+  const pathname = window.location.pathname;
+  return ROUTE_LOADING_MESSAGES[pathname] ?? "Loading...";
+};
+
+// ---------------------------
 // PIXELATED LOADING SCREEN
 // ---------------------------
 const Loading: React.FC = () => {
+  const loadingMessage = getLoadingMessage();
+
   const styles: Record<string, React.CSSProperties> = {
     screen: {
       position: "fixed",
@@ -97,7 +114,7 @@ const Loading: React.FC = () => {
           <div style={{ ...styles.pixel, animationDelay: "0.4s" }} />
           <div style={{ ...styles.pixel, animationDelay: "0.6s" }} />
         </div>
-        <p style={styles.text}>Starting...</p>
+        <p style={styles.text}>{loadingMessage}</p>
       </div>
     </>
   );
