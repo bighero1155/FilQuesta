@@ -115,7 +115,7 @@ const Register: React.FC = () => {
   const fieldLabels: Record<FormField, string> = {
     username: "Username",
     first_name: "First Name",
-    middle_name: "Middle Name",
+    middle_name: "Middle Name (Optional)",
     last_name: "Last Name",
     age: "Age",
     address: "Address",
