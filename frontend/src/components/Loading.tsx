@@ -56,7 +56,7 @@ const Loading: React.FC = () => {
           <div style={{ ...styles.pixel, animationDelay: "0.4s" }} />
           <div style={{ ...styles.pixel, animationDelay: "0.6s" }} />
         </div>
-        <p style={styles.text}>Loading...</p>
+        <p style={styles.text}>Starting...</p>
       </div>
     </>
   );
