@@ -32,7 +32,7 @@ const StudentRegisterModal: React.FC<StudentRegisterModalProps> = ({
 
   const stepImages = [
     "/assets/students.jpg",
-    "/assets/students2.jpg",
+    "/assets/students.jpg",
     "/assets/school.jpg",
     "/assets/lock.jpg",
   ];
