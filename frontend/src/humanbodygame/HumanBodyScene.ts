@@ -74,7 +74,9 @@ export default class HumanBodyScene extends Phaser.Scene {
   // Get category display name with emoji
   // Get background image based on category
   private getBackgroundImage(): string {
-    if (this.currentCategoryId === "BASIC" || this.currentCategoryId === "NORMAL") {
+    if (this.currentCategoryId === "BASIC") {
+      return "/assets/pyramid.png";
+    } else if (this.currentCategoryId === "NORMAL") {
       return "/assets/human5.png";
     } else if (this.currentCategoryId === "HARD") {
       return "/assets/skeleton.png";

@@ -26,171 +26,180 @@ export interface LevelConfig {
 // ========================================
 // 🟢 BASIC — Organs (15 items)
 // ========================================
-const basicOrgans: PartConfig[] = [
-  { 
-    name: "Heart", 
-    assetKey: "heart", 
-    scale: 0.2, 
-    x: 40, 
-    y: -230, 
-    mobileX: 30, 
-    mobileY: -140, 
-    description: "Pumps blood throughout the body.",
-    imagePath: "/assets/heart.png"
+const basicFoods: PartConfig[] = [
+
+  // ── GROW tier (top, 3 items) — Protein & Dairy ─────────────────────
+  // Narrow tip: spread tightly around center
+  {
+    name: "Egg",
+    assetKey: "egg",
+    scale: 0.25,
+    x: 0,
+    y: -220,
+    mobileX: 0,
+    mobileY: -140,
+    description: "A protein-rich food that helps build muscles and repair body tissues.",
+    imagePath: "/assets/egg.png"
   },
-  { 
-    name: "Lungs", 
-    assetKey: "lungs", 
-    scale: 0.2, 
-    x: 0, 
-    y: -190, 
-    mobileX: -10, 
-    mobileY: -110, 
-    description: "Allow breathing and oxygen exchange.",
-    imagePath: "/assets/lungs.png"
+  {
+    name: "Milk",
+    assetKey: "milk",
+    scale: 0.25,
+    x: -55,
+    y: -205,
+    mobileX: -35,
+    mobileY: -128,
+    description: "A dairy drink rich in calcium that strengthens bones and teeth.",
+    imagePath: "/assets/milk.png"
   },
-  { 
-    name: "Brain", 
-    assetKey: "brain", 
-    scale: 0.5, 
-    x: 0, 
-    y: -350, 
-    mobileX: 0, 
-    mobileY: -220, 
-    description: "Controls thoughts, memory, and movement.",
-    imagePath: "/assets/brain.png"
+  {
+    name: "Chicken",
+    assetKey: "chicken",
+    scale: 0.25,
+    x: 55,
+    y: -205,
+    mobileX: 35,
+    mobileY: -128,
+    description: "A lean meat that provides protein for growth and body repair.",
+    imagePath: "/assets/chicken.png"
   },
-  { 
-    name: "Stomach", 
-    assetKey: "stomach", 
-    scale: 0.3, 
-    x: 30, 
-    y: -130, 
-    mobileX: 20, 
-    mobileY: -60, 
-    description: "Breaks down food during digestion.",
-    imagePath: "/assets/stomach.png"
+
+  // ── GLOW tier (middle, 6 items) — Fruits & Vegetables ──────────────
+  // Medium band: evenly spaced across ~-150px to +150px
+  {
+    name: "Carrot",
+    assetKey: "carrot",
+    scale: 0.25,
+    x: -150,
+    y: -70,
+    mobileX: -93,
+    mobileY: -40,
+    description: "A vegetable rich in vitamin A that keeps eyes and skin healthy.",
+    imagePath: "/assets/carrot.png"
   },
-  { 
-    name: "Liver", 
-    assetKey: "liver", 
-    scale: 0.35, 
-    x: -20, 
-    y: -145, 
-    mobileX: -20, 
-    mobileY: -70, 
-    description: "Filters toxins and produces bile.",
-    imagePath: "/assets/liver.png"
+  {
+    name: "Apple",
+    assetKey: "apple",
+    scale: 0.25,
+    x: -90,
+    y: -70,
+    mobileX: -56,
+    mobileY: -40,
+    description: "A fruit packed with vitamins and fiber that boosts the immune system.",
+    imagePath: "/assets/apple.png"
   },
-  { 
-    name: "Kidneys", 
-    assetKey: "kidney", 
-    scale: 0.18, 
-    x: -35, 
-    y: -100, 
-    mobileX: -35, 
-    mobileY: -40, 
-    description: "Filter blood and remove waste.",
-    imagePath: "/assets/kidney.png"
+  {
+    name: "Spinach",
+    assetKey: "spinach",
+    scale: 0.25,
+    x: -30,
+    y: -70,
+    mobileX: -19,
+    mobileY: -40,
+    description: "A leafy vegetable rich in iron and vitamins for healthy blood.",
+    imagePath: "/assets/spinach.png"
   },
-  { 
-    name: "Trachea", 
-    assetKey: "trachea", 
-    scale: 0.25, 
-    x: 0, 
-    y: -260, 
-    mobileX: 0, 
-    mobileY: -160, 
-    description: "Windpipe that carries air to lungs.",
-    imagePath: "/assets/trachea.png"
+  {
+    name: "Orange",
+    assetKey: "orange",
+    scale: 0.25,
+    x: 30,
+    y: -70,
+    mobileX: 19,
+    mobileY: -40,
+    description: "A citrus fruit high in vitamin C that strengthens the immune system.",
+    imagePath: "/assets/orange.png"
   },
-  { 
-    name: "Esophagus", 
-    assetKey: "esophagus", 
-    scale: 0.22, 
-    x: 10, 
-    y: -200, 
-    mobileX: 5, 
-    mobileY: -120, 
-    description: "Tube connecting mouth to stomach.",
-    imagePath: "/assets/esophagus.png"
+  {
+    name: "Banana",
+    assetKey: "banana",
+    scale: 0.25,
+    x: 90,
+    y: -70,
+    mobileX: 56,
+    mobileY: -40,
+    description: "A fruit that provides quick energy and is rich in potassium.",
+    imagePath: "/assets/banana.png"
   },
-  { 
-    name: "Pancreas", 
-    assetKey: "pancreas", 
-    scale: 0.25, 
-    x: -30, 
-    y: -120, 
-    mobileX: -25, 
-    mobileY: -55, 
-    description: "Produces insulin and digestive enzymes.",
-    imagePath: "/assets/pancreas.png"
+  {
+    name: "Broccoli",
+    assetKey: "broccoli",
+    scale: 0.25,
+    x: 150,
+    y: -70,
+    mobileX: 93,
+    mobileY: -40,
+    description: "A vegetable packed with vitamins C and K for a strong body.",
+    imagePath: "/assets/broccoli.png"
   },
-  { 
-    name: "Intestine", 
-    assetKey: "intestine", 
-    scale: 0.2, 
-    x: 0, 
-    y: -75, 
-    mobileX: 0, 
-    mobileY: -20, 
-    description: "Absorbs nutrients and water.",
-    imagePath: "/assets/Intestine.png"
+
+  // ── GO tier (bottom, 6 items) — Carbohydrates & Energy Foods ───────
+  // Wide base: evenly spaced across ~-175px to +175px
+  {
+    name: "Rice",
+    assetKey: "rice",
+    scale: 0.25,
+    x: -175,
+    y: 120,
+    mobileX: -109,
+    mobileY: 80,
+    description: "A staple grain that gives the body energy to move and think.",
+    imagePath: "/assets/rice.png"
   },
-  { 
-    name: "Bladder", 
-    assetKey: "bladder", 
-    scale: 0.2, 
-    x: 0, 
-    y: -40, 
-    mobileX: 0, 
-    mobileY: -10, 
-    description: "Stores urine before excretion.",
-    imagePath: "/assets/bladder.png"
+  {
+    name: "Bread",
+    assetKey: "bread",
+    scale: 0.25,
+    x: -105,
+    y: 120,
+    mobileX: -65,
+    mobileY: 80,
+    description: "A baked grain food that provides carbohydrates for daily energy.",
+    imagePath: "/assets/bread.png"
   },
-  { 
-    name: "Gallbladder", 
-    assetKey: "gallbladder", 
-    scale: 0.18, 
-    x: -40, 
-    y: -135, 
-    mobileX: -35, 
-    mobileY: -65, 
-    description: "Stores bile from the liver.",
-    imagePath: "/assets/gallbladder.png"
+  {
+    name: "Corn",
+    assetKey: "corn",
+    scale: 0.25,
+    x: -35,
+    y: 120,
+    mobileX: -22,
+    mobileY: 80,
+    description: "A grain vegetable that fuels the body with carbohydrates and fiber.",
+    imagePath: "/assets/corn.png"
   },
-  { 
-    name: "Spleen", 
-    assetKey: "spleen", 
-    scale: 0.2, 
-    x: -50, 
-    y: -150, 
-    mobileX: -40, 
-    mobileY: -80, 
-    description: "Filters blood and fights infection.",
-    imagePath: "/assets/spleen.png"
+  {
+    name: "Pasta",
+    assetKey: "pasta",
+    scale: 0.25,
+    x: 35,
+    y: 120,
+    mobileX: 22,
+    mobileY: 80,
+    description: "A wheat-based food rich in carbohydrates that provides lasting energy.",
+    imagePath: "/assets/pasta.png"
   },
-  { 
-    name: "Thyroid gland", 
-    assetKey: "thyroid", 
-    scale: 0.15, 
-    x: 0, 
-    y: -300, 
-    mobileX: 0, 
-    mobileY: -180, 
-    description: "Regulates metabolism and energy.",
-    imagePath: "/assets/thyroid.png"
+  {
+    name: "Sweet Potato",
+    assetKey: "sweet_potato",
+    scale: 0.25,
+    x: 105,
+    y: 120,
+    mobileX: 65,
+    mobileY: 80,
+    description: "A root vegetable packed with carbohydrates and vitamins for energy.",
+    imagePath: "/assets/sweet_potato.png"
   },
-  { 
-    name: "Appendix", 
-    assetKey: "appendix", 
-    scale: 0.15, 
-    x: 20, 
-    y: -60, 
-    mobileX: 15, 
-    mobileY: -25, 
-    description: "Small pouch attached to large intestine.",
-    imagePath: "/assets/appendix.png"
+  {
+    name: "Oats",
+    assetKey: "oats",
+    scale: 0.25,
+    x: 175,
+    y: 120,
+    mobileX: 109,
+    mobileY: 80,
+    description: "A whole grain that provides slow-releasing energy to keep you full.",
+    imagePath: "/assets/oats.png"
   },
 ];
 
@@ -958,7 +967,7 @@ function generateCategoryLevels(
 
 // Generate all 75 levels (15 per category × 5 categories)
 const levels: LevelConfig[] = [
-  ...generateCategoryLevels("BASIC", 1, basicOrgans),           // Levels 1-15
+  ...generateCategoryLevels("BASIC", 1, basicFoods),           // Levels 1-15
   ...generateCategoryLevels("NORMAL", 16, normalBodyParts),     // Levels 16-30
   ...generateCategoryLevels("HARD", 31, hardSkeleton),          // Levels 31-45
   ...generateCategoryLevels("ADVANCED", 46, advancedPathogens), // Levels 46-60
