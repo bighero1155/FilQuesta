@@ -71,7 +71,6 @@ export default class HumanBodyScene extends Phaser.Scene {
     return this.scale.width < 768;
   }
 
-  // Get category display name with emoji
   // Get background image based on category
   private getBackgroundImage(): string {
     if (this.currentCategoryId === "BASIC") {
@@ -203,10 +202,28 @@ export default class HumanBodyScene extends Phaser.Scene {
     
     // Create animated background
     this.createAnimatedBackground();
-    
-    // Mobile vs Desktop body image scale
-    const bodyScaleX = isMobile ? 1.8 : 2.0;
-    const bodyScaleY = isMobile ? 1.1 : 1.4;  
+
+    // ✅ Background image scaling:
+    // Desktop: always original values (2.0 / 1.4) — untouched for all categories
+    // Mobile + BASIC pyramid: aspect-ratio-aware fit to screen width
+    // Mobile + other categories: original mobile values (1.8 / 1.1)
+    let bodyScaleX: number;
+    let bodyScaleY: number;
+
+    if (isMobile && this.currentCategoryId === "BASIC") {
+      // ✅ MOBILE ONLY fix: pyramid needs to fit within screen width
+      // Update pyramidNaturalWidth/Height to match your actual pyramid.png dimensions
+      const pyramidNaturalWidth = 1024;
+      const pyramidNaturalHeight = 900;
+      const pyramidAspect = pyramidNaturalHeight / pyramidNaturalWidth;
+      bodyScaleX = (this.cameras.main.width * 0.95) / pyramidNaturalWidth;
+      bodyScaleY = bodyScaleX * pyramidAspect;
+    } else {
+      // Desktop (all categories) and mobile non-BASIC: original unchanged values
+      bodyScaleX = isMobile ? 1.8 : 2.0;
+      bodyScaleY = isMobile ? 1.1 : 1.4;
+    }
+
     this.add.image(centerX, centerY, "body").setScale(bodyScaleX, bodyScaleY).setAlpha(1.3);
 
     // Score and Level positioning — mobile: level top-left, score shifted right; desktop: inline
@@ -260,7 +277,6 @@ export default class HumanBodyScene extends Phaser.Scene {
       strokeThickness: isMobile ? 3 : 4,
       shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 2, fill: true },
     });
-
 
     // Mobile vs Desktop back button - IMPROVED ROUND VERSION
     const backButtonSize = isMobile ? 70 : 80; // Circle diameter
