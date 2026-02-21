@@ -71,7 +71,6 @@ export default class HumanBodyScene extends Phaser.Scene {
     return this.scale.width < 768;
   }
 
-  // Get category display name with emoji
   // Get background image based on category
   private getBackgroundImage(): string {
     if (this.currentCategoryId === "BASIC") {
@@ -204,9 +203,29 @@ export default class HumanBodyScene extends Phaser.Scene {
     // Create animated background
     this.createAnimatedBackground();
     
-    // Mobile vs Desktop body image scale
-    const bodyScaleX = isMobile ? 1.8 : 2.0;
-    const bodyScaleY = isMobile ? 1.1 : 1.4;  
+    // ✅ FIX: Mobile-compatible background image scaling
+    // Pyramid has a different aspect ratio than human body images
+    let bodyScaleX: number;
+    let bodyScaleY: number;
+
+    if (this.currentCategoryId === "BASIC") {
+      // Pyramid image: fit within screen width preserving aspect ratio
+      const pyramidNaturalWidth = 1024;  // Update to match your actual pyramid.png width
+      const pyramidNaturalHeight = 900;  // Update to match your actual pyramid.png height
+      const pyramidAspect = pyramidNaturalHeight / pyramidNaturalWidth;
+
+      const pyramidTargetWidth = isMobile
+        ? this.cameras.main.width * 0.95   // 95% of screen width on mobile
+        : this.cameras.main.width * 0.60;  // 60% of screen width on desktop
+
+      bodyScaleX = pyramidTargetWidth / pyramidNaturalWidth;
+      bodyScaleY = bodyScaleX * pyramidAspect;
+    } else {
+      // Human / skeleton / organs images — original logic
+      bodyScaleX = isMobile ? 1.8 : 2.0;
+      bodyScaleY = isMobile ? 1.1 : 1.4;
+    }
+
     this.add.image(centerX, centerY, "body").setScale(bodyScaleX, bodyScaleY).setAlpha(1.3);
 
     // Score and Level positioning — mobile: level top-left, score shifted right; desktop: inline
@@ -261,7 +280,6 @@ export default class HumanBodyScene extends Phaser.Scene {
       shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 2, fill: true },
     });
 
-
     // Mobile vs Desktop back button - IMPROVED ROUND VERSION
     const backButtonSize = isMobile ? 70 : 80; // Circle diameter
     const backY = isMobile ? this.scale.height - 120 : this.scale.height - 50;
@@ -290,37 +308,37 @@ export default class HumanBodyScene extends Phaser.Scene {
         fontSize: backFontSize,
         fontStyle: "bold",
         color: "#ffffff",
-        stroke: "#cc0000", // Sharp red outline
-        strokeThickness: 3, // Thickness of the outline
+        stroke: "#cc0000",
+        strokeThickness: 3,
       })
-      .setOrigin(0.5, 0.5) // Center the text in the circle
+      .setOrigin(0.5, 0.5)
       .setDepth(10000);
 
     // Interactive states
     this.backCircle.on("pointerover", () => {
       this.backCircle.clear();
-      this.backCircle.fillStyle(0xff5252, 1); // Lighter red on hover
+      this.backCircle.fillStyle(0xff5252, 1);
       this.backCircle.fillCircle(backX, backY, backButtonSize / 2);
       this.backButton.setScale(1.1);
     });
 
     this.backCircle.on("pointerout", () => {
       this.backCircle.clear();
-      this.backCircle.fillStyle(0xff6b6b, 1); // Original red
+      this.backCircle.fillStyle(0xff6b6b, 1);
       this.backCircle.fillCircle(backX, backY, backButtonSize / 2);
       this.backButton.setScale(1);
     });
 
     this.backCircle.on("pointerdown", () => {
       this.backCircle.clear();
-      this.backCircle.fillStyle(0xcc0000, 1); // Darker red on click
+      this.backCircle.fillStyle(0xcc0000, 1);
       this.backCircle.fillCircle(backX, backY, backButtonSize / 2);
       this.backButton.setScale(0.95);
     });
 
     this.backCircle.on("pointerup", async () => {
       this.backCircle.clear();
-      this.backCircle.fillStyle(0xff6b6b, 1); // Back to original
+      this.backCircle.fillStyle(0xff6b6b, 1);
       this.backCircle.fillCircle(backX, backY, backButtonSize / 2);
       this.backButton.setScale(1);
       
@@ -589,15 +607,15 @@ export default class HumanBodyScene extends Phaser.Scene {
       // ✅ FIX: Dynamically calculate spacing so all items fit the screen height
       const availableHeight = this.cameras.main.height - (isMobile ? 180 : 160);
       const spacing = Math.min(
-        isMobile ? 80 : 110,                          // max spacing cap
-        Math.floor(availableHeight / this.level.parts.length) // auto-fit
+        isMobile ? 80 : 110,                                    // max spacing cap
+        Math.floor(availableHeight / this.level.parts.length)   // auto-fit
       );
 
       x = startX;
       y = startY + index * spacing;
     }
     
-    // Mobile vs Desktop organ scale
+    // Mobile vs Desktop scale
     const organScale = isMobile ? scale * 0.7 : scale;
     
     // Create glowing circle behind the image
@@ -801,7 +819,7 @@ export default class HumanBodyScene extends Phaser.Scene {
         (image.body as Phaser.Physics.Arcade.Body).setVelocity(velocityX, velocityY);
         (image.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
 
-        // Keep glow hidden — food is now under physics/bouncing
+        // Keep glow hidden — item is now under physics/bouncing
         glowCircle.setVisible(false);
         glowCircle.setPosition(x, y);
 
