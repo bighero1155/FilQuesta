@@ -105,7 +105,7 @@ const basicFoods: PartConfig[] = [
     scale: 0.25,
     x: 30,
     y: 10,
-    mobileX: 50,
+    mobileX: 30,
     mobileY: 10,
     description: "A citrus fruit high in vitamin C that strengthens the immune system.",
     imagePath: "/assets/orange.png"
@@ -116,7 +116,7 @@ const basicFoods: PartConfig[] = [
     scale: 0.25,
     x: 90,
     y: 10,
-    mobileX: 90,
+    mobileX: 50,
     mobileY: 10,
     description: "A fruit that provides quick energy and is rich in potassium.",
     imagePath: "/assets/banana.png"
@@ -127,7 +127,7 @@ const basicFoods: PartConfig[] = [
     scale: 0.25,
     x: 150,
     y: 10,
-    mobileX: 130,
+    mobileX: 70,
     mobileY: 10,
     description: "A vegetable packed with vitamins C and K for a strong body.",
     imagePath: "/assets/broccoli.png"
