@@ -211,17 +211,19 @@ export default class HumanBodyScene extends Phaser.Scene {
     let bodyScaleY: number;
 
     if (isMobile && this.currentCategoryId === "BASIC") {
-      // ✅ MOBILE ONLY fix: pyramid needs to fit within screen width
-      // Update pyramidNaturalWidth/Height to match your actual pyramid.png dimensions
+      // ✅ MOBILE ONLY fix: scale pyramid to fill most of the screen height
+      // pyramidNaturalWidth/Height should match your actual pyramid.png dimensions
       const pyramidNaturalWidth = 1024;
       const pyramidNaturalHeight = 900;
       const pyramidAspect = pyramidNaturalHeight / pyramidNaturalWidth;
-      bodyScaleX = (this.cameras.main.width * 0.95) / pyramidNaturalWidth;
-      bodyScaleY = bodyScaleX * pyramidAspect;
+      // Use 85% of screen HEIGHT as the target so pyramid fills the vertical space
+      const targetHeight = this.cameras.main.height * 0.85;
+      bodyScaleY = targetHeight / pyramidNaturalHeight;
+      bodyScaleX = bodyScaleY / pyramidAspect;
     } else {
       // Desktop (all categories) and mobile non-BASIC: original unchanged values
-      bodyScaleX = isMobile ? 1.9 : 2.0;
-      bodyScaleY = isMobile ? 1.3 : 1.4;
+      bodyScaleX = isMobile ? 1.8 : 2.0;
+      bodyScaleY = isMobile ? 1.1 : 1.4;
     }
 
     this.add.image(centerX, centerY, "body").setScale(bodyScaleX, bodyScaleY).setAlpha(1.3);
