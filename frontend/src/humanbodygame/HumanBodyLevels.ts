@@ -84,7 +84,7 @@ const basicFoods: PartConfig[] = [
     x: -90,
     y: -70,
     mobileX: -56,
-    mobileY: -40,
+    mobileY: 60,
     description: "A fruit packed with vitamins and fiber that boosts the immune system.",
     imagePath: "/assets/apple.png"
   },
@@ -95,7 +95,7 @@ const basicFoods: PartConfig[] = [
     x: -30,
     y: -70,
     mobileX: -19,
-    mobileY: -40,
+    mobileY: 60,
     description: "A leafy vegetable rich in iron and vitamins for healthy blood.",
     imagePath: "/assets/spinach.png"
   },
@@ -106,7 +106,7 @@ const basicFoods: PartConfig[] = [
     x: 30,
     y: -70,
     mobileX: 19,
-    mobileY: -40,
+    mobileY: 60,
     description: "A citrus fruit high in vitamin C that strengthens the immune system.",
     imagePath: "/assets/orange.png"
   },
@@ -117,7 +117,7 @@ const basicFoods: PartConfig[] = [
     x: 90,
     y: -70,
     mobileX: 56,
-    mobileY: -40,
+    mobileY: 60,
     description: "A fruit that provides quick energy and is rich in potassium.",
     imagePath: "/assets/banana.png"
   },
@@ -128,7 +128,7 @@ const basicFoods: PartConfig[] = [
     x: 150,
     y: -70,
     mobileX: 93,
-    mobileY: -40,
+    mobileY: 60,
     description: "A vegetable packed with vitamins C and K for a strong body.",
     imagePath: "/assets/broccoli.png"
   },
