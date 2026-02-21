@@ -116,7 +116,7 @@ const basicFoods: PartConfig[] = [
     scale: 0.25,
     x: 90,
     y: 10,
-    mobileX: 50,
+    mobileX: -70,
     mobileY: 10,
     description: "A fruit that provides quick energy and is rich in potassium.",
     imagePath: "/assets/banana.png"
