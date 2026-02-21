@@ -46,9 +46,9 @@ const basicFoods: PartConfig[] = [
     assetKey: "milk",
     scale: 0.25,
     x: -55,
-    y: -135,
+    y: -130,
     mobileX: -35,
-    mobileY: -78,
+    mobileY: -50,
     description: "A dairy drink rich in calcium that strengthens bones and teeth.",
     imagePath: "/assets/milk.png"
   },
@@ -57,9 +57,9 @@ const basicFoods: PartConfig[] = [
     assetKey: "chicken",
     scale: 0.25,
     x: 55,
-    y: -135,
+    y: -130,
     mobileX: 35,
-    mobileY: -78,
+    mobileY: -50,
     description: "A lean meat that provides protein for growth and body repair.",
     imagePath: "/assets/chicken.png"
   },
