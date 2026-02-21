@@ -605,7 +605,7 @@ export default class HumanBodyScene extends Phaser.Scene {
       // Multiple items - use vertical list layout
       const startX = isMobile ? 60 : 80;
       const startY = isMobile ? 100 : 100;
-      const spacing = isMobile ? 70 : 90;
+      const spacing = isMobile ? 70 : 130;
       
       x = startX;
       y = startY + index * spacing;
