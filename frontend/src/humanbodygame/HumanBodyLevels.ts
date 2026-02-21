@@ -72,7 +72,7 @@ const basicFoods: PartConfig[] = [
     scale: 0.25,
     x: -150,
     y: 10,
-    mobileX: -80,
+    mobileX: -70,
     mobileY: 10,
     description: "A vegetable rich in vitamin A that keeps eyes and skin healthy.",
     imagePath: "/assets/carrot.png"
@@ -83,7 +83,7 @@ const basicFoods: PartConfig[] = [
     scale: 0.25,
     x: -90,
     y: 10,
-    mobileX: -56,
+    mobileX: -30,
     mobileY: 10,
     description: "A fruit packed with vitamins and fiber that boosts the immune system.",
     imagePath: "/assets/apple.png"
