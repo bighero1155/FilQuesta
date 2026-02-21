@@ -71,6 +71,7 @@ export default class HumanBodyScene extends Phaser.Scene {
     return this.scale.width < 768;
   }
 
+  // Get category display name with emoji
   // Get background image based on category
   private getBackgroundImage(): string {
     if (this.currentCategoryId === "BASIC") {
@@ -203,29 +204,9 @@ export default class HumanBodyScene extends Phaser.Scene {
     // Create animated background
     this.createAnimatedBackground();
     
-    // ✅ FIX: Mobile-compatible background image scaling
-    // Pyramid has a different aspect ratio than human body images
-    let bodyScaleX: number;
-    let bodyScaleY: number;
-
-    if (this.currentCategoryId === "BASIC") {
-      // Pyramid image: fit within screen width preserving aspect ratio
-      const pyramidNaturalWidth = 1024;  // Update to match your actual pyramid.png width
-      const pyramidNaturalHeight = 900;  // Update to match your actual pyramid.png height
-      const pyramidAspect = pyramidNaturalHeight / pyramidNaturalWidth;
-
-      const pyramidTargetWidth = isMobile
-        ? this.cameras.main.width * 0.95   // 95% of screen width on mobile
-        : this.cameras.main.width * 0.60;  // 60% of screen width on desktop
-
-      bodyScaleX = pyramidTargetWidth / pyramidNaturalWidth;
-      bodyScaleY = bodyScaleX * pyramidAspect;
-    } else {
-      // Human / skeleton / organs images — original logic
-      bodyScaleX = isMobile ? 1.8 : 2.0;
-      bodyScaleY = isMobile ? 1.1 : 1.4;
-    }
-
+    // Mobile vs Desktop body image scale
+    const bodyScaleX = isMobile ? 1.8 : 2.0;
+    const bodyScaleY = isMobile ? 1.1 : 1.4;  
     this.add.image(centerX, centerY, "body").setScale(bodyScaleX, bodyScaleY).setAlpha(1.3);
 
     // Score and Level positioning — mobile: level top-left, score shifted right; desktop: inline
@@ -280,6 +261,7 @@ export default class HumanBodyScene extends Phaser.Scene {
       shadow: { offsetX: 1, offsetY: 1, color: "#000000", blur: 2, fill: true },
     });
 
+
     // Mobile vs Desktop back button - IMPROVED ROUND VERSION
     const backButtonSize = isMobile ? 70 : 80; // Circle diameter
     const backY = isMobile ? this.scale.height - 120 : this.scale.height - 50;
@@ -308,37 +290,37 @@ export default class HumanBodyScene extends Phaser.Scene {
         fontSize: backFontSize,
         fontStyle: "bold",
         color: "#ffffff",
-        stroke: "#cc0000",
-        strokeThickness: 3,
+        stroke: "#cc0000", // Sharp red outline
+        strokeThickness: 3, // Thickness of the outline
       })
-      .setOrigin(0.5, 0.5)
+      .setOrigin(0.5, 0.5) // Center the text in the circle
       .setDepth(10000);
 
     // Interactive states
     this.backCircle.on("pointerover", () => {
       this.backCircle.clear();
-      this.backCircle.fillStyle(0xff5252, 1);
+      this.backCircle.fillStyle(0xff5252, 1); // Lighter red on hover
       this.backCircle.fillCircle(backX, backY, backButtonSize / 2);
       this.backButton.setScale(1.1);
     });
 
     this.backCircle.on("pointerout", () => {
       this.backCircle.clear();
-      this.backCircle.fillStyle(0xff6b6b, 1);
+      this.backCircle.fillStyle(0xff6b6b, 1); // Original red
       this.backCircle.fillCircle(backX, backY, backButtonSize / 2);
       this.backButton.setScale(1);
     });
 
     this.backCircle.on("pointerdown", () => {
       this.backCircle.clear();
-      this.backCircle.fillStyle(0xcc0000, 1);
+      this.backCircle.fillStyle(0xcc0000, 1); // Darker red on click
       this.backCircle.fillCircle(backX, backY, backButtonSize / 2);
       this.backButton.setScale(0.95);
     });
 
     this.backCircle.on("pointerup", async () => {
       this.backCircle.clear();
-      this.backCircle.fillStyle(0xff6b6b, 1);
+      this.backCircle.fillStyle(0xff6b6b, 1); // Back to original
       this.backCircle.fillCircle(backX, backY, backButtonSize / 2);
       this.backButton.setScale(1);
       
@@ -602,20 +584,14 @@ export default class HumanBodyScene extends Phaser.Scene {
     } else {
       // Multiple items - use vertical list layout
       const startX = isMobile ? 60 : 80;
-      const startY = isMobile ? 80 : 80;
-
-      // ✅ FIX: Dynamically calculate spacing so all items fit the screen height
-      const availableHeight = this.cameras.main.height - (isMobile ? 180 : 160);
-      const spacing = Math.min(
-        isMobile ? 80 : 110,                                    // max spacing cap
-        Math.floor(availableHeight / this.level.parts.length)   // auto-fit
-      );
-
+      const startY = isMobile ? 100 : 100;
+      const spacing = isMobile ? 70 : 90;
+      
       x = startX;
       y = startY + index * spacing;
     }
     
-    // Mobile vs Desktop scale
+    // Mobile vs Desktop organ scale
     const organScale = isMobile ? scale * 0.7 : scale;
     
     // Create glowing circle behind the image
@@ -652,7 +628,7 @@ export default class HumanBodyScene extends Phaser.Scene {
     part.image = image;
 
     // Mobile vs Desktop label positioning
-    const labelX = isMobile ? this.cameras.main.width - 160 : this.cameras.main.width - 290;
+    const labelX = isMobile ? this.cameras.main.width - 160 : this.cameras.main.width - 280;
     const labelY = y;
 
     // Mobile vs Desktop circle size
@@ -661,16 +637,16 @@ export default class HumanBodyScene extends Phaser.Scene {
     // Color circle indicator
     part.colorCircle = this.add.graphics();
     part.colorCircle.fillStyle(part.color);
-    part.colorCircle.fillCircle(labelX, labelY, circleRadius);
+    part.colorCircle.fillCircle(labelX, labelY + 10, circleRadius);
 
     // Mobile vs Desktop text sizes
-    const nameFontSize = isMobile ? "12px" : "15px";
-    const descFontSize = isMobile ? "11px" : "13px";
-    const descWrapWidth = isMobile ? 130 : 220;
-    const textOffsetX = isMobile ? 15 : 22;
+    const nameFontSize = isMobile ? "12px" : "17px";
+    const descFontSize = isMobile ? "12px" : "17px";
+    const descWrapWidth = isMobile ? 130 : 240;
+    const textOffsetX = isMobile ? 15 : 25;
 
     // Name text
-    part.text = this.add.text(labelX + textOffsetX, labelY - 10, part.name, {
+    part.text = this.add.text(labelX + textOffsetX, labelY, part.name, {
       fontSize: nameFontSize,
       fontFamily: "Poppins, sans-serif",
       fontStyle: "bold",
@@ -686,20 +662,22 @@ export default class HumanBodyScene extends Phaser.Scene {
       },
     });
 
-    // ✅ FIX: Description sits directly below name with consistent offset
-    const descOffsetY = isMobile ? 14 : 16;
+    // Description text — student-friendly with Poppins,
+    // white fill with a solid black outline for easy readability
+    const descOffsetY = isMobile ? 26 : 32;
     part.descriptionText = this.add.text(
       labelX + textOffsetX,
-      labelY - 10 + descOffsetY,
+      labelY + descOffsetY,
       part.description,
       {
         fontSize: descFontSize,
         fontFamily: "Poppins, sans-serif",
-        color: "#ffffcc",
-        stroke: "#000000",
-        strokeThickness: isMobile ? 2 : 3,
+        fontStyle: "bold",
+        color: "#ffffff",         // White text fill
+        stroke: "#000000",        // Black outline
+        strokeThickness: isMobile ? 3 : 4,
         wordWrap: { width: descWrapWidth },
-        lineSpacing: isMobile ? 1 : 2,
+        lineSpacing: isMobile ? 2 : 4,
         shadow: {
           offsetX: 1,
           offsetY: 1,
@@ -775,10 +753,10 @@ export default class HumanBodyScene extends Phaser.Scene {
         
         part.colorCircle.clear();
         part.colorCircle.fillStyle(part.color);
-        part.colorCircle.fillCircle(newLabelX, newLabelY, circleRadius);
+        part.colorCircle.fillCircle(newLabelX, newLabelY + 10, circleRadius);
         
-        part.text.setPosition(newLabelX + textOffsetX, newLabelY - 10);
-        part.descriptionText.setPosition(newLabelX + textOffsetX, newLabelY - 10 + descOffsetY);
+        part.text.setPosition(newLabelX + textOffsetX, newLabelY);
+        part.descriptionText.setPosition(newLabelX + textOffsetX, newLabelY + (isMobile ? 26 : 32));
       }
     });
 
@@ -819,21 +797,21 @@ export default class HumanBodyScene extends Phaser.Scene {
         (image.body as Phaser.Physics.Arcade.Body).setVelocity(velocityX, velocityY);
         (image.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
 
-        // Keep glow hidden — item is now under physics/bouncing
+        // Keep glow hidden — organ is now under physics/bouncing
         glowCircle.setVisible(false);
         glowCircle.setPosition(x, y);
 
-        // Reset labels to original position
+        // Reset labels
         if (part.colorCircle && part.text && part.descriptionText) {
-          const resetLabelX = isMobile ? this.cameras.main.width - 160 : this.cameras.main.width - 290;
+          const resetLabelX = isMobile ? this.cameras.main.width - 160 : this.cameras.main.width - 280;
           const resetLabelY = y;
           
           part.colorCircle.clear();
           part.colorCircle.fillStyle(part.color);
-          part.colorCircle.fillCircle(resetLabelX, resetLabelY, circleRadius);
+          part.colorCircle.fillCircle(resetLabelX, resetLabelY + 10, circleRadius);
           
-          part.text.setPosition(resetLabelX + textOffsetX, resetLabelY - 10);
-          part.descriptionText.setPosition(resetLabelX + textOffsetX, resetLabelY - 10 + descOffsetY);
+          part.text.setPosition(resetLabelX + textOffsetX, resetLabelY);
+          part.descriptionText.setPosition(resetLabelX + textOffsetX, resetLabelY + (isMobile ? 26 : 32));
           
           // Hide color circle, name AND description again when drag ends on mobile
           if (isMobile) {
