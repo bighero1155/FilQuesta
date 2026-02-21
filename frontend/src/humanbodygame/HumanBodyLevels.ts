@@ -35,9 +35,9 @@ const basicFoods: PartConfig[] = [
     assetKey: "egg",
     scale: 0.25,
     x: 0,
-    y: -220,
+    y: -190,
     mobileX: 0,
-    mobileY: -140,
+    mobileY: -100,
     description: "A protein-rich food that helps build muscles and repair body tissues.",
     imagePath: "/assets/egg.png"
   },
