@@ -48,7 +48,7 @@ const basicFoods: PartConfig[] = [
     x: -55,
     y: -135,
     mobileX: -35,
-    mobileY: -50,
+    mobileY: -40,
     description: "A dairy drink rich in calcium that strengthens bones and teeth.",
     imagePath: "/assets/milk.png"
   },
@@ -59,7 +59,7 @@ const basicFoods: PartConfig[] = [
     x: 55,
     y: -135,
     mobileX: 35,
-    mobileY: -50,
+    mobileY: -60,
     description: "A lean meat that provides protein for growth and body repair.",
     imagePath: "/assets/chicken.png"
   },
@@ -72,7 +72,7 @@ const basicFoods: PartConfig[] = [
     scale: 0.25,
     x: -150,
     y: 10,
-    mobileX: -93,
+    mobileX: -80,
     mobileY: 10,
     description: "A vegetable rich in vitamin A that keeps eyes and skin healthy.",
     imagePath: "/assets/carrot.png"
