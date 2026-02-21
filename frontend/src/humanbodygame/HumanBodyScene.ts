@@ -220,8 +220,8 @@ export default class HumanBodyScene extends Phaser.Scene {
       bodyScaleY = bodyScaleX * pyramidAspect;
     } else {
       // Desktop (all categories) and mobile non-BASIC: original unchanged values
-      bodyScaleX = isMobile ? 1.8 : 2.0;
-      bodyScaleY = isMobile ? 1.1 : 1.4;
+      bodyScaleX = isMobile ? 1.9 : 2.0;
+      bodyScaleY = isMobile ? 1.3 : 1.4;
     }
 
     this.add.image(centerX, centerY, "body").setScale(bodyScaleX, bodyScaleY).setAlpha(1.3);
