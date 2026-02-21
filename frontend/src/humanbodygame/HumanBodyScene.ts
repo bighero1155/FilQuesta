@@ -562,9 +562,11 @@ export default class HumanBodyScene extends Phaser.Scene {
       const targetY = centerY + (isMobile ? p.mobileY : p.y);
       
       // Draw target circle at the appropriate position
+      // ✅ Smaller target circles on mobile
+      const targetRadius = isMobile ? 18 : 30;
       const circle = this.add.graphics();
       circle.fillStyle(0xffffff, 0.6);
-      circle.fillCircle(targetX, targetY, 30);
+      circle.fillCircle(targetX, targetY, targetRadius);
 
       const part: BodyPart = {
         name: p.name,
@@ -617,8 +619,8 @@ export default class HumanBodyScene extends Phaser.Scene {
     glowCircle.setPosition(x, y);
     glowCircle.setDepth(-1);
     
-    // Draw multiple circles for glow effect
-    const glowRadius = isMobile ? 35 : 45;
+    // ✅ Smaller glow circle on mobile
+    const glowRadius = isMobile ? 22 : 45;
     glowCircle.fillStyle(0xffffff, 0.3);
     glowCircle.fillCircle(0, 0, glowRadius);
     glowCircle.fillStyle(0xffff00, 0.2);
@@ -796,7 +798,7 @@ export default class HumanBodyScene extends Phaser.Scene {
         this.scoreText.setText(`Score: ${this.score}`);
         part.targetCircle.clear();
         part.targetCircle.fillStyle(part.color, 0.9);
-        part.targetCircle.fillCircle(part.correctX, part.correctY, 30);
+        part.targetCircle.fillCircle(part.correctX, part.correctY, isMobile ? 18 : 30);
 
         // Destroy glow when placed correctly
         glowCircle.destroy();
