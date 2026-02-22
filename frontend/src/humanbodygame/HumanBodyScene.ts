@@ -100,7 +100,7 @@ export default class HumanBodyScene extends Phaser.Scene {
       case "HARD":
         return this.level?.backgroundImage ?? "/assets/astronomy/space_bg.png";
       case "ADVANCED":
-        return "/assets/habitat/habitat.png";
+        return "/assets/habitat.png";
       case "EXPERT":
         return "/assets/lifecycle/lifecycle_bg.png";
       default:

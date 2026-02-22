@@ -384,35 +384,35 @@ const skyAnimals: PartConfig[] = [
     assetKey: "eagle", scale: 0.28,
     x: -180, y: -290, mobileX: -110, mobileY: -185,
     description: "A powerful bird of prey that soars high in the sky.",
-    imagePath: "/assets/habitat/eagle.png",
+    imagePath: "/assets/eagle.png",
   },
   {
     name: "Parrot",
     assetKey: "parrot", scale: 0.26,
     x: -90, y: -290, mobileX: -55, mobileY: -185,
     description: "A colorful bird known for its ability to mimic sounds.",
-    imagePath: "/assets/habitat/parrot.png",
+    imagePath: "/assets/parrot.png",
   },
   {
     name: "Butterfly",
     assetKey: "butterfly", scale: 0.26,
     x: 0, y: -290, mobileX: 0, mobileY: -185,
     description: "A winged insect that flutters through the air.",
-    imagePath: "/assets/habitat/butterfly.png",
+    imagePath: "/assets/butterfly.png",
   },
   {
     name: "Bat",
     assetKey: "bat", scale: 0.26,
     x: 90, y: -290, mobileX: 55, mobileY: -185,
     description: "A flying mammal that navigates using echolocation.",
-    imagePath: "/assets/habitat/bat.png",
+    imagePath: "/assets/bat.png",
   },
   {
     name: "Owl",
     assetKey: "owl", scale: 0.26,
     x: 180, y: -290, mobileX: 110, mobileY: -185,
     description: "A nocturnal bird with excellent night vision.",
-    imagePath: "/assets/habitat/owl.png",
+    imagePath: "/assets/owl.png",
   },
 ];
 
@@ -423,35 +423,35 @@ const landAnimals: PartConfig[] = [
     assetKey: "lion", scale: 0.28,
     x: -180, y: -60, mobileX: -110, mobileY: -35,
     description: "The king of the savanna, a powerful land predator.",
-    imagePath: "/assets/habitat/lion.png",
+    imagePath: "/assets/lion.png",
   },
   {
     name: "Elephant",
     assetKey: "elephant", scale: 0.28,
     x: -90, y: -60, mobileX: -55, mobileY: -35,
     description: "The largest land animal on Earth.",
-    imagePath: "/assets/habitat/elephant.png",
+    imagePath: "/assets/elephant.png",
   },
   {
     name: "Snake",
     assetKey: "snake", scale: 0.26,
     x: 0, y: -60, mobileX: 0, mobileY: -35,
     description: "A reptile that slithers along the ground.",
-    imagePath: "/assets/habitat/snake.png",
+    imagePath: "/assets/snake.png",
   },
   {
     name: "Rabbit",
     assetKey: "rabbit", scale: 0.26,
     x: 90, y: -60, mobileX: 55, mobileY: -35,
     description: "A small, fast mammal that lives in burrows.",
-    imagePath: "/assets/habitat/rabbit.png",
+    imagePath: "/assets/rabbit.png",
   },
   {
     name: "Tiger",
     assetKey: "tiger", scale: 0.28,
     x: 180, y: -60, mobileX: 110, mobileY: -35,
     description: "A striped big cat that hunts in forests and grasslands.",
-    imagePath: "/assets/habitat/tiger.png",
+    imagePath: "/assets/tiger.png",
   },
 ];
 
@@ -462,35 +462,35 @@ const waterAnimals: PartConfig[] = [
     assetKey: "shark", scale: 0.28,
     x: -180, y: 200, mobileX: -110, mobileY: 130,
     description: "A fierce ocean predator with rows of sharp teeth.",
-    imagePath: "/assets/habitat/shark.png",
+    imagePath: "/assets/shark.png",
   },
   {
     name: "Dolphin",
     assetKey: "dolphin", scale: 0.28,
     x: -90, y: 200, mobileX: -55, mobileY: 130,
     description: "An intelligent marine mammal known for its playfulness.",
-    imagePath: "/assets/habitat/dolphin.png",
+    imagePath: "/assets/dolphin.png",
   },
   {
     name: "Clownfish",
     assetKey: "clownfish", scale: 0.26,
     x: 0, y: 200, mobileX: 0, mobileY: 130,
     description: "A small, brightly colored fish that lives among sea anemones.",
-    imagePath: "/assets/habitat/clownfish.png",
+    imagePath: "/assets/clownfish.png",
   },
   {
     name: "Crab",
     assetKey: "crab", scale: 0.26,
     x: 90, y: 200, mobileX: 55, mobileY: 130,
     description: "A crustacean that walks sideways along the ocean floor.",
-    imagePath: "/assets/habitat/crab.png",
+    imagePath: "/assets/crab.png",
   },
   {
     name: "Turtle",
     assetKey: "turtle", scale: 0.26,
     x: 180, y: 200, mobileX: 110, mobileY: 130,
     description: "A shelled reptile that swims gracefully in the sea.",
-    imagePath: "/assets/habitat/turtle.png",
+    imagePath: "/assets/turtle.png",
   },
 ];
 
@@ -705,7 +705,7 @@ function generateCategoryLevels(
     if (categoryId === "BASIC" || categoryId === "NORMAL") {
       backgroundImage = "/assets/human5.png";
     } else if (categoryId === "ADVANCED") {
-      backgroundImage = "/assets/habitat/habitat.png";
+      backgroundImage = "/assets/habitat.png";
     } else {
       // EXPERT
       backgroundImage = "/assets/lifecycle/lifecycle_bg.png";
