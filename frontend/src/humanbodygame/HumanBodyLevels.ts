@@ -8,7 +8,14 @@ export interface PartConfig {
   mobileX: number; // Mobile X offset from center
   mobileY: number; // Mobile Y offset from center
   description: string;
-  imagePath: string; // Explicit image path for each part
+  imagePath: string;
+  // ── Astronomy / Orbit fields (optional) ──
+  isCenter?: boolean;         // True for the anchor body (Sun, Jupiter, Saturn)
+  orbitRadius?: number;       // Desktop orbit radius in px
+  mobileOrbitRadius?: number; // Mobile orbit radius in px
+  orbitStartAngle?: number;   // Starting angle in degrees
+  // ── Life Cycle fields (optional) ──
+  cycleOrder?: number;        // 1–5 correct sequence position in the life cycle
 }
 
 export interface LevelConfig {
@@ -20,184 +27,122 @@ export interface LevelConfig {
   snapRadius: number;
   scorePerPart: number;
   parts: PartConfig[];
-  backgroundImage: string; 
+  backgroundImage: string;
+  // ── Astronomy-specific (optional) ──
+  orbitSpeed?: number; // deg/sec, negative = counter-clockwise
+  // ── Life cycle-specific (optional) ──
+  isLifecycle?: boolean; // True for EXPERT life cycle levels — draws circular arrows
 }
 
 // ========================================
-// 🟢 BASIC — Organs (15 items)
+// 🟢 BASIC — Food Groups (15 items)
 // ========================================
 const basicFoods: PartConfig[] = [
-
-  // ── GROW tier (top, 3 items) — Protein & Dairy ─────────────────────
-  // Narrow tip: spread tightly around center
+  // ── GROW tier ──
   {
     name: "Egg",
-    assetKey: "egg",
-    scale: 0.25,
-    x: 0,
-    y: -190,
-    mobileX: 0,
-    mobileY: -100,
+    assetKey: "egg", scale: 0.25,
+    x: 0, y: -190, mobileX: 0, mobileY: -100,
     description: "A protein-rich food that helps build muscles and repair body tissues.",
     imagePath: "/assets/egg.png"
   },
   {
     name: "Milk",
-    assetKey: "milk",
-    scale: 0.25,
-    x: -55,
-    y: -135,
-    mobileX: -35,
-    mobileY: -60,
+    assetKey: "milk", scale: 0.25,
+    x: -55, y: -135, mobileX: -35, mobileY: -60,
     description: "A dairy drink rich in calcium that strengthens bones and teeth.",
     imagePath: "/assets/milk.png"
   },
   {
     name: "Chicken",
-    assetKey: "chicken",
-    scale: 0.25,
-    x: 55,
-    y: -135,
-    mobileX: 35,
-    mobileY: -60,
+    assetKey: "chicken", scale: 0.25,
+    x: 55, y: -135, mobileX: 35, mobileY: -60,
     description: "A lean meat that provides protein for growth and body repair.",
     imagePath: "/assets/chicken.png"
   },
-
-  // ── GLOW tier (middle, 6 items) — Fruits & Vegetables ──────────────
-  // Medium band: evenly spaced across ~-150px to +150px
+  // ── GLOW tier ──
   {
     name: "Carrot",
-    assetKey: "carrot",
-    scale: 0.25,
-    x: -150,
-    y: 10,
-    mobileX: -70,
-    mobileY: 10,
+    assetKey: "carrot", scale: 0.25,
+    x: -150, y: 10, mobileX: -70, mobileY: 10,
     description: "A vegetable rich in vitamin A that keeps eyes and skin healthy.",
     imagePath: "/assets/carrot.png"
   },
   {
     name: "Apple",
-    assetKey: "apple",
-    scale: 0.25,
-    x: -90,
-    y: 10,
-    mobileX: -30,
-    mobileY: 10,
+    assetKey: "apple", scale: 0.25,
+    x: -80, y: 10, mobileX: -30, mobileY: 10,
     description: "A fruit packed with vitamins and fiber that boosts the immune system.",
     imagePath: "/assets/apple.png"
   },
   {
     name: "Spinach",
-    assetKey: "spinach",
-    scale: 0.25,
-    x: -30,
-    y: 10,
-    mobileX: -10,
-    mobileY: 10,
+    assetKey: "spinach", scale: 0.25,
+    x: 110, y: 10, mobileX: -10, mobileY: 10,
     description: "A leafy vegetable rich in iron and vitamins for healthy blood.",
     imagePath: "/assets/spinach.png"
   },
   {
     name: "Orange",
-    assetKey: "orange",
-    scale: 0.25,
-    x: 30,
-    y: 10,
-    mobileX: 30,
-    mobileY: 10,
+    assetKey: "orange", scale: 0.25,
+    x: -100, y: 10, mobileX: 30, mobileY: 10,
     description: "A citrus fruit high in vitamin C that strengthens the immune system.",
     imagePath: "/assets/orange.png"
   },
   {
     name: "Banana",
-    assetKey: "banana",
-    scale: 0.25,
-    x: 90,
-    y: 10,
-    mobileX: -70,
-    mobileY: 10,
+    assetKey: "banana", scale: 0.25,
+    x: -30, y: 10, mobileX: -70, mobileY: 10,
     description: "A fruit that provides quick energy and is rich in potassium.",
     imagePath: "/assets/banana.png"
   },
   {
     name: "Broccoli",
-    assetKey: "broccoli",
-    scale: 0.25,
-    x: 150,
-    y: 10,
-    mobileX: 70,
-    mobileY: 10,
+    assetKey: "broccoli", scale: 0.25,
+    x: 40, y: 10, mobileX: 70, mobileY: 10,
     description: "A vegetable packed with vitamins C and K for a strong body.",
     imagePath: "/assets/broccoli.png"
   },
-
-  // ── GO tier (bottom, 6 items) — Carbohydrates & Energy Foods ───────
-  // Wide base: evenly spaced across ~-175px to +175px
+  // ── GO tier ──
   {
     name: "Rice",
-    assetKey: "rice",
-    scale: 0.25,
-    x: -175,
-    y: 120,
-    mobileX: -109,
-    mobileY: 80,
+    assetKey: "rice", scale: 0.25,
+    x: -200, y: 160, mobileX: -109, mobileY: 80,
     description: "A staple grain that gives the body energy to move and think.",
     imagePath: "/assets/rice.png"
   },
   {
     name: "Bread",
-    assetKey: "bread",
-    scale: 0.25,
-    x: -105,
-    y: 120,
-    mobileX: -65,
-    mobileY: 80,
+    assetKey: "bread", scale: 0.25,
+    x: -180, y: 160, mobileX: -65, mobileY: 80,
     description: "A baked grain food that provides carbohydrates for daily energy.",
     imagePath: "/assets/bread.png"
   },
   {
     name: "Corn",
-    assetKey: "corn",
-    scale: 0.25,
-    x: -35,
-    y: 120,
-    mobileX: -22,
-    mobileY: 80,
+    assetKey: "corn", scale: 0.25,
+    x: -100, y: 160, mobileX: -22, mobileY: 80,
     description: "A grain vegetable that fuels the body with carbohydrates and fiber.",
     imagePath: "/assets/corn.png"
   },
   {
     name: "Pasta",
-    assetKey: "pasta",
-    scale: 0.25,
-    x: 35,
-    y: 120,
-    mobileX: 22,
-    mobileY: 80,
+    assetKey: "pasta", scale: 0.25,
+    x: -20, y: 160, mobileX: 22, mobileY: 80,
     description: "A wheat-based food rich in carbohydrates that provides lasting energy.",
     imagePath: "/assets/pasta.png"
   },
   {
     name: "Sweet Potato",
-    assetKey: "sweet_potato",
-    scale: 0.25,
-    x: 105,
-    y: 120,
-    mobileX: 65,
-    mobileY: 80,
+    assetKey: "sweet_potato", scale: 0.25,
+    x: 60, y: 160, mobileX: 65, mobileY: 80,
     description: "A root vegetable packed with carbohydrates and vitamins for energy.",
     imagePath: "/assets/sweet_potato.png"
   },
   {
     name: "Oats",
-    assetKey: "oats",
-    scale: 0.25,
-    x: 175,
-    y: 120,
-    mobileX: 109,
-    mobileY: 80,
+    assetKey: "oats", scale: 0.25,
+    x: 140, y: 160, mobileX: 109, mobileY: 80,
     description: "A whole grain that provides slow-releasing energy to keep you full.",
     imagePath: "/assets/oats.png"
   },
@@ -207,746 +152,563 @@ const basicFoods: PartConfig[] = [
 // 🔵 NORMAL — Body Parts (15 items)
 // ========================================
 const normalBodyParts: PartConfig[] = [
-  { 
-    name: "Eyes", 
-    assetKey: "eyes",
-    scale: 0.3, 
-    x: 0, 
-    y: -320, 
-    mobileX: 0, 
-    mobileY: -200, 
-    description: "Allow vision and light perception.",
-    imagePath: "/assets/eyes.png"
+  {
+    name: "Eyes", assetKey: "eyes", scale: 0.3,
+    x: 0, y: -320, mobileX: 0, mobileY: -200,
+    description: "Allow vision and light perception.", imagePath: "/assets/eyes.png"
   },
-  { 
-    name: "Nails", 
-    assetKey: "nails",
-    scale: 0.15, 
-    x: -200, 
-    y: -20, 
-    mobileX: -75, 
-    mobileY: -35, 
-    description: "Protect fingertips and toes.",
-    imagePath: "/assets/nails.png"
+  {
+    name: "Nails", assetKey: "nails", scale: 0.15,
+    x: -200, y: -20, mobileX: -75, mobileY: -35,
+    description: "Protect fingertips and toes.", imagePath: "/assets/nails.png"
   },
-  { 
-    name: "Ears", 
-    assetKey: "ears",
-    scale: 0.2, 
-    x: 50, 
-    y: -310, 
-    mobileX: 0, 
-    mobileY: -140, 
-    description: "Enable hearing and balance.",
-    imagePath: "/assets/ears.png"
+  {
+    name: "Ears", assetKey: "ears", scale: 0.2,
+    x: 50, y: -310, mobileX: 0, mobileY: -140,
+    description: "Enable hearing and balance.", imagePath: "/assets/ears.png"
   },
-  { 
-    name: "Feet", 
-    assetKey: "feet",
-    scale: 0.25, 
-    x: -80, 
-    y: 330, 
-    mobileX: 0, 
-    mobileY: 80, 
-    description: "Support body weight and enable movement.",
-    imagePath: "/assets/feet.png"
+  {
+    name: "Feet", assetKey: "feet", scale: 0.25,
+    x: -80, y: 330, mobileX: 0, mobileY: 80,
+    description: "Support body weight and enable movement.", imagePath: "/assets/feet.png"
   },
-  { 
-    name: "Toes", 
-    assetKey: "toes",
-    scale: 0.18, 
-    x: 80, 
-    y: 330, 
-    mobileX: 0, 
-    mobileY: 95, 
-    description: "Help with balance and walking.",
-    imagePath: "/assets/toes.png"
+  {
+    name: "Toes", assetKey: "toes", scale: 0.18,
+    x: 80, y: 330, mobileX: 0, mobileY: 95,
+    description: "Help with balance and walking.", imagePath: "/assets/toes.png"
   },
-  { 
-    name: "Nose", 
-    assetKey: "nose",
-    scale: 0.25, 
-    x: 0, 
-    y: -330, 
-    mobileX: 0, 
-    mobileY: -170, 
-    description: "Detects smells and filters air.",
-    imagePath: "/assets/nose.png"
+  {
+    name: "Nose", assetKey: "nose", scale: 0.25,
+    x: 0, y: -330, mobileX: 0, mobileY: -170,
+    description: "Detects smells and filters air.", imagePath: "/assets/nose.png"
   },
-  { 
-    name: "Mouth", 
-    assetKey: "mouth",
-    scale: 0.3, 
-    x: 0, 
-    y: -280, 
-    mobileX: 0, 
-    mobileY: -110, 
-    description: "For eating, speaking, and breathing.",
-    imagePath: "/assets/mouth.png"
+  {
+    name: "Mouth", assetKey: "mouth", scale: 0.3,
+    x: 0, y: -280, mobileX: 0, mobileY: -110,
+    description: "For eating, speaking, and breathing.", imagePath: "/assets/mouth.png"
   },
-  { 
-    name: "Hands", 
-    assetKey: "hands",
-    scale: 0.25, 
-    x: -180, 
-    y: -10, 
-    mobileX: -60, 
-    mobileY: -50, 
-    description: "Manipulate objects and sense touch.",
-    imagePath: "/assets/hands.png"
+  {
+    name: "Hands", assetKey: "hands", scale: 0.25,
+    x: -180, y: -10, mobileX: -60, mobileY: -50,
+    description: "Manipulate objects and sense touch.", imagePath: "/assets/hands.png"
   },
-  { 
-    name: "Fingers", 
-    assetKey: "fingers",
-    scale: 0.2, 
-    x: 180, 
-    y: -10, 
-    mobileX: -70, 
-    mobileY: -40, 
-    description: "Provide fine motor control.",
-    imagePath: "/assets/fingers.png"
+  {
+    name: "Fingers", assetKey: "fingers", scale: 0.2,
+    x: 180, y: -10, mobileX: -70, mobileY: -40,
+    description: "Provide fine motor control.", imagePath: "/assets/fingers.png"
   },
-  { 
-    name: "Arms", 
-    assetKey: "arms",
-    scale: 0.25, 
-    x: -140, 
-    y: -130, 
-    mobileX: -55, 
-    mobileY: -70, 
-    description: "Connect shoulders to hands.",
-    imagePath: "/assets/arms.png"
+  {
+    name: "Arms", assetKey: "arms", scale: 0.25,
+    x: -140, y: -130, mobileX: -55, mobileY: -70,
+    description: "Connect shoulders to hands.", imagePath: "/assets/arms.png"
   },
-  { 
-    name: "Teeth", 
-    assetKey: "teeth",
-    scale: 0.25, 
-    x: 0, 
-    y: -300, 
-    mobileX: 0, 
-    mobileY: -115, 
-    description: "Break down food by chewing.",
-    imagePath: "/assets/teeth.png"
+  {
+    name: "Teeth", assetKey: "teeth", scale: 0.25,
+    x: 0, y: -300, mobileX: 0, mobileY: -115,
+    description: "Break down food by chewing.", imagePath: "/assets/teeth.png"
   },
-  { 
-    name: "Tongue", 
-    assetKey: "tongue",
-    scale: 0.22, 
-    x: 0, 
-    y: -270, 
-    mobileX: 0, 
-    mobileY: -105, 
-    description: "Tastes food and helps with speech.",
-    imagePath: "/assets/tongue.png"
+  {
+    name: "Tongue", assetKey: "tongue", scale: 0.22,
+    x: 0, y: -270, mobileX: 0, mobileY: -105,
+    description: "Tastes food and helps with speech.", imagePath: "/assets/tongue.png"
   },
-  { 
-    name: "Legs", 
-    assetKey: "legs",
-    scale: 0.25, 
-    x: 0, 
-    y: 50, 
-    mobileX: 0, 
-    mobileY: 40, 
-    description: "Support body and enable walking.",
-    imagePath: "/assets/legs.png"
+  {
+    name: "Legs", assetKey: "legs", scale: 0.25,
+    x: 0, y: 50, mobileX: 0, mobileY: 40,
+    description: "Support body and enable walking.", imagePath: "/assets/legs.png"
   },
-  { 
-    name: "Skin", 
-    assetKey: "skin",
-    scale: 0.2, 
-    x: 0, 
-    y: -100, 
-    mobileX: 0, 
-    mobileY: 0, 
-    description: "Protects the body and regulates temperature.",
-    imagePath: "/assets/skin.png"
+  {
+    name: "Skin", assetKey: "skin", scale: 0.2,
+    x: 0, y: -100, mobileX: 0, mobileY: 0,
+    description: "Protects the body and regulates temperature.", imagePath: "/assets/skin.png"
   },
-  { 
-    name: "Hair", 
-    assetKey: "hair",
-    scale: 0.25, 
-    x: 0, 
-    y: -360, 
-    mobileX: 0, 
-    mobileY: -230, 
-    description: "Protects scalp and regulates temperature.",
-    imagePath: "/assets/hair.png"
+  {
+    name: "Hair", assetKey: "hair", scale: 0.25,
+    x: 0, y: -360, mobileX: 0, mobileY: -230,
+    description: "Protects scalp and regulates temperature.", imagePath: "/assets/hair.png"
   },
 ];
 
 // ========================================
-// 🔴 HARD — Skeleton (15 items)
+// 🔴 HARD — Astronomy / Solar System
+// Orbit-based gameplay, counter-clockwise moving targets
+// 3 sets of 5: Sun system → Jupiter system → Saturn system
 // ========================================
-const hardSkeleton: PartConfig[] = [
-  { 
-    name: "", 
-    assetKey: "skull",
-    scale: 0.4, 
-    x: 0, 
-    y: -350, 
-    mobileX: 0, 
-    mobileY: -220, 
-    description: "Protects the brain.",
-    imagePath: "/assets/skull.png"
+
+// ── Set 1: Sun + inner planets ──────────
+const astronomySunParts: PartConfig[] = [
+  {
+    name: "Sun",
+    assetKey: "sun", scale: 0.55,
+    x: 0, y: 0, mobileX: 0, mobileY: 0,
+    description: "Our star at the center of the solar system.",
+    imagePath: "/assets/astronomy/sun.png",
+    isCenter: true,
   },
-  { 
-    name: "", 
-    assetKey: "mandible",
-    scale: 0.25, 
-    x: 0, 
-    y: -300, 
-    mobileX: 0, 
-    mobileY: -180, 
-    description: "Lower jawbone.",
-    imagePath: "/assets/mandible.png"
+  {
+    name: "Mercury",
+    assetKey: "mercury", scale: 0.22,
+    x: 0, y: 0, mobileX: 0, mobileY: 0,
+    description: "Closest planet to the Sun.",
+    imagePath: "/assets/astronomy/mercury.png",
+    orbitRadius: 110, mobileOrbitRadius: 70, orbitStartAngle: 0,
   },
-  { 
-    name: "", 
-    assetKey: "clavicle",
-    scale: 0.2, 
-    x: -20, 
-    y: -250, 
-    mobileX: -40, 
-    mobileY: -150, 
-    description: "Collarbone connecting sternum to shoulder.",
-    imagePath: "/assets/clavicle.png"
+  {
+    name: "Venus",
+    assetKey: "venus", scale: 0.26,
+    x: 0, y: 0, mobileX: 0, mobileY: 0,
+    description: "Hottest planet in the solar system.",
+    imagePath: "/assets/astronomy/venus.png",
+    orbitRadius: 160, mobileOrbitRadius: 100, orbitStartAngle: 90,
   },
-  { 
-    name: "", 
-    assetKey: "scapula",
-    scale: 0.25, 
-    x: -70, 
-    y: -220, 
-    mobileX: -55, 
-    mobileY: -130, 
-    description: "Shoulder blade.",
-    imagePath: "/assets/scapula.png"
+  {
+    name: "Earth",
+    assetKey: "earth", scale: 0.26,
+    x: 0, y: 0, mobileX: 0, mobileY: 0,
+    description: "Our home planet.",
+    imagePath: "/assets/astronomy/earth.png",
+    orbitRadius: 210, mobileOrbitRadius: 130, orbitStartAngle: 180,
   },
-  { 
-    name: "", 
-    assetKey: "sternum",
-    scale: 0.2, 
-    x: 0, 
-    y: -200, 
-    mobileX: 0, 
-    mobileY: -140, 
-    description: "Breastbone in the center of chest.",
-    imagePath: "/assets/sternum.png"
+  {
+    name: "Mars",
+    assetKey: "mars", scale: 0.24,
+    x: 0, y: 0, mobileX: 0, mobileY: 0,
+    description: "The Red Planet.",
+    imagePath: "/assets/astronomy/mars.png",
+    orbitRadius: 260, mobileOrbitRadius: 160, orbitStartAngle: 270,
   },
-  { 
-    name: "", 
-    assetKey: "ribs",
-    scale: 0.3, 
-    x: 0, 
-    y: -190, 
-    mobileX: 0, 
-    mobileY: -110, 
-    description: "Protects heart and lungs.",
-    imagePath: "/assets/ribs.png"
+];
+
+// ── Set 2: Jupiter + Galilean moons ─────
+const astronomyJupiterParts: PartConfig[] = [
+  {
+    name: "Jupiter",
+    assetKey: "jupiter", scale: 0.5,
+    x: 0, y: 0, mobileX: 0, mobileY: 0,
+    description: "Largest planet in our solar system.",
+    imagePath: "/assets/astronomy/jupiter.png",
+    isCenter: true,
   },
-  { 
-    name: "", 
-    assetKey: "spine",
-    scale: 0.25, 
-    x: 0, 
-    y: -100, 
-    mobileX: 0, 
-    mobileY: -50, 
-    description: "Supports body structure.",
-    imagePath: "/assets/spine.png"
+  {
+    name: "Io",
+    assetKey: "io", scale: 0.2,
+    x: 0, y: 0, mobileX: 0, mobileY: 0,
+    description: "Most volcanically active moon in the solar system.",
+    imagePath: "/assets/astronomy/io.png",
+    orbitRadius: 110, mobileOrbitRadius: 70, orbitStartAngle: 0,
   },
-  { 
-    name: "", 
-    assetKey: "pelvis",
-    scale: 0.3, 
-    x: 0, 
-    y: -30, 
-    mobileX: 0, 
-    mobileY: -10, 
-    description: "Connects spine to legs.",
-    imagePath: "/assets/pelvis.png"
+  {
+    name: "Europa",
+    assetKey: "europa", scale: 0.2,
+    x: 0, y: 0, mobileX: 0, mobileY: 0,
+    description: "Icy moon possibly hiding a subsurface ocean.",
+    imagePath: "/assets/astronomy/europa.png",
+    orbitRadius: 160, mobileOrbitRadius: 100, orbitStartAngle: 90,
   },
-  { 
-    name: "", 
-    assetKey: "humerus",
-    scale: 0.18, 
-    x: -140, 
-    y: -180, 
-    mobileX: -60, 
-    mobileY: -90, 
-    description: "Upper arm bone.",
-    imagePath: "/assets/humerus.png"
+  {
+    name: "Ganymede",
+    assetKey: "ganymede", scale: 0.22,
+    x: 0, y: 0, mobileX: 0, mobileY: 0,
+    description: "Largest moon in the solar system.",
+    imagePath: "/assets/astronomy/ganymede.png",
+    orbitRadius: 210, mobileOrbitRadius: 130, orbitStartAngle: 180,
   },
-  { 
-    name: "", 
-    assetKey: "radius",
-    scale: 0.16, 
-    x: -150, 
-    y: -90, 
-    mobileX: -65, 
-    mobileY: -55, 
-    description: "Forearm bone on thumb side.",
-    imagePath: "/assets/radius.png"
+  {
+    name: "Callisto",
+    assetKey: "callisto", scale: 0.22,
+    x: 0, y: 0, mobileX: 0, mobileY: 0,
+    description: "Most cratered object in the solar system.",
+    imagePath: "/assets/astronomy/callisto.png",
+    orbitRadius: 260, mobileOrbitRadius: 160, orbitStartAngle: 270,
   },
-  { 
-    name: "", 
-    assetKey: "ulna",
-    scale: 0.16, 
-    x: -145, 
-    y: -95, 
-    mobileX: -60, 
-    mobileY: -50, 
-    description: "Forearm bone on pinky side.",
-    imagePath: "/assets/ulna.png"
+];
+
+// ── Set 3: Saturn + moons ────────────────
+const astronomySaturnParts: PartConfig[] = [
+  {
+    name: "Saturn",
+    assetKey: "saturn", scale: 0.5,
+    x: 0, y: 0, mobileX: 0, mobileY: 0,
+    description: "Known for its stunning ring system.",
+    imagePath: "/assets/astronomy/saturn.png",
+    isCenter: true,
   },
-  { 
-    name: "", 
-    assetKey: "femur",
-    scale: 0.2, 
-    x: -70, 
-    y: 50, 
-    mobileX: -20, 
-    mobileY: 40, 
-    description: "Thighbone, longest bone in body.",
-    imagePath: "/assets/femur.png"
+  {
+    name: "Titan",
+    assetKey: "titan", scale: 0.22,
+    x: 0, y: 0, mobileX: 0, mobileY: 0,
+    description: "Saturn's largest moon with a thick atmosphere.",
+    imagePath: "/assets/astronomy/titan.png",
+    orbitRadius: 110, mobileOrbitRadius: 70, orbitStartAngle: 0,
   },
-  { 
-    name: "", 
-    assetKey: "patella",
-    scale: 0.15, 
-    x: -70, 
-    y: 130, 
-    mobileX: -18, 
-    mobileY: 65, 
-    description: "Kneecap.",
-    imagePath: "/assets/patella.png"
+  {
+    name: "Enceladus",
+    assetKey: "enceladus", scale: 0.18,
+    x: 0, y: 0, mobileX: 0, mobileY: 0,
+    description: "Shoots water geysers from its south pole.",
+    imagePath: "/assets/astronomy/enceladus.png",
+    orbitRadius: 160, mobileOrbitRadius: 100, orbitStartAngle: 90,
   },
-  { 
-    name: "", 
-    assetKey: "tibia",
-    scale: 0.18, 
-    x: -70, 
-    y: 230, 
-    mobileX: -15, 
-    mobileY: 90, 
-    description: "Shinbone.",
-    imagePath: "/assets/tibia.png"
+  {
+    name: "Mimas",
+    assetKey: "mimas", scale: 0.18,
+    x: 0, y: 0, mobileX: 0, mobileY: 0,
+    description: "Resembles the Death Star with its huge crater.",
+    imagePath: "/assets/astronomy/mimas.png",
+    orbitRadius: 210, mobileOrbitRadius: 130, orbitStartAngle: 180,
   },
-  { 
-    name: "", 
-    assetKey: "fibula",
-    scale: 0.16, 
-    x: 70, 
-    y: 230,  
-    mobileX: -12, 
-    mobileY: 95, 
-    description: "Calf bone next to tibia.", 
-    imagePath: "/assets/fibula.png"
+  {
+    name: "Rhea",
+    assetKey: "rhea", scale: 0.2,
+    x: 0, y: 0, mobileX: 0, mobileY: 0,
+    description: "Saturn's second-largest moon.",
+    imagePath: "/assets/astronomy/rhea.png",
+    orbitRadius: 260, mobileOrbitRadius: 160, orbitStartAngle: 270,
   },
 ];
 
 // ========================================
-// 🟠 ADVANCED — Organ-Based Diseases (15 items)
+// 🟠 ADVANCED — Habitat Sorting (15 animals)
+// Background: habitat.png (SKY top / LAND middle / WATER bottom)
+// x / y are offsets from scene center to the correct snap zone.
+// SKY   zone center ≈ y -290 (desktop) / -185 (mobile)
+// LAND  zone center ≈ y  -60 (desktop) /  -35 (mobile)
+// WATER zone center ≈ y  200 (desktop) /  130 (mobile)
+// 5 animals per zone, spread across x so they don't overlap.
 // ========================================
-const advancedPathogens: PartConfig[] = [
-  { 
-    name: "Peptic Ulcer Disease", 
-    assetKey: "peptic_ulcer",
-    scale: 0.22, 
-    x: 40, 
-    y: -150, 
-    mobileX: 0, 
-    mobileY: -120, 
-    description: "Open sores in the stomach lining.",
-    imagePath: "/assets/peptic_ulcer.png"
+
+// ── SKY animals (5) ──
+const skyAnimals: PartConfig[] = [
+  {
+    name: "Eagle",
+    assetKey: "eagle", scale: 0.28,
+    x: -180, y: -290, mobileX: -110, mobileY: -185,
+    description: "A powerful bird of prey that soars high in the sky.",
+    imagePath: "/assets/habitat/eagle.png",
   },
-  { 
-    name: "Encephalitis", 
-    assetKey: "encephalitis",
-    scale: 0.2, 
-    x: 5, 
-    y: -370, 
-    mobileX: 20, 
-    mobileY: -90, 
-    description: "Inflammation of the brain.",
-    imagePath: "/assets/encephalitis.png"
+  {
+    name: "Parrot",
+    assetKey: "parrot", scale: 0.26,
+    x: -90, y: -290, mobileX: -55, mobileY: -185,
+    description: "A colorful bird known for its ability to mimic sounds.",
+    imagePath: "/assets/habitat/parrot.png",
   },
-  { 
-    name: "Bladder Stones", 
-    assetKey: "bladder_stones",
-    scale: 0.22, 
-    x: -5, 
-    y: -50, 
-    mobileX: -20, 
-    mobileY: -90, 
-    description: "Hard mineral deposits in the bladder.",
-    imagePath: "/assets/bladder_stones.png"
+  {
+    name: "Butterfly",
+    assetKey: "butterfly", scale: 0.26,
+    x: 0, y: -290, mobileX: 0, mobileY: -185,
+    description: "A winged insect that flutters through the air.",
+    imagePath: "/assets/habitat/butterfly.png",
   },
-  { 
-    name: "Diabetes Mellitus", 
-    assetKey: "diabetes",
-    scale: 0.2, 
-    x: 0, 
-    y: -100, 
-    mobileX: 0, 
-    mobileY: -60, 
-    description: "Chronic condition affecting blood sugar regulation.",
-    imagePath: "/assets/diabetes.png"
+  {
+    name: "Bat",
+    assetKey: "bat", scale: 0.26,
+    x: 90, y: -290, mobileX: 55, mobileY: -185,
+    description: "A flying mammal that navigates using echolocation.",
+    imagePath: "/assets/habitat/bat.png",
   },
-  { 
-    name: "Tuberculosis", 
-    assetKey: "tuberculosis",
-    scale: 0.22, 
-    x: -70, 
-    y: -180, 
-    mobileX: 30, 
-    mobileY: -105, 
-    description: "Bacterial lung infection.",
-    imagePath: "/assets/tuberculosis.png"
-  },
-  { 
-    name: "Splenomegaly", 
-    assetKey: "splenomegaly",
-    scale: 0.2, 
-    x: 70, 
-    y: -180, 
-    mobileX: -30, 
-    mobileY: -105, 
-    description: "Abnormal enlargement of the spleen.",
-    imagePath: "/assets/spleen.png"
-  },
-  { 
-    name: "Hypothyroidism", 
-    assetKey: "hypothyroidism",
-    scale: 0.21, 
-    x: 2, 
-    y: -270, 
-    mobileX: 25, 
-    mobileY: -70, 
-    description: "Underactive thyroid gland.",
-    imagePath: "/assets/hypothyroidism.png"
-  },
-  { 
-    name: "Appendicitis", 
-    assetKey: "appendicitis",
-    scale: 0.2, 
-    x: -35, 
-    y: -60, 
-    mobileX: -25, 
-    mobileY: -70, 
-    description: "Inflammation of the appendix.",
-    imagePath: "/assets/appendicitis.png"
-  },
-  { 
-    name: "Coronary Artery Disease", 
-    assetKey: "coronary_artery_disease",
-    scale: 0.19, 
-    x: 15, 
-    y: -200, 
-    mobileX: 0, 
-    mobileY: -30, 
-    description: "Narrowing of heart arteries.",
-    imagePath: "/assets/coronary_artery_disease.png"
-  },
-  { 
-    name: "Crohn’s Disease", 
-    assetKey: "crohns_disease",
-    scale: 0.2, 
-    x: 40, 
-    y: -80, 
-    mobileX: 30, 
-    mobileY: -50, 
-    description: "Chronic inflammatory bowel disease.",
-    imagePath: "/assets/crohns_disease.png"
-  },
-  { 
-    name: "Pneumonia", 
-    assetKey: "pneumonia",
-    scale: 0.2, 
-    x: -40, 
-    y: -210, 
-    mobileX: -30, 
-    mobileY: -50, 
-    description: "Infection causing lung inflammation.",
-    imagePath: "/assets/pneumonia.png"
-  },
-  { 
-    name: "Hepatitis B", 
-    assetKey: "hepatitis_b",
-    scale: 0.18, 
-    x: -35, 
-    y: -150, 
-    mobileX: 25, 
-    mobileY: -20, 
-    description: "Viral infection of the liver.",
-    imagePath: "/assets/hepatitis_b.png"
-  },
-  { 
-    name: "Ovarian Cancer", 
-    assetKey: "ovarian_cancer",
-    scale: 0.18, 
-    x: 0, 
-    y: -40, 
-    mobileX: -25, 
-    mobileY: -20, 
-    description: "Cancer of the ovaries.",
-    imagePath: "/assets/ovarian_cancer.png"
-  },
-  { 
-    name: "Nephritis", 
-    assetKey: "nephritis",
-    scale: 0.17, 
-    x: 30, 
-    y: -90, 
-    mobileX: 20, 
-    mobileY: 0, 
-    description: "Inflammation of the kidneys.",
-    imagePath: "/assets/nephritis.png"
-  },
-  { 
-    name: "Stroke", 
-    assetKey: "stroke",
-    scale: 0.19, 
-    x: 0, 
-    y: -370, 
-    mobileX: -20, 
-    mobileY: 0, 
-    description: "Disrupted blood flow to the brain.",
-    imagePath: "/assets/stroke.png"
+  {
+    name: "Owl",
+    assetKey: "owl", scale: 0.26,
+    x: 180, y: -290, mobileX: 110, mobileY: -185,
+    description: "A nocturnal bird with excellent night vision.",
+    imagePath: "/assets/habitat/owl.png",
   },
 ];
 
-// ========================================
-// 💀 EXPERT — Cells (Organ Only, 15 items, Randomized)
-// ========================================
-const expertCells: PartConfig[] = [
-  { 
-    name: "Neuron", 
-    assetKey: "neuron",
-    scale: 0.22, 
-    x: 0, 
-    y: -360, 
-    mobileX: 0, 
-    mobileY: -130, 
-    description: "Nerve cell transmitting signals. Found in the brain.",
-    imagePath: "/assets/neuron.png"
+// ── LAND animals (5) ──
+const landAnimals: PartConfig[] = [
+  {
+    name: "Lion",
+    assetKey: "lion", scale: 0.28,
+    x: -180, y: -60, mobileX: -110, mobileY: -35,
+    description: "The king of the savanna, a powerful land predator.",
+    imagePath: "/assets/habitat/lion.png",
   },
-  { 
-    name: "Red blood cell", 
-    assetKey: "red_blood_cell",
-    scale: 0.25, 
-    x: -20, 
-    y: -200, 
-    mobileX: 0, 
-    mobileY: -110, 
-    description: "Carries oxygen throughout the body. Found in the heart and blood.",
-    imagePath: "/assets/red_blood_cell.png"
+  {
+    name: "Elephant",
+    assetKey: "elephant", scale: 0.28,
+    x: -90, y: -60, mobileX: -55, mobileY: -35,
+    description: "The largest land animal on Earth.",
+    imagePath: "/assets/habitat/elephant.png",
   },
-  { 
-    name: "White blood cell", 
-    assetKey: "white_blood_cell",
-    scale: 0.2, 
-    x: 70, 
-    y: -150, 
-    mobileX: 20, 
-    mobileY: -90, 
-    description: "Defends the body against disease. Found in the spleen and blood.",
-    imagePath: "/assets/white_blood_cell.png"
+  {
+    name: "Snake",
+    assetKey: "snake", scale: 0.26,
+    x: 0, y: -60, mobileX: 0, mobileY: -35,
+    description: "A reptile that slithers along the ground.",
+    imagePath: "/assets/habitat/snake.png",
   },
-  { 
-    name: "Platelet", 
-    assetKey: "platelet",
-    scale: 0.18, 
-    x: -30, 
-    y: -150, 
-    mobileX: -20, 
-    mobileY: -90, 
-    description: "Helps blood clot to stop bleeding. Found in blood.",
-    imagePath: "/assets/platelet.png"
+  {
+    name: "Rabbit",
+    assetKey: "rabbit", scale: 0.26,
+    x: 90, y: -60, mobileX: 55, mobileY: -35,
+    description: "A small, fast mammal that lives in burrows.",
+    imagePath: "/assets/habitat/rabbit.png",
   },
-  { 
-    name: "Cardiac muscle cell", 
-    assetKey: "cardiac_muscle_cell",
-    scale: 0.2, 
-    x: 20, 
-    y: -200, 
-    mobileX: -30, 
-    mobileY: -70, 
-    description: "Makes up heart muscle tissue. Found in the heart.",
-    imagePath: "/assets/cardiac_muscle_cell.png"
-  },
-  { 
-    name: "Skeletal muscle cell", 
-    assetKey: "skeletal_muscle_cell",
-    scale: 0.2, 
-    x: 40, 
-    y: 70, 
-    mobileX: 30, 
-    mobileY: -70, 
-    description: "Enables voluntary body movement. Found in muscles.",
-    imagePath: "/assets/skeletal_muscle_cell.png"
-  },
-  { 
-    name: "Smooth muscle cell", 
-    assetKey: "smooth_muscle_cell",
-    scale: 0.19, 
-    x: 0, 
-    y: -90, 
-    mobileX: 0, 
-    mobileY: -50, 
-    description: "Lines internal organs. Found in stomach, intestines, and blood vessels.",
-    imagePath: "/assets/smooth_muscle_cell.png"
-  },
-  { 
-    name: "Epithelial cell", 
-    assetKey: "epithelial_cell",
-    scale: 0.18, 
-    x: 35, 
-    y: -150, 
-    mobileX: 25, 
-    mobileY: -35, 
-    description: "Forms protective layers. Found lining organs like stomach and lungs.",
-    imagePath: "/assets/epithelial_cell.png"
-  },
-  { 
-    name: "Liver cell", 
-    assetKey: "liver_cell",
-    scale: 0.18, 
-    x: -30, 
-    y: -150, 
-    mobileX: -20, 
-    mobileY: 0, 
-    description: "Performs liver functions. Found in the liver.",
-    imagePath: "/assets/liver_cell.png"
-  },
-  { 
-    name: "Kidney epithelial cell", 
-    assetKey: "kidney_cell",
-    scale: 0.18, 
-    x: -60, 
-    y: -90, 
-    mobileX: 20, 
-    mobileY: 0, 
-    description: "Filters waste from blood. Found in the kidneys.",
-    imagePath: "/assets/kidney_cell.png"
-  },
-  { 
-    name: "Stem cell", 
-    assetKey: "stem_cell",
-    scale: 0.19, 
-    x: 70, 
-    y: -150, 
-    mobileX: 20, 
-    mobileY: -10, 
-    description: "Can become different cells. Found in blood and spleen.",
-    imagePath: "/assets/stem_cell.png"
-  },
-  { 
-    name: "Sperm cell", 
-    assetKey: "sperm_cell",
-    scale: 0.19, 
-    x: -30, 
-    y: -50, 
-    mobileX: -20, 
-    mobileY: 20, 
-    description: "Male reproductive cell. Found in the testes.",
-    imagePath: "/assets/sperm_cell.png"
-  },
-  { 
-    name: "Egg cell", 
-    assetKey: "egg_cell",
-    scale: 0.2, 
-    x: 30, 
-    y: -50, 
-    mobileX: 0, 
-    mobileY: 20, 
-    description: "Female reproductive cell. Found in the ovaries.",
-    imagePath: "/assets/egg_cell.png"
-  },
-  { 
-    name: "Red pulp spleen cell", 
-    assetKey: "spleen_cell",
-    scale: 0.18, 
-    x: 70, 
-    y: -210,
-    mobileX: -20, 
-    mobileY: -15, 
-    description: "Helps fight infection. Found in the spleen.",
-    imagePath: "/assets/spleen_cell.png"
-  },
-  { 
-    name: "Pulmonary epithelial cell", 
-    assetKey: "lung_cell",
-    scale: 0.18, 
-    x: -50, 
-    y: -210,
-    mobileX: 0, 
-    mobileY: 0, 
-    description: "Lines airways. Found in the lungs.",
-    imagePath: "/assets/lung_cell.png"
+  {
+    name: "Tiger",
+    assetKey: "tiger", scale: 0.28,
+    x: 180, y: -60, mobileX: 110, mobileY: -35,
+    description: "A striped big cat that hunts in forests and grasslands.",
+    imagePath: "/assets/habitat/tiger.png",
   },
 ];
 
+// ── WATER animals (5) ──
+const waterAnimals: PartConfig[] = [
+  {
+    name: "Shark",
+    assetKey: "shark", scale: 0.28,
+    x: -180, y: 200, mobileX: -110, mobileY: 130,
+    description: "A fierce ocean predator with rows of sharp teeth.",
+    imagePath: "/assets/habitat/shark.png",
+  },
+  {
+    name: "Dolphin",
+    assetKey: "dolphin", scale: 0.28,
+    x: -90, y: 200, mobileX: -55, mobileY: 130,
+    description: "An intelligent marine mammal known for its playfulness.",
+    imagePath: "/assets/habitat/dolphin.png",
+  },
+  {
+    name: "Clownfish",
+    assetKey: "clownfish", scale: 0.26,
+    x: 0, y: 200, mobileX: 0, mobileY: 130,
+    description: "A small, brightly colored fish that lives among sea anemones.",
+    imagePath: "/assets/habitat/clownfish.png",
+  },
+  {
+    name: "Crab",
+    assetKey: "crab", scale: 0.26,
+    x: 90, y: 200, mobileX: 55, mobileY: 130,
+    description: "A crustacean that walks sideways along the ocean floor.",
+    imagePath: "/assets/habitat/crab.png",
+  },
+  {
+    name: "Turtle",
+    assetKey: "turtle", scale: 0.26,
+    x: 180, y: 200, mobileX: 110, mobileY: 130,
+    description: "A shelled reptile that swims gracefully in the sea.",
+    imagePath: "/assets/habitat/turtle.png",
+  },
+];
+
+// Flat array: SKY first, then LAND, then WATER
+// generateCategoryLevels slices in batches of 5, so:
+// Batch 0 (levels 1–5)  → skyAnimals
+// Batch 1 (levels 6–10) → landAnimals
+// Batch 2 (levels 11–15)→ waterAnimals
+const advancedHabitat: PartConfig[] = [
+  ...skyAnimals,
+  ...landAnimals,
+  ...waterAnimals,
+];
+
 // ========================================
-// Level Generation
+// 💀 EXPERT — Life Cycle Ordering (15 stages)
+// 3 life cycles × 5 stages each, arranged in a circle.
+// Snap targets sit on a circle around scene center.
+// Arrows are drawn between them in the scene.
+//
+// Circle math (clockwise from top, radius 200px desktop / 130px mobile):
+//   Stage 1 (top):          angle -90°  →  x=0,    y=-200
+//   Stage 2 (top-right):    angle  -18° →  x=190,  y=-62
+//   Stage 3 (bottom-right): angle   54° →  x=118,  y=162
+//   Stage 4 (bottom-left):  angle  126° →  x=-118, y=162
+//   Stage 5 (top-left):     angle  198° →  x=-190, y=-62
+// Mobile radius 130px — same angles, scaled ~0.65
 // ========================================
 
-// Generate levels for a category with batched item progression
+// ── 🐸 Frog Life Cycle ──────────────────
+const frogCycle: PartConfig[] = [
+  {
+    name: "Egg",
+    assetKey: "frog_egg", scale: 0.26,
+    x: 0,    y: -200, mobileX: 0,    mobileY: -130,
+    description: "Frog eggs laid in clusters in still water.",
+    imagePath: "/assets/lifecycle/frog_egg.png",
+    cycleOrder: 1,
+  },
+  {
+    name: "Tadpole",
+    assetKey: "tadpole", scale: 0.26,
+    x: 190,  y: -62,  mobileX: 124,  mobileY: -40,
+    description: "A legless larva that swims and breathes through gills.",
+    imagePath: "/assets/lifecycle/tadpole.png",
+    cycleOrder: 2,
+  },
+  {
+    name: "Tadpole with Legs",
+    assetKey: "tadpole_legs", scale: 0.26,
+    x: 118,  y: 162,  mobileX: 77,   mobileY: 105,
+    description: "A tadpole that has grown hind legs and is changing shape.",
+    imagePath: "/assets/lifecycle/tadpole_legs.png",
+    cycleOrder: 3,
+  },
+  {
+    name: "Froglet",
+    assetKey: "froglet", scale: 0.26,
+    x: -118, y: 162,  mobileX: -77,  mobileY: 105,
+    description: "A young frog that still has a small tail.",
+    imagePath: "/assets/lifecycle/froglet.png",
+    cycleOrder: 4,
+  },
+  {
+    name: "Adult Frog",
+    assetKey: "adult_frog", scale: 0.28,
+    x: -190, y: -62,  mobileX: -124, mobileY: -40,
+    description: "A fully grown frog that can live on land and in water.",
+    imagePath: "/assets/lifecycle/adult_frog.png",
+    cycleOrder: 5,
+  },
+];
+
+// ── 🦋 Butterfly Life Cycle ─────────────
+const butterflyCycle: PartConfig[] = [
+  {
+    name: "Egg",
+    assetKey: "butterfly_egg", scale: 0.24,
+    x: 0,    y: -200, mobileX: 0,    mobileY: -130,
+    description: "Tiny eggs laid on the underside of leaves.",
+    imagePath: "/assets/lifecycle/butterfly_egg.png",
+    cycleOrder: 1,
+  },
+  {
+    name: "Caterpillar",
+    assetKey: "caterpillar", scale: 0.28,
+    x: 190,  y: -62,  mobileX: 124,  mobileY: -40,
+    description: "A larva that eats leaves and grows rapidly.",
+    imagePath: "/assets/lifecycle/caterpillar.png",
+    cycleOrder: 2,
+  },
+  {
+    name: "Pupa (Chrysalis)",
+    assetKey: "chrysalis", scale: 0.26,
+    x: 118,  y: 162,  mobileX: 77,   mobileY: 105,
+    description: "A protective case where the caterpillar transforms.",
+    imagePath: "/assets/lifecycle/chrysalis.png",
+    cycleOrder: 3,
+  },
+  {
+    name: "Emerging Butterfly",
+    assetKey: "emerging_butterfly", scale: 0.26,
+    x: -118, y: 162,  mobileX: -77,  mobileY: 105,
+    description: "A butterfly breaking free from its chrysalis.",
+    imagePath: "/assets/lifecycle/emerging_butterfly.png",
+    cycleOrder: 4,
+  },
+  {
+    name: "Adult Butterfly",
+    assetKey: "adult_butterfly", scale: 0.28,
+    x: -190, y: -62,  mobileX: -124, mobileY: -40,
+    description: "A fully grown butterfly that pollinates flowers.",
+    imagePath: "/assets/lifecycle/adult_butterfly.png",
+    cycleOrder: 5,
+  },
+];
+
+// ── 🌱 Plant Life Cycle ──────────────────
+const plantCycle: PartConfig[] = [
+  {
+    name: "Seed",
+    assetKey: "seed", scale: 0.26,
+    x: 0,    y: -200, mobileX: 0,    mobileY: -130,
+    description: "A tiny seed that contains everything needed to grow a plant.",
+    imagePath: "/assets/lifecycle/seed.png",
+    cycleOrder: 1,
+  },
+  {
+    name: "Germinating Seed",
+    assetKey: "sprout", scale: 0.26,
+    x: 190,  y: -62,  mobileX: 124,  mobileY: -40,
+    description: "A seed cracking open as a tiny root and shoot emerge.",
+    imagePath: "/assets/lifecycle/sprout.png",
+    cycleOrder: 2,
+  },
+  {
+    name: "Seedling",
+    assetKey: "seedling", scale: 0.26,
+    x: 118,  y: 162,  mobileX: 77,   mobileY: 105,
+    description: "A young plant with its first small leaves.",
+    imagePath: "/assets/lifecycle/seedling.png",
+    cycleOrder: 3,
+  },
+  {
+    name: "Mature Plant",
+    assetKey: "mature_plant", scale: 0.26,
+    x: -118, y: 162,  mobileX: -77,  mobileY: 105,
+    description: "A fully grown plant with stems and leaves.",
+    imagePath: "/assets/lifecycle/mature_plant.png",
+    cycleOrder: 4,
+  },
+  {
+    name: "Flowering Plant",
+    assetKey: "flowering_plant", scale: 0.28,
+    x: -190, y: -62,  mobileX: -124, mobileY: -40,
+    description: "A plant in full bloom that produces seeds to restart the cycle.",
+    imagePath: "/assets/lifecycle/flowering_plant.png",
+    cycleOrder: 5,
+  },
+];
+
+// Flat array: Frog → Butterfly → Plant
+// Batch 0 (levels 1–5):  frog stages
+// Batch 1 (levels 6–10): butterfly stages
+// Batch 2 (levels 11–15): plant stages
+const expertLifecycle: PartConfig[] = [
+  ...frogCycle,
+  ...butterflyCycle,
+  ...plantCycle,
+];
+
+// ========================================
+// Level Generation — Standard categories
+// ========================================
 function generateCategoryLevels(
   categoryId: string,
   startId: number,
   allParts: PartConfig[]
 ): LevelConfig[] {
   const levels: LevelConfig[] = [];
-  
+
   for (let i = 1; i <= 15; i++) {
     const globalId = startId + i - 1;
-    
-    // ⭐ Determine which batch of 5 items this level belongs to
-    // Levels 1-5: items 0-4
-    // Levels 6-10: items 5-9
-    // Levels 11-15: items 10-14
-    const batchIndex = Math.floor((i - 1) / 5); // 0, 1, or 2
-    const positionInBatch = ((i - 1) % 5) + 1; // 1-5
-    
-    // Get cumulative parts for this level within the current batch
+    const batchIndex = Math.floor((i - 1) / 5);
+    const positionInBatch = ((i - 1) % 5) + 1;
     const batchStartIndex = batchIndex * 5;
     const parts = allParts.slice(batchStartIndex, batchStartIndex + positionInBatch);
-    
+
     let title: string;
     let time: number;
     let snapRadius: number;
     let scorePerPart: number;
-    
+
     if (i <= 5) {
-      // Levels 1-5: Normal gameplay (Batch 1)
-      title = `${categoryId} ${i} – ${parts.length} Part${parts.length > 1 ? 's' : ''}`;
+      title = `${categoryId} ${i} – ${parts.length} Part${parts.length > 1 ? "s" : ""}`;
       time = 60 - (positionInBatch - 1) * 5;
       snapRadius = 60 - (positionInBatch - 1) * 3;
       scorePerPart = 10 + (positionInBatch - 1) * 2;
     } else if (i <= 10) {
-      // Levels 6-10: Scattered organs (Batch 2)
       title = `${categoryId} ${i} – Scattered Challenge`;
       time = 60 - (positionInBatch - 1) * 5;
       snapRadius = 60 - (positionInBatch - 1) * 3;
       scorePerPart = 20 + (positionInBatch - 1) * 2;
     } else {
-      // Levels 11-15: Advanced challenges (Batch 3)
       title = `${categoryId} ${i} – Expert Mode`;
       time = 50 - (positionInBatch - 1) * 4;
       snapRadius = 50 - (positionInBatch - 1) * 2;
       scorePerPart = 30 + (positionInBatch - 1) * 3;
     }
-    
-     let backgroundImage: string;
+
+    let backgroundImage: string;
     if (categoryId === "BASIC" || categoryId === "NORMAL") {
       backgroundImage = "/assets/human5.png";
-    } else if (categoryId === "HARD") {
-      backgroundImage = "/assets/skeleton.png";
-    } else if (categoryId === "ADVANCED" || categoryId === "EXPERT") {
-      backgroundImage = "/assets/humanorgans.png";
+    } else if (categoryId === "ADVANCED") {
+      backgroundImage = "/assets/habitat/habitat.png";
     } else {
-      backgroundImage = "/assets/human5.png"; // Default fallback
+      // EXPERT
+      backgroundImage = "/assets/lifecycle/lifecycle_bg.png";
     }
 
     levels.push({
@@ -958,46 +720,124 @@ function generateCategoryLevels(
       snapRadius,
       scorePerPart,
       parts,
-      backgroundImage, 
+      backgroundImage,
+      isLifecycle: categoryId === "EXPERT",
     });
   }
-  
+
   return levels;
 }
 
-// Generate all 75 levels (15 per category × 5 categories)
+// ========================================
+// Level Generation — HARD = Astronomy
+// orbitSpeed: deg/sec, negative = counter-clockwise
+// Set 1 (levels 1–5):   Sun system   -15 → -35  slow
+// Set 2 (levels 6–10):  Jupiter sys  -40 → -60  medium
+// Set 3 (levels 11–15): Saturn sys   -65 → -85  fast
+// ========================================
+function generateHardAstronomyLevels(startId: number): LevelConfig[] {
+  const sets: Array<{
+    pool: PartConfig[];
+    speeds: number[];
+    times: number[];
+    snaps: number[];
+    scores: number[];
+  }> = [
+    {
+      pool: astronomySunParts,
+      speeds: [-15, -20, -25, -30, -35],
+      times:  [ 60,  75,  90, 100,  90],
+      snaps:  [ 45,  42,  40,  38,  32],
+      scores: [  1,   1,   1,   1,   2],
+    },
+    {
+      pool: astronomyJupiterParts,
+      speeds: [-40, -45, -50, -55, -60],
+      times:  [ 60,  75,  90, 100,  90],
+      snaps:  [ 42,  40,  38,  36,  30],
+      scores: [  1,   1,   1,   1,   2],
+    },
+    {
+      pool: astronomySaturnParts,
+      speeds: [-65, -70, -75, -80, -85],
+      times:  [ 60,  75,  90, 100,  90],
+      snaps:  [ 40,  38,  36,  34,  28],
+      scores: [  1,   1,   1,   1,   2],
+    },
+  ];
+
+  const levels: LevelConfig[] = [];
+
+  sets.forEach((set, setIndex) => {
+    for (let pos = 0; pos < 5; pos++) {
+      const levelInCategory = setIndex * 5 + pos + 1; // 1–15
+      const globalId = startId + levelInCategory - 1;
+
+      // pos=0 (levels 1, 6, 11): center only — place the star/planet by itself
+      // pos=1–4: center + orbiters added one per level
+      const parts: PartConfig[] = pos === 0
+        ? [set.pool[0]]                               // center only
+        : [set.pool[0], ...set.pool.slice(1, pos + 1)]; // center + 1..4 orbiters
+
+      levels.push({
+        id: globalId,
+        categoryId: "HARD",
+        levelInCategory,
+        title: `HARD ${levelInCategory} – Astronomy`,
+        time: set.times[pos],
+        snapRadius: set.snaps[pos],
+        scorePerPart: set.scores[pos],
+        parts,
+        backgroundImage: "/assets/astronomy/space_bg.png",
+        orbitSpeed: set.speeds[pos],
+      });
+    }
+  });
+
+  return levels;
+}
+
+// ========================================
+// All Levels — 75 total
+// BASIC    1–15   (food groups / pyramid)
+// NORMAL   16–30  (body parts)
+// HARD     31–45  (astronomy orbit game)
+// ADVANCED 46–60  (habitat sorting)
+// EXPERT   61–75  (life cycle ordering — circular arrows)
+// ========================================
 const levels: LevelConfig[] = [
-  ...generateCategoryLevels("BASIC", 1, basicFoods),           // Levels 1-15
-  ...generateCategoryLevels("NORMAL", 16, normalBodyParts),     // Levels 16-30
-  ...generateCategoryLevels("HARD", 31, hardSkeleton),          // Levels 31-45
-  ...generateCategoryLevels("ADVANCED", 46, advancedPathogens), // Levels 46-60
-  ...generateCategoryLevels("EXPERT", 61, expertCells),         // Levels 61-75
+  ...generateCategoryLevels("BASIC",    1,  basicFoods),
+  ...generateCategoryLevels("NORMAL",   16, normalBodyParts),
+  ...generateHardAstronomyLevels(31),
+  ...generateCategoryLevels("ADVANCED", 46, advancedHabitat),
+  ...generateCategoryLevels("EXPERT",   61, expertLifecycle),
 ];
 
 export default levels;
 
-// Helper function to get a level by ID
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
 export function getLevelConfig(levelId: number): LevelConfig {
   return levels.find((l) => l.id === levelId) || levels[0];
 }
 
-// Helper function to get levels by category
 export function getLevelsByCategory(categoryId: string): LevelConfig[] {
   return levels.filter((l) => l.categoryId === categoryId);
 }
 
-// Helper function to get a level by category and level number
-export function getLevelByCategory(categoryId: string, levelInCategory: number): LevelConfig | undefined {
-  return levels.find((l) => l.categoryId === categoryId && l.levelInCategory === levelInCategory);
+export function getLevelByCategory(
+  categoryId: string,
+  levelInCategory: number
+): LevelConfig | undefined {
+  return levels.find(
+    (l) => l.categoryId === categoryId && l.levelInCategory === levelInCategory
+  );
 }
 
-// Helper function to get all unique asset keys needed for a level
 export function getRequiredAssets(levelConfig: LevelConfig): string[] {
-  const assetKeys = levelConfig.parts.map(part => part.assetKey);
-  return [...new Set(assetKeys)]; // Remove duplicates
+  return [...new Set(levelConfig.parts.map((p) => p.assetKey))];
 }
 
-// Helper function to get asset path for an asset key
 export function getAssetPath(assetKey: string): string {
   return `/assets/${assetKey}.png`;
 }
