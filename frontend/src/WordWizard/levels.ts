@@ -2,6 +2,7 @@
 export interface WordEntry {
   word: string;
   description: string;
+  choices?: string[]; // Multiple choice options (correct answer must be included)
 }
 
 export interface LevelConfig {
@@ -13,12 +14,13 @@ export interface LevelConfig {
   scorePerWord: number;
   words: WordEntry[];
   maxAttempts: number;
+  mode?: "drag" | "type" | "multiple_choice"; // Optional override
 }
 
 // ========================================
 // 🟢 BASIC — 3-Letter Animals (15 items)
 // ========================================
-const basic3LetterAnimals: WordEntry[] = [
+const basicSpelling: WordEntry[] = [
   { word: "CAT", description: "A small furry pet\nthat meows and purrs" },
   { word: "DOG", description: "A friendly pet that barks\nand wags its tail" },
   { word: "FOX", description: "A wild animal with orange fur\nand a bushy tail" },
@@ -37,91 +39,216 @@ const basic3LetterAnimals: WordEntry[] = [
 ];
 
 // ========================================
-// 🔵 NORMAL — 4-Letter Food (15 items)
+// 🔵 NORMAL — Grammar Fill-in-the-Blank (15 items)
+// Spell the missing word to complete the sentence!
 // ========================================
-const normal4LetterFood: WordEntry[] = [
-  { word: "RICE", description: "Small white grains that\nare cooked and eaten" },
-  { word: "SOUP", description: "A hot liquid meal with\nvegetables or meat" },
-  { word: "CAKE", description: "A sweet dessert for\nbirthdays and celebrations" },
-  { word: "MILK", description: "A white drink that\ncomes from cows" },
-  { word: "MEAT", description: "Food that comes from animals\nlike chicken or beef" },
-  { word: "TACO", description: "A Mexican food with a\nfolded shell and filling" },
-  { word: "BEEF", description: "Meat that comes\nfrom a cow" },
-  { word: "SALT", description: "White crystals that\nmake food taste better" },
-  { word: "EGGS", description: "Oval food that \nchickens lay,often eaten\n for breakfast" },
-  { word: "NUTS", description: "Hard-shelled seeds like\npeanuts or almonds" },
-  { word: "CORN", description: "Yellow vegetable with\nkernels on a cob" },
-  { word: "FISH", description: "A water animal that\nwe can eat" },
-  { word: "PEAR", description: "A sweet fruit shaped\nlike a light bulb" },
-  { word: "PLUM", description: "A small round purple\nor red fruit" },
-  { word: "BEAN", description: "A small vegetable seed\nthat grows in pods" }
+const normalGrammar: WordEntry[] = [
+  { word: "IS",      description: "She ___ happy.\nSpell the missing word!" },
+  { word: "ARE",     description: "They ___ playing.\nSpell the missing word!" },
+  { word: "GOES",    description: "He ___ to school.\nSpell the missing word!" },
+  { word: "READ",    description: "I ___ a book.\nSpell the missing word!" },
+  { word: "WERE",    description: "We ___ late.\nSpell the missing word!" },
+  { word: "HAS",     description: "She ___ a cat.\nSpell the missing word!" },
+  { word: "LIKES",   description: "He ___ milk.\nSpell the missing word!" },
+  { word: "ARE",     description: "They ___ home.\nSpell the missing word!" },
+  { word: "AM",      description: "I ___ tired.\nSpell the missing word!" },
+  { word: "RUNS",    description: "The dog ___ fast.\nSpell the missing word!" },
+  { word: "WENT",    description: "She ___ yesterday.\nSpell the missing word!" },
+  { word: "WATCHED", description: "We ___ a movie.\nSpell the missing word!" },
+  { word: "IS",      description: "He ___ not here.\nSpell the missing word!" },
+  { word: "EAT",     description: "They ___ food.\nSpell the missing word!" },
+  { word: "DID",     description: "I ___ my homework.\nSpell the missing word!" },
 ];
 
 // ========================================
-// 🔴 HARD — 5-Letter Places (15 items)
+// 🔴 HARD — Vocabulary Fill-in-the-Blank (15 items)
+// Spell the word that matches the meaning!
 // ========================================
-const hard5LetterPlaces: WordEntry[] = [
-  { word: "HOUSE", description: "A building where\npeople live" },
-  { word: "RIVER", description: "A long flowing body\nof fresh water" },
-  { word: "BEACH", description: "Sandy area next to\nthe ocean or sea" },
-  { word: "FIELD", description: "A large open area of\ngrass or farmland" },
-  { word: "PARKS", description: "Outdoor areas with trees,\ngrass, and playgrounds" },
-  { word: "MALLS", description: "Large buildings with\nmany shops inside" },
-  { word: "ROADS", description: "Paved paths where cars\nand vehicles travel" },
-  { word: "TOWER", description: "A very tall,\nnarrow building" },
-  { word: "LANES", description: "Narrow roads or paths\nin a neighborhood" },
-  { word: "PLAZA", description: "A public square in\na city or town" },
-  { word: "STORE", description: "A shop where you\nbuy things" },
-  { word: "COURT", description: "A place where legal\ncases are decided" },
-  { word: "HOTEL", description: "A building where travelers\nstay for the night" },
-  { word: "VILLA", description: "A large, fancy house\noften in the countryside" },
-  { word: "CANAL", description: "A man-made waterway\nfor boats" }
+const hardVocabulary: WordEntry[] = [
+  { word: "HUGE",  description: "Big means ___.\nSpell the missing word!" },
+  { word: "FAST",  description: "Quick means ___.\nSpell the missing word!" },
+  { word: "GLAD",  description: "Happy means ___.\nSpell the missing word!" },
+  { word: "WARM",  description: "Cold is the opposite of ___.\nSpell the missing word!" },
+  { word: "TINY",  description: "Small means ___.\nSpell the missing word!" },
+  { word: "ANGRY", description: "Mad means ___.\nSpell the missing word!" },
+  { word: "BEGIN", description: "Start means ___.\nSpell the missing word!" },
+  { word: "PLAIN", description: "Simple means ___.\nSpell the missing word!" },
+  { word: "RICH",  description: "Wealthy means ___.\nSpell the missing word!" },
+  { word: "QUIET", description: "Silent means ___.\nSpell the missing word!" },
+  { word: "BRAVE", description: "Fearless means ___.\nSpell the missing word!" },
+  { word: "OLDER", description: "Aged means ___.\nSpell the missing word!" },
+  { word: "NEAT",  description: "Tidy means ___.\nSpell the missing word!" },
+  { word: "BUY",   description: "Purchase means ___.\nSpell the missing word!" },
+  { word: "SMART", description: "Clever means ___.\nSpell the missing word!" },
 ];
 
 // ========================================
-// 🟠 ADVANCED — 6-Letter Objects (15 items)
+// 🟠 ADVANCED — Punctuation Multiple Choice (15 items)
+// Tap the correct sentence!
 // ========================================
-const advanced6LetterObjects: WordEntry[] = [
-  { word: "PENCIL", description: "A writing tool with\nlead inside wood" },
-  { word: "MARKER", description: "A thick pen with\ncolorful ink" },
-  { word: "BOTTLE", description: "A container for holding\nliquids like water" },
-  { word: "BASKET", description: "A container made of woven\nmaterial for carrying things" },
-  { word: "CAMERA", description: "A device for taking\npictures and photos" },
-  { word: "WINDOW", description: "A glass opening in a wall\nthat lets in light" },
-  { word: "BUTTON", description: "A small round object used\nto fasten clothes" },
-  { word: "CANDLE", description: "A wax stick with a wick\nthat gives light when burned" },
-  { word: "SPOONS", description: "Utensils used for eating\nsoup or cereal" },
-  { word: "POCKET", description: "A small pouch in clothing\nfor carrying small items" },
-  { word: "PILLOW", description: "A soft cushion for\nresting your head" },
-  { word: "LADDER", description: "A tool with steps for\nclimbing up high" },
-  { word: "HAMMER", description: "A tool for hitting\nnails into wood" },
-  { word: "BUCKET", description: "A round container with\na handle for carrying water" },
-  { word: "MIRROR", description: "A glass surface that\nshows your reflection" }
+const advancedPunctuation: WordEntry[] = [
+  {
+    word: "Hello.",
+    description: "A greeting that ends\nwith a period. Pick it!",
+    choices: ["Hello", "Hello.", "Hello!"],
+  },
+  {
+    word: "How are you?",
+    description: "You are asking someone\na question. Pick it!",
+    choices: ["How are you.", "How are you?", "How are you!"],
+  },
+  {
+    word: "It's raining.",
+    description: "\"It is\" shortened uses\nan apostrophe. Pick it!",
+    choices: ["Its raining.", "It is raining", "It's raining."],
+  },
+  {
+    word: "I like apples, oranges, and bananas.",
+    description: "A list of 3 things\nneeds commas. Pick it!",
+    choices: ["I like apples oranges and bananas.", "I like apples, oranges, and bananas.", "I like apples; oranges; and bananas."],
+  },
+  {
+    word: "Stop!",
+    description: "A strong command\nneeds an exclamation mark. Pick it!",
+    choices: ["Stop?", "Stop.", "Stop!"],
+  },
+  {
+    word: 'She said, "Hi."',
+    description: "Speech marks go around\nwhat someone says. Pick it!",
+    choices: ['She said "Hi"', 'She said "Hi".', 'She said, "Hi."'],
+  },
+  {
+    word: "Let's eat, grandma.",
+    description: "A comma after \"eat\"\nmeans we are calling grandma. Pick it!",
+    choices: ["Lets eat grandma.", "Let's eat, grandma.", "Let's eat grandma."],
+  },
+  {
+    word: "Yes, I agree.",
+    description: "\"Yes\" at the start\nneeds a comma after it. Pick it!",
+    choices: ["Yes I agree.", "Yes, I agree.", "Yes I agree"],
+  },
+  {
+    word: "What time is it?",
+    description: "You are asking\nfor the time. Pick it!",
+    choices: ["What time is it!", "What time is it.", "What time is it?"],
+  },
+  {
+    word: "That's my book.",
+    description: "\"That is\" shortened\nneeds an apostrophe. Pick it!",
+    choices: ["Thats my book.", "That is my book", "That's my book."],
+  },
+  {
+    word: "It is cold today.",
+    description: "A plain statement of fact\nends with a period. Pick it!",
+    choices: ["It is cold today", "It is cold today!", "It is cold today."],
+  },
+  {
+    word: "Wait!",
+    description: "An urgent command\nneeds an exclamation mark. Pick it!",
+    choices: ["Wait?", "Wait.", "Wait!"],
+  },
+  {
+    word: "He ran fast; he won.",
+    description: "A semicolon joins two\nrelated sentences. Pick it!",
+    choices: ["He ran fast he won.", "He ran fast, he won.", "He ran fast; he won."],
+  },
+  {
+    word: "I'm ready.",
+    description: "\"I am\" shortened\nneeds an apostrophe. Pick it!",
+    choices: ["Im ready.", "I am ready", "I'm ready."],
+  },
+  {
+    word: "We won, didn't we?",
+    description: "A tag question checks\nif someone agrees. Pick it!",
+    choices: ["We won didnt we?", "We won didn't we.", "We won, didn't we?"],
+  },
 ];
 
 // ========================================
-// 💀 EXPERT — 7-Letter Fantasy (15 items)
+// 💀 EXPERT — Comprehension Drag & Drop (15 items)
+// Read the passage, drag the correct answer to the box!
+// 3 yellow tile choices — only 1 is correct!
 // ========================================
-const expert7LetterFantasy: WordEntry[] = [
-  { word: "DRAGON", description: "A mythical flying creature\nthat breathes fire" },
-  { word: "KINGDOM", description: "A land ruled by\na king or queen" },
-  { word: "CRYSTAL", description: "A clear, sparkling\nmagical stone or gem" },
-  { word: "WIZARD", description: "A magical person\nwho casts spells" },
-  { word: "MONSTER", description: "A scary imaginary\ncreature" },
-  { word: "SPIRIT", description: "A ghost or magical being\nwithout a body" },
-  { word: "PORTAL", description: "A magical doorway\nto another world" },
-  { word: "PHOENIX", description: "A mythical bird that\nrises from ashes" },
-  { word: "FANTASY", description: "Magical stories with imaginary\ncreatures and worlds" },
-  { word: "UNICORN", description: "A magical horse with\na horn on its head" },
-  { word: "SORCERY", description: "The practice of\nmagic and spells" },
-  { word: "ENCHANT", description: "To put a magical\nspell on something" },
-  { word: "MYTHIC", description: "Related to ancient\nlegends and myths" },
-  { word: "ANCIENT", description: "Very old, from\nlong ago" },
-  { word: "MAGICAL", description: "Having supernatural\npowers or qualities" }
+const expertComprehension: WordEntry[] = [
+  {
+    word: "TOM",
+    description: "Tom woke up early\nand went to school.\nWho woke up early?",
+    choices: ["SAM", "TOM", "JACK"],
+  },
+  {
+    word: "SCHOOL",
+    description: "Tom woke up early\nand went to school.\nWhere did Tom go?",
+    choices: ["HOME", "PARK", "SCHOOL"],
+  },
+  {
+    word: "RAIN",
+    description: "It was raining, so\nwe stayed inside.\nWhy did we stay inside?",
+    choices: ["WIND", "SUN", "RAIN"],
+  },
+  {
+    word: "RAINY",
+    description: "It was raining, so\nwe stayed inside.\nWhat was the weather?",
+    choices: ["SUNNY", "CLOUDY", "RAINY"],
+  },
+  {
+    word: "SARA",
+    description: "Sara studied hard because\nshe wanted to pass.\nWho studied hard?",
+    choices: ["ANNA", "SARA", "EMMA"],
+  },
+  {
+    word: "PASS",
+    description: "Sara studied hard because\nshe wanted to pass.\nWhy did she study?",
+    choices: ["SLEEP", "PLAY", "PASS"],
+  },
+  {
+    word: "YES",
+    description: "Although he was tired,\nhe finished his work.\nWas he tired?",
+    choices: ["MAYBE", "NO", "YES"],
+  },
+  {
+    word: "DOG",
+    description: "The dog barked loudly\nwhen the door opened.\nWhat barked?",
+    choices: ["CAT", "BIRD", "DOG"],
+  },
+  {
+    word: "APPLES",
+    description: "Lisa likes apples more\nthan oranges.\nWhat does Lisa like more?",
+    choices: ["ORANGES", "APPLES", "BANANAS"],
+  },
+  {
+    word: "NO",
+    description: "The movie was long\nbut interesting.\nWas the movie boring?",
+    choices: ["YES", "MAYBE", "NO"],
+  },
+  {
+    word: "BUS",
+    description: "Jack missed the bus,\nso he was late.\nWhat did Jack miss?",
+    choices: ["TAXI", "TRAIN", "BUS"],
+  },
+  {
+    word: "CAUSE",
+    description: "Jack missed the bus,\nso he was late.\nThe word 'so' shows:",
+    choices: ["TIME", "PLACE", "CAUSE"],
+  },
+  {
+    word: "HOME",
+    description: "If it rains, we\nwill stay home.\nWhat happens if it rains?",
+    choices: ["GO OUT", "TRAVEL", "HOME"],
+  },
+  {
+    word: "EMMA",
+    description: "Emma smiled because\nshe was happy.\nWho smiled?",
+    choices: ["LILY", "SARA", "EMMA"],
+  },
+  {
+    word: "HAPPY",
+    description: "Emma smiled because\nshe was happy.\nWhy did she smile?",
+    choices: ["SAD", "ANGRY", "HAPPY"],
+  },
 ];
 
 // ========================================
-// Level Generation - FIXED VERSION
+// Level Generation
 // ========================================
 
 // Generate levels for a category - each level gets ONE word
@@ -131,19 +258,19 @@ function generateCategoryLevels(
   allWords: WordEntry[]
 ): LevelConfig[] {
   const levels: LevelConfig[] = [];
-  
+
   for (let i = 1; i <= 15; i++) {
     const globalId = startId + i - 1;
-    
-    // ⭐ FIXED: Each level gets exactly ONE word at its index
+
+    // Each level gets exactly ONE word at its index
     const wordIndex = i - 1; // Level 1 gets word 0, Level 2 gets word 1, etc.
     const word = allWords[wordIndex];
-    
+
     let title: string;
     let time: number;
     let scorePerWord: number;
     let maxAttempts: number;
-    
+
     if (i <= 5) {
       // Levels 1-5: Normal gameplay
       title = `${categoryId} ${i} – ${word.word}`;
@@ -171,21 +298,21 @@ function generateCategoryLevels(
       title,
       time,
       scorePerWord,
-      words: [word], // ⭐ FIXED: Array with single word
+      words: [word], // Array with single word
       maxAttempts,
     });
   }
-  
+
   return levels;
 }
 
 // Generate all 75 levels (15 per category × 5 categories)
 const levels: LevelConfig[] = [
-  ...generateCategoryLevels("BASIC", 1, basic3LetterAnimals),           // Levels 1-15
-  ...generateCategoryLevels("NORMAL", 16, normal4LetterFood),           // Levels 16-30
-  ...generateCategoryLevels("HARD", 31, hard5LetterPlaces),             // Levels 31-45
-  ...generateCategoryLevels("ADVANCED", 46, advanced6LetterObjects),    // Levels 46-60
-  ...generateCategoryLevels("EXPERT", 61, expert7LetterFantasy),        // Levels 61-75
+  ...generateCategoryLevels("BASIC", 1, basicSpelling),        // Levels 1-15
+  ...generateCategoryLevels("NORMAL", 16, normalGrammar),            // Levels 16-30
+  ...generateCategoryLevels("HARD", 31, hardVocabulary),          // Levels 31-45
+  ...generateCategoryLevels("ADVANCED", 46, advancedPunctuation), // Levels 46-60
+  ...generateCategoryLevels("EXPERT", 61, expertComprehension),     // Levels 61-75
 ];
 
 export default levels;
@@ -208,4 +335,50 @@ export function getLevelByCategory(categoryId: string, levelInCategory: number):
 // Helper function to get all words needed for a level
 export function getRequiredWords(levelConfig: LevelConfig): WordEntry[] {
   return levelConfig.words;
+}
+
+// ========================================
+// 🔵 NORMAL — Decoy Letter Generator
+// Use this helper to generate shuffled tiles
+// for grammar levels (answer letters + decoys)
+// ========================================
+
+/**
+ * Generates a shuffled array of letters for a grammar level tile set.
+ * Includes all letters of the correct answer plus decoy letters.
+ *
+ * @param answer   - The correct answer word (e.g. "GOES")
+ * @param decoyCount - How many extra fake letters to add (default: 3)
+ * @returns Shuffled array of letters (answer + decoys)
+ *
+ * @example
+ * generateGrammarTiles("IS")    → ["A", "S", "R", "I", "E", "O"] (shuffled)
+ * generateGrammarTiles("GOES")  → ["G", "X", "O", "E", "S", "T", "A"] (shuffled)
+ */
+export function generateGrammarTiles(answer: string, decoyCount = 3): string[] {
+  // Common decoy letters pool — avoid letters already in the answer
+  const decoyPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(
+    (l) => !answer.includes(l)
+  );
+
+  // Pick random decoys
+  const decoys: string[] = [];
+  const shuffledPool = Phaser_shuffle(decoyPool);
+  for (let i = 0; i < decoyCount && i < shuffledPool.length; i++) {
+    decoys.push(shuffledPool[i]);
+  }
+
+  // Combine answer letters + decoys and shuffle
+  const allLetters = [...answer.split(""), ...decoys];
+  return Phaser_shuffle(allLetters);
+}
+
+/** Simple Fisher-Yates shuffle (no Phaser dependency) */
+function Phaser_shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }

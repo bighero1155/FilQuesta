@@ -1,8 +1,8 @@
 import Phaser from "phaser";
-import { updateUserProgress, getUserProfile } from "../services/userService";
-import { saveCategoryLevel, getAllCategoryProgress } from "../services/levelService";
+import { updateUserProgress } from "../services/userService";
+import { saveCategoryLevel, getAllCategoryProgress, hasCompletedAnyLevelOne } from "../services/levelService";
 import { logPageVisit, logGameOver } from "../services/pageVisitService";
-import { LevelConfig, getLevelConfig } from "./levels";
+import { LevelConfig, getLevelConfig, generateGrammarTiles } from "./levels";
 import { createStyledButtons, createQuitButton } from "./buttons";
 import {
   createBackground,
@@ -10,9 +10,9 @@ import {
   createTile,
   createInfoText,
   showSlotFeedback,
-  createInputField,        
-  createSubmitButton,      
-  createStaticLetterDisplay 
+  createInputField,
+  createSubmitButton,
+  createStaticLetterDisplay,
 } from "./design";
 import { showCongratulationsConfetti } from "./congratulations";
 import { PowerUpLogic } from "../components/Powerups/powerUpLogic";
@@ -21,6 +21,15 @@ import { getUserPowerUps, UserPowerUp } from "../services/powerUpService";
 const SCENE_KEY = "WordWizardScene";
 const WORDWIZARD_CATEGORIES = ["BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"];
 
+// ✅ Maps each category to a friendly topic title shown above the question
+const CATEGORY_TOPIC_TITLE: Record<string, string> = {
+  BASIC:    "📝 SPELLING",
+  NORMAL:   "📖 GRAMMAR",
+  HARD:     "📚 VOCABULARY",
+  ADVANCED: "✏️ PUNCTUATION",
+  EXPERT:   "🧠 COMPREHENSION",
+};
+
 export default class WordWizardScene extends Phaser.Scene {
   private userId: number | null = null;
   private score = 0;
@@ -28,6 +37,7 @@ export default class WordWizardScene extends Phaser.Scene {
   private slots: Phaser.GameObjects.Zone[] = [];
   private tiles: Phaser.GameObjects.Container[] = [];
   private infoText?: Phaser.GameObjects.Text;
+  private _levelInfoText?: Phaser.GameObjects.Text;
   private activeButtons: Phaser.GameObjects.Container[] = [];
 
   private level!: LevelConfig;
@@ -42,6 +52,7 @@ export default class WordWizardScene extends Phaser.Scene {
     EXPERT: 0,
   };
 
+  private startTime = 0;
   private timeRemaining = 90;
   private timerEvent: Phaser.Time.TimerEvent | null = null;
   private timerText?: Phaser.GameObjects.Text;
@@ -54,15 +65,16 @@ export default class WordWizardScene extends Phaser.Scene {
 
   // ⌨️ Typing mode properties
   private isTypingMode = false;
+  // 🟠 Multiple choice mode
+  private isMultipleChoiceMode = false;
+  private mcButtons: Phaser.GameObjects.Container[] = [];
+  // 💀 Expert flag (routes to typing mode)
+  private isExpertDragMode = false;
   private typingInputField?: HTMLInputElement;
   private typingSubmitButton?: Phaser.GameObjects.Container;
   private staticLettersText?: Phaser.GameObjects.Text;
 
   private isSecondChanceActive = false;
-
-  // Analytics tracking
-  private sceneStartTime: number = 0;
-  private hasLoggedVisit: boolean = false;
 
   constructor() {
     super({ key: SCENE_KEY });
@@ -79,7 +91,6 @@ export default class WordWizardScene extends Phaser.Scene {
     try {
       const storedScore = localStorage.getItem("wordwizard_session_score");
       const storedStreak = localStorage.getItem("wordwizard_streak");
-      
       this.score = storedScore ? parseInt(storedScore) : 0;
       this.consecutiveLevelsCompleted = storedStreak ? parseInt(storedStreak) : 0;
     } catch {
@@ -87,7 +98,6 @@ export default class WordWizardScene extends Phaser.Scene {
       this.consecutiveLevelsCompleted = 0;
     }
 
-    // Get level from URL or data
     const urlParams = new URLSearchParams(window.location.search);
     const levelParam = urlParams.get("level");
     const categoryParam = urlParams.get("category");
@@ -101,30 +111,21 @@ export default class WordWizardScene extends Phaser.Scene {
 
     this.currentLevel = startLevel ?? 1;
 
-    // Extract category and level from URL or calculate from global level
     if (categoryParam) {
       this.currentCategoryId = categoryParam;
-      // Calculate level within category from global level
       const categoryIndex = WORDWIZARD_CATEGORIES.indexOf(categoryParam);
-      this.currentLevelInCategory = this.currentLevel - (categoryIndex * 15);
+      this.currentLevelInCategory = this.currentLevel - categoryIndex * 15;
     } else {
-      // Calculate category and level from global level number
       this.calculateCategoryFromGlobalLevel(this.currentLevel);
     }
 
-    // Load level config before preload runs
     this.level = getLevelConfig(this.currentLevel);
-
-    // Initialize analytics tracking
-    this.sceneStartTime = Date.now();
-    this.hasLoggedVisit = false;
+    this.startTime = Date.now();
   }
 
-  // Calculate category and level from global level number
   private calculateCategoryFromGlobalLevel(globalLevel: number) {
     const categoryIndex = Math.floor((globalLevel - 1) / 15);
     const levelInCategory = ((globalLevel - 1) % 15) + 1;
-
     this.currentCategoryId = WORDWIZARD_CATEGORIES[categoryIndex] || "BASIC";
     this.currentLevelInCategory = levelInCategory;
   }
@@ -144,14 +145,13 @@ export default class WordWizardScene extends Phaser.Scene {
     }
   }
 
-  // Get category display name with emoji
   private getCategoryDisplayName(): string {
     const categoryEmojis: Record<string, string> = {
-      BASIC: "🟢 BASIC",
-      NORMAL: "🔵 NORMAL",
-      HARD: "🔴 HARD",
+      BASIC:    "🟢 BASIC",
+      NORMAL:   "🔵 NORMAL",
+      HARD:     "🔴 HARD",
       ADVANCED: "🟠 ADVANCED",
-      EXPERT: "💀 EXPERT",
+      EXPERT:   "💀 EXPERT",
     };
     return categoryEmojis[this.currentCategoryId] || this.currentCategoryId;
   }
@@ -161,7 +161,6 @@ export default class WordWizardScene extends Phaser.Scene {
 
     if (!this.userId) return;
 
-    // Fetch category progress (async)
     try {
       this.categoryProgress = await getAllCategoryProgress(
         this.userId,
@@ -172,15 +171,26 @@ export default class WordWizardScene extends Phaser.Scene {
       this.categoryProgress = { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
     }
 
-    // ✅ FIXED: Check if level is unlocked
     const unlockedInCategory = this.categoryProgress[this.currentCategoryId] || 0;
-    
-    // ✅ Level 1 is ALWAYS playable
-    // ✅ Levels 2-15: Must complete previous level in THIS category
-    if (this.currentLevelInCategory > 1 && this.currentLevelInCategory > unlockedInCategory) {
-      alert(`🚫 Complete ${this.currentCategoryId} Level ${this.currentLevelInCategory - 1} first!`);
-      window.location.href = "/wordwizardmap";
-      return;
+    const hasCompletedAnyLevel1 = await hasCompletedAnyLevelOne(
+      this.userId,
+      "WordWizard",
+      WORDWIZARD_CATEGORIES
+    );
+
+    if (this.currentLevelInCategory === 1) {
+      const totalProgress = Object.values(this.categoryProgress).reduce((sum, val) => sum + val, 0);
+      if (!hasCompletedAnyLevel1 && totalProgress > 0) {
+        alert("🚫 Complete any Level 1 first to unlock all Level 1s!");
+        window.location.href = "/wordwizardmap";
+        return;
+      }
+    } else {
+      if (this.currentLevelInCategory > unlockedInCategory) {
+        alert(`🚫 Complete ${this.currentCategoryId} Level ${this.currentLevelInCategory - 1} first!`);
+        window.location.href = "/wordwizardmap";
+        return;
+      }
     }
 
     this.timeRemaining = this.level.time;
@@ -189,13 +199,10 @@ export default class WordWizardScene extends Phaser.Scene {
     this.createLevelInfoText();
     this.createLevel();
     createQuitButton(this);
-    
-    // Log initial page visit
-    this.logInitialVisit();
-    
+    await logPageVisit(this.userId, SCENE_KEY, 0);
     this.createTimerAndHUD();
 
-    // ⌨️ Only set up drag events if NOT in typing mode
+    // Only wire up drag events when NOT in typing mode
     if (!this.isTypingMode) {
       this.input.on("dragstart", (_: any, go: any) => {
         go.setAlpha(0.6);
@@ -228,7 +235,7 @@ export default class WordWizardScene extends Phaser.Scene {
     const levelInfoY = isMobile ? 55 : 60;
     const levelInfoX = isMobile ? this.scale.width - 380 : this.scale.width - 1400;
 
-    this.add.text(
+    this._levelInfoText = this.add.text(
       levelInfoX,
       levelInfoY,
       `${this.getCategoryDisplayName()}\nLevel ${this.currentLevelInCategory}`,
@@ -243,44 +250,11 @@ export default class WordWizardScene extends Phaser.Scene {
     );
   }
 
-  // ---------- Analytics Methods ----------
-  private async logInitialVisit() {
-    if (!this.userId || this.hasLoggedVisit) return;
-    
-    try {
-      await logPageVisit(this.userId, SCENE_KEY, 0);
-      this.hasLoggedVisit = true;
-    } catch (error) {
-      console.error("Failed to log initial visit:", error);
-    }
-  }
-
-  private async logVisitBeforeExit() {
-    if (!this.userId) return;
-
-    const timeSpentSeconds = Math.floor((Date.now() - this.sceneStartTime) / 1000);
-    
-    try {
-      await logPageVisit(this.userId, SCENE_KEY, timeSpentSeconds);
-    } catch (error) {
-      console.error("Failed to log visit before exit:", error);
-    }
-  }
-
-  private async logGameOverEvent() {
-    if (!this.userId) return;
-
-    try {
-      await logGameOver(this.userId, SCENE_KEY);
-    } catch (error) {
-      console.error("Failed to log game over:", error);
-    }
-  }
-
   private async handleSceneEnd() {
-    await this.logVisitBeforeExit();
-    
-    // ⌨️ Clean up HTML input if exists
+    if (!this.userId) return;
+    const timeSpent = Math.floor((Date.now() - this.startTime) / 1000);
+    await logPageVisit(this.userId, SCENE_KEY, timeSpent);
+
     if (this.typingInputField) {
       this.typingInputField.remove();
       this.typingInputField = undefined;
@@ -297,8 +271,10 @@ export default class WordWizardScene extends Phaser.Scene {
     this.tiles.forEach((t) => t.destroy());
     this.slots = [];
     this.tiles = [];
-    
-    // ⌨️ Clean up typing mode elements
+
+    this.mcButtons.forEach((b) => b.destroy());
+    this.mcButtons = [];
+
     if (this.typingInputField) {
       this.typingInputField.remove();
       this.typingInputField = undefined;
@@ -319,10 +295,22 @@ export default class WordWizardScene extends Phaser.Scene {
 
     const currentWord = this.level.words[0];
 
-    // ⌨️ Determine if this level should use typing mode (levels 11-15)
-    this.isTypingMode = this.currentLevelInCategory >= 11;
+    // 🟠 ADVANCED = multiple choice tap mode
+    this.isMultipleChoiceMode = this.currentCategoryId === "ADVANCED";
 
-    if (this.isTypingMode) {
+    // 💀 EXPERT flag
+    this.isExpertDragMode = this.currentCategoryId === "EXPERT";
+
+    // Typing/fill-in-the-blank:
+    //   BASIC / NORMAL / HARD → levels 11–15
+    //   EXPERT                → ALL levels (1–15)
+    this.isTypingMode =
+      !this.isMultipleChoiceMode &&
+      (this.isExpertDragMode || this.currentLevelInCategory >= 11);
+
+    if (this.isMultipleChoiceMode) {
+      this.createMultipleChoiceMode(currentWord);
+    } else if (this.isTypingMode) {
       this.createTypingMode(currentWord);
     } else {
       this.createDragAndDropMode(currentWord);
@@ -332,37 +320,218 @@ export default class WordWizardScene extends Phaser.Scene {
     this.updateInfoText();
   }
 
-  // ⌨️ Create drag-and-drop mode (original behavior for levels 1-10)
+  // ──────────────────────────────────────────────
+  // DRAG-AND-DROP  (BASIC/NORMAL/HARD levels 1-10)
+  // ──────────────────────────────────────────────
   private createDragAndDropMode(currentWord: { word: string; description: string }) {
-    const letters = Phaser.Utils.Array.Shuffle(currentWord.word.split(""));
-
     const isMobile = this.scale.width < 768;
     const centerX = this.scale.width / 2;
 
-    const slotY = isMobile ? this.scale.height * 0.6 : this.scale.height * 0.28;
-    const spacing = isMobile ? 70 : 130;
+    const isNormal = this.currentCategoryId === "NORMAL";
+    const totalTileCount = isNormal ? currentWord.word.length + 3 : currentWord.word.length;
 
-    const startX = centerX - ((currentWord.word.length - 1) * spacing) / 2;
+    const slotSpacing = isMobile ? 70 : 130;
+    const slotY = isMobile ? this.scale.height * 0.6 : this.scale.height * 0.28;
+    const startX = centerX - ((currentWord.word.length - 1) * slotSpacing) / 2;
 
     for (let i = 0; i < currentWord.word.length; i++) {
-      const slot = createSlot(this, startX + i * spacing, slotY);
+      const slot = createSlot(this, startX + i * slotSpacing, slotY);
       (slot as any).expected = currentWord.word[i];
       (slot as any).filled = null;
       this.slots.push(slot);
     }
 
+    const screenPadding = isMobile ? 32 : 80;
+    const availableWidth = this.scale.width - screenPadding * 2;
+    const tileGap = isMobile ? 10 : 20;
+
+    const maxTileSize = isMobile ? 58 : 110;
+    const minTileSize = isMobile ? 28 : 60;
+    const rawTileSize = Math.floor((availableWidth - tileGap * (totalTileCount + 1)) / totalTileCount);
+    const tileSize = Math.min(maxTileSize, Math.max(minTileSize, rawTileSize));
+    const tileSpacing = tileSize + tileGap;
+    const tileScale = tileSize / 64;
+
+    let letters: string[];
+    if (isNormal) {
+      letters = generateGrammarTiles(currentWord.word, 3);
+    } else {
+      letters = Phaser.Utils.Array.Shuffle(currentWord.word.split(""));
+    }
+
     const tileY = isMobile ? this.scale.height * 0.8 : this.scale.height * 0.51;
-    const tileStartX = centerX - ((letters.length - 1) * spacing) / 2;
+    const tileStartX = centerX - ((letters.length - 1) * tileSpacing) / 2;
+
+    const answerLetterCount: Record<string, number> = {};
+    for (const l of currentWord.word.split("")) {
+      answerLetterCount[l] = (answerLetterCount[l] || 0) + 1;
+    }
+    const assignedCount: Record<string, number> = {};
 
     letters.forEach((letter, i) => {
-      const tile = createTile(this, letter, tileStartX + i * spacing, tileY);
+      const tile = createTile(this, letter, tileStartX + i * tileSpacing, tileY);
+      if (isMobile && isNormal) tile.setScale(tileScale);
       (tile as any).home = { x: tile.x, y: tile.y };
       (tile as any).letter = letter;
+
+      assignedCount[letter] = (assignedCount[letter] || 0) + 1;
+      const needed = answerLetterCount[letter] || 0;
+      const isDecoy = assignedCount[letter] > needed;
+      (tile as any).isDecoy = isDecoy;
+
+      if (isDecoy) tile.setAlpha(0.85);
+
       this.tiles.push(tile);
     });
   }
 
-  // ⌨️ Create typing mode (levels 11-15)
+  // ──────────────────────────────────────────────
+  // MULTIPLE CHOICE  (ADVANCED — all levels)
+  // ──────────────────────────────────────────────
+  private createMultipleChoiceMode(currentWord: { word: string; description: string; choices?: string[] }) {
+    const isMobile = this.scale.width < 768;
+    const centerX = this.scale.width / 2;
+    const centerY = this.scale.height / 2;
+
+    const choices = currentWord.choices ?? [currentWord.word, "Option B", "Option C"];
+    const shuffled = Phaser.Utils.Array.Shuffle([...choices]);
+
+    const btnWidth = isMobile ? this.scale.width * 0.82 : 600;
+    const btnHeight = isMobile ? 64 : 72;
+    const btnRadius = 16;
+    const btnSpacing = isMobile ? 76 : 86;
+    const totalHeight = btnSpacing * shuffled.length;
+    const startY = centerY - totalHeight / 2 + 40;
+    const fontSize = isMobile ? "17px" : "22px";
+
+    shuffled.forEach((choice, i) => {
+      const isCorrect = choice === currentWord.word;
+      const btnY = startY + i * btnSpacing;
+
+      const bg = this.add.graphics();
+      bg.fillStyle(0x4c51bf, 1);
+      bg.fillRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
+      bg.lineStyle(3, 0x818cf8, 1);
+      bg.strokeRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
+
+      const label = this.add
+        .text(0, 0, choice, {
+          fontFamily: '"Segoe UI", Roboto, Arial, sans-serif',
+          fontSize,
+          fontStyle: "bold",
+          color: "#ffffff",
+          wordWrap: { width: btnWidth - 32 },
+          align: "center",
+        })
+        .setOrigin(0.5);
+
+      const container = this.add.container(centerX, btnY, [bg, label]);
+      container.setSize(btnWidth, btnHeight);
+      container.setInteractive();
+      container.setDepth(10);
+
+      container.on("pointerover", () => {
+        bg.clear();
+        bg.fillStyle(0x6366f1, 1);
+        bg.fillRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
+        bg.lineStyle(3, 0xa5b4fc, 1);
+        bg.strokeRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
+      });
+
+      container.on("pointerout", () => {
+        bg.clear();
+        bg.fillStyle(0x4c51bf, 1);
+        bg.fillRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
+        bg.lineStyle(3, 0x818cf8, 1);
+        bg.strokeRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
+      });
+
+      container.on("pointerdown", () => {
+        this.mcButtons.forEach((b) => b.disableInteractive());
+
+        if (isCorrect) {
+          bg.clear();
+          bg.fillStyle(0x10b981, 1);
+          bg.fillRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
+          this.showMCFeedback(true, container.x, container.y);
+
+          this.time.delayedCall(700, async () => {
+            if (this.timerEvent) {
+              this.timerEvent.remove(false);
+              this.timerEvent = null;
+            }
+            this.consecutiveLevelsCompleted += 1;
+            const pointsToAdd = Math.round(this.level.scorePerWord * this.nextScoreMultiplier);
+            this.score += pointsToAdd;
+            try {
+              localStorage.setItem("wordwizard_session_score", this.score.toString());
+              localStorage.setItem("wordwizard_streak", this.consecutiveLevelsCompleted.toString());
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (_) { /* ignore */ }
+            try {
+              if (this.userId) await updateUserProgress(this.userId, pointsToAdd);
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (_) { /* ignore */ }
+            this.nextScoreMultiplier = 1;
+            this.showWinScreen();
+          });
+        } else {
+          bg.clear();
+          bg.fillStyle(0xef4444, 1);
+          bg.fillRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
+          this.showMCFeedback(false, container.x, container.y);
+
+          this.time.delayedCall(700, () => {
+            bg.clear();
+            bg.fillStyle(0x4c51bf, 1);
+            bg.fillRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
+            bg.lineStyle(3, 0x818cf8, 1);
+            bg.strokeRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
+            this.mcButtons.forEach((b) => b.setInteractive());
+          });
+        }
+      });
+
+      this.mcButtons.push(container);
+    });
+  }
+
+  // 🟠 Visual feedback for MC answers
+  private showMCFeedback(correct: boolean, x: number, y: number) {
+    const feedbackText = this.add
+      .text(x, y - 60, correct ? "✓ CORRECT!" : "✗ WRONG!", {
+        fontSize: "36px",
+        fontStyle: "bold",
+        color: correct ? "#10b981" : "#ef4444",
+        stroke: "#000000",
+        strokeThickness: 5,
+      })
+      .setOrigin(0.5)
+      .setDepth(200)
+      .setAlpha(0);
+
+    this.tweens.add({
+      targets: feedbackText,
+      alpha: 1,
+      y: y - 80,
+      duration: 250,
+      ease: "Power2",
+      onComplete: () => {
+        this.tweens.add({
+          targets: feedbackText,
+          alpha: 0,
+          duration: 400,
+          delay: 300,
+          onComplete: () => feedbackText.destroy(),
+        });
+      },
+    });
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  // TYPING / FILL-IN-THE-BLANK
+  // Used by: BASIC/NORMAL/HARD levels 11-15  AND  ALL EXPERT levels
+  // ──────────────────────────────────────────────────────────────
   private createTypingMode(currentWord: { word: string; description: string }) {
     const isMobile = this.scale.width < 768;
     const centerX = this.scale.width / 2;
@@ -370,12 +539,10 @@ export default class WordWizardScene extends Phaser.Scene {
 
     const letters = Phaser.Utils.Array.Shuffle(currentWord.word.split(""));
 
-    // Display scrambled letters using the new design function
     const lettersY = isMobile ? centerY - 40 : centerY - 100;
     const letterDisplay = createStaticLetterDisplay(this, letters, centerX, lettersY);
     this.staticLettersText = letterDisplay as any;
 
-    // Create HTML input field using the new design function
     const inputY = isMobile ? centerY + 28 : centerY + 40;
     this.typingInputField = createInputField(
       centerX,
@@ -384,17 +551,13 @@ export default class WordWizardScene extends Phaser.Scene {
       () => this.handleTypingSubmit()
     );
 
-    // Create submit button using the new design function
     const buttonY = isMobile ? centerY + 100 : centerY + 130;
-    this.typingSubmitButton = createSubmitButton(
-      this,
-      centerX,
-      buttonY,
-      () => this.handleTypingSubmit()
+    this.typingSubmitButton = createSubmitButton(this, centerX, buttonY, () =>
+      this.handleTypingSubmit()
     );
   }
 
-  // ⌨️ Handle typing mode submission
+  // ⌨️ Shared submit handler for all typing-mode levels
   private async handleTypingSubmit() {
     if (!this.typingInputField) return;
 
@@ -402,7 +565,6 @@ export default class WordWizardScene extends Phaser.Scene {
     const target = this.level.words[0].word;
 
     if (answer === target) {
-      // Correct answer
       if (this.timerEvent) {
         this.timerEvent.remove(false);
         this.timerEvent = null;
@@ -412,24 +574,24 @@ export default class WordWizardScene extends Phaser.Scene {
 
       const pointsToAdd = Math.round(this.level.scorePerWord * this.nextScoreMultiplier);
       this.score += pointsToAdd;
-      
+
       try {
         localStorage.setItem("wordwizard_session_score", this.score.toString());
         localStorage.setItem("wordwizard_streak", this.consecutiveLevelsCompleted.toString());
       } catch (e) {
         console.error("Failed to save score/streak:", e);
       }
-      
-      // ✅ Update score (same pattern as HumanBody)
-      await this.addScore(pointsToAdd);
-      
+
+      try {
+        if (this.userId) await updateUserProgress(this.userId, pointsToAdd);
+      } catch (error) {
+        console.error("Failed to update progress:", error);
+      }
+
       this.nextScoreMultiplier = 1;
-      
-      // Show success feedback
       this.showTypingFeedback(true);
       this.time.delayedCall(600, () => this.showWinScreen());
     } else {
-      // Wrong answer
       this.showTypingFeedback(false);
       this.time.delayedCall(800, async () => {
         await this.handleFail();
@@ -437,7 +599,7 @@ export default class WordWizardScene extends Phaser.Scene {
     }
   }
 
-  // ⌨️ Show visual feedback for typing mode
+  // ⌨️ Visual feedback for typing mode
   private showTypingFeedback(correct: boolean) {
     if (this.staticLettersText) {
       this.tweens.add({
@@ -449,18 +611,19 @@ export default class WordWizardScene extends Phaser.Scene {
       });
     }
 
-    const feedbackText = this.add.text(
-      this.scale.width / 2,
-      this.scale.height / 2 - 150,
-      correct ? "✓ CORRECT!" : "✗ WRONG!",
-      {
-        fontSize: "48px",
-        fontStyle: "bold",
-        color: correct ? "#10b981" : "#ef4444",
-        stroke: "#000000",
-        strokeThickness: 6,
-      }
-    )
+    const feedbackText = this.add
+      .text(
+        this.scale.width / 2,
+        this.scale.height / 2 - 150,
+        correct ? "✓ CORRECT!" : "✗ WRONG!",
+        {
+          fontSize: "48px",
+          fontStyle: "bold",
+          color: correct ? "#10b981" : "#ef4444",
+          stroke: "#000000",
+          strokeThickness: 6,
+        }
+      )
       .setOrigin(0.5)
       .setDepth(100)
       .setAlpha(0);
@@ -482,18 +645,23 @@ export default class WordWizardScene extends Phaser.Scene {
     });
   }
 
+  // ✅ UPDATED: shows topic title above score/streak, then the question description
   private updateInfoText() {
     if (!this.infoText) return;
     const currentWord = this.level.words[0];
 
-    const streakText = this.consecutiveLevelsCompleted >= 3 
-      ? ` 🔥 ${this.consecutiveLevelsCompleted}x STREAK!` 
-      : "";
+    const topicTitle = CATEGORY_TOPIC_TITLE[this.currentCategoryId] ?? "";
+
+    const streakText =
+      this.consecutiveLevelsCompleted >= 3
+        ? ` 🔥 ${this.consecutiveLevelsCompleted}x STREAK!`
+        : "";
 
     this.infoText.setFontSize(29);
     this.infoText.setText(
+      `${topicTitle}\n` +
       `⭐ Score: ${this.score}${streakText}\n` +
-        `💡 ${currentWord.description}`
+      `💡 ${currentWord.description}`
     );
   }
 
@@ -510,6 +678,11 @@ export default class WordWizardScene extends Phaser.Scene {
           slot.y
         );
         if (dist < threshold) {
+          if ((tileContainer as any).isDecoy) {
+            this.showDecoyRejection(tileContainer);
+            return;
+          }
+
           tileContainer.setPosition(slot.x, slot.y);
           (slot as any).filled = tileContainer;
           snapped = true;
@@ -520,10 +693,57 @@ export default class WordWizardScene extends Phaser.Scene {
 
     if (!snapped) {
       const home = (tileContainer as any).home;
-      tileContainer.setPosition(home.x, home.y);
+      this.tweens.add({
+        targets: tileContainer,
+        x: home.x,
+        y: home.y,
+        duration: 200,
+        ease: "Back.easeOut",
+      });
     }
 
     this.checkComplete();
+  }
+
+  private showDecoyRejection(tile: Phaser.GameObjects.Container) {
+    const home = (tile as any).home;
+
+    this.tweens.add({
+      targets: tile,
+      x: tile.x + 12,
+      duration: 60,
+      yoyo: true,
+      repeat: 3,
+      ease: "Sine.easeInOut",
+      onComplete: () => {
+        this.tweens.add({
+          targets: tile,
+          x: home.x,
+          y: home.y,
+          duration: 200,
+          ease: "Back.easeOut",
+        });
+      },
+    });
+
+    const flash = this.add
+      .text(tile.x, tile.y - 40, "✗", {
+        fontSize: "28px",
+        fontStyle: "bold",
+        color: "#ef4444",
+        stroke: "#000000",
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setDepth(200);
+
+    this.tweens.add({
+      targets: flash,
+      alpha: 0,
+      y: flash.y - 20,
+      duration: 500,
+      onComplete: () => flash.destroy(),
+    });
   }
 
   private async checkComplete() {
@@ -545,17 +765,20 @@ export default class WordWizardScene extends Phaser.Scene {
 
       const pointsToAdd = Math.round(this.level.scorePerWord * this.nextScoreMultiplier);
       this.score += pointsToAdd;
-      
+
       try {
         localStorage.setItem("wordwizard_session_score", this.score.toString());
         localStorage.setItem("wordwizard_streak", this.consecutiveLevelsCompleted.toString());
       } catch (e) {
         console.error("Failed to save score/streak:", e);
       }
-      
-      // ✅ Update score (same pattern as HumanBody)
-      await this.addScore(pointsToAdd);
-      
+
+      try {
+        if (this.userId) await updateUserProgress(this.userId, pointsToAdd);
+      } catch (error) {
+        console.error("Failed to update progress:", error);
+      }
+
       this.nextScoreMultiplier = 1;
       this.slots.forEach((slot) => showSlotFeedback(this, slot, true));
       this.time.delayedCall(600, () => this.showWinScreen());
@@ -573,11 +796,9 @@ export default class WordWizardScene extends Phaser.Scene {
       this.timerEvent = null;
     }
 
-    // Check if Second Chance was manually activated FIRST
     if (this.isSecondChanceActive) {
       this.isSecondChanceActive = false;
-      
-      // ⌨️ Reset based on mode
+
       if (this.isTypingMode) {
         if (this.typingInputField) {
           this.typingInputField.value = "";
@@ -586,21 +807,19 @@ export default class WordWizardScene extends Phaser.Scene {
       } else {
         this.resetTiles();
       }
-      
+
       this.resetTimer();
       this.showSecondChanceMessage();
       return;
     }
 
-    // Only check inventory if Second Chance wasn't manually activated
     await this.fetchInventoryAndUpdateHUD();
     const hasSecondChance = (this.inventory.second_chance || 0) > 0;
 
     if (hasSecondChance) {
       await PowerUpLogic.activateSecondChance(this.userId!, this);
       await this.fetchInventoryAndUpdateHUD();
-      
-      // ⌨️ Reset based on mode
+
       if (this.isTypingMode) {
         if (this.typingInputField) {
           this.typingInputField.value = "";
@@ -609,7 +828,7 @@ export default class WordWizardScene extends Phaser.Scene {
       } else {
         this.resetTiles();
       }
-      
+
       this.resetTimer();
       this.showSecondChanceMessage();
     } else {
@@ -621,8 +840,8 @@ export default class WordWizardScene extends Phaser.Scene {
       } catch (e) {
         console.error("Failed to reset streak/score:", e);
       }
-      
-      await this.logGameOverEvent();
+
+      await logGameOver(this.userId!, SCENE_KEY);
       this.showGameOverScreen();
     }
   }
@@ -647,8 +866,6 @@ export default class WordWizardScene extends Phaser.Scene {
   }
 
   private async showGameOverScreen() {
-    await this.logVisitBeforeExit();
-    
     this.clearLevelElements();
 
     const centerX = this.scale.width / 2;
@@ -704,7 +921,6 @@ export default class WordWizardScene extends Phaser.Scene {
 
     const centerX = this.scale.width / 2;
     const centerY = this.scale.height / 2;
-
     const isMobile = this.scale.width < 768;
 
     let s = 1;
@@ -719,9 +935,7 @@ export default class WordWizardScene extends Phaser.Scene {
       s = Phaser.Math.Clamp(s * 1.2, 0.5, 2.2);
     }
 
-    if (this.infoText) {
-      this.infoText.setVisible(false);
-    }
+    if (this.infoText) this.infoText.setVisible(false);
 
     const correctFontSize = isMobile ? Math.round(48 * s * 1.6) : 64;
     const correctYOffset = isMobile ? -60 : -80;
@@ -738,19 +952,16 @@ export default class WordWizardScene extends Phaser.Scene {
       .setDepth(10)
       .setScale(0);
 
-    const targetScale = isMobile ? 1.0 : 1.2;
     this.tweens.add({
       targets: correctText,
-      scale: targetScale,
+      scale: isMobile ? 1.0 : 1.2,
       duration: 600,
       ease: "Bounce.easeOut",
     });
 
-    const pulseFrom = isMobile ? 1.0 : 1.2;
-    const pulseTo = isMobile ? 1.05 : 1.25;
     this.tweens.add({
       targets: correctText,
-      scale: { from: pulseFrom, to: pulseTo },
+      scale: { from: isMobile ? 1.0 : 1.2, to: isMobile ? 1.05 : 1.25 },
       duration: 800,
       yoyo: true,
       repeat: -1,
@@ -780,10 +991,9 @@ export default class WordWizardScene extends Phaser.Scene {
       ease: "Power2",
     });
 
-    const floatAmount = isMobile ? 3 : 5;
     this.tweens.add({
       targets: scoreText,
-      y: centerY + scoreYOffset - floatAmount,
+      y: centerY + scoreYOffset - (isMobile ? 3 : 5),
       duration: 1500,
       yoyo: true,
       repeat: -1,
@@ -797,25 +1007,19 @@ export default class WordWizardScene extends Phaser.Scene {
     sparkleGraphics.generateTexture("winSparkle", sparkleSize * 2, sparkleSize * 2);
     sparkleGraphics.destroy();
 
-    const sparkleSpeed = isMobile ? { min: 30, max: 100 } : { min: 50, max: 150 };
-    const sparkleQuantity = isMobile ? 1 : 2;
-    const sparkleFrequency = isMobile ? 150 : 100;
-
     const sparkleEmitter = this.add.particles(centerX, centerY + correctYOffset, "winSparkle", {
-      speed: sparkleSpeed,
+      speed: isMobile ? { min: 30, max: 100 } : { min: 50, max: 150 },
       angle: { min: 0, max: 360 },
       scale: { start: isMobile ? 1.0 : 1.2, end: 0 },
       alpha: { start: 1, end: 0 },
       lifespan: 1000,
-      quantity: sparkleQuantity,
-      frequency: sparkleFrequency,
+      quantity: isMobile ? 1 : 2,
+      frequency: isMobile ? 150 : 100,
       blendMode: "ADD",
     });
     sparkleEmitter.setDepth(9);
 
-    this.time.delayedCall(3000, () => {
-      sparkleEmitter.stop();
-    });
+    this.time.delayedCall(3000, () => sparkleEmitter.stop());
 
     const buttons = createStyledButtons(this, [
       {
@@ -830,18 +1034,14 @@ export default class WordWizardScene extends Phaser.Scene {
           buttons.forEach((b) => b.destroy());
           this.clearLevelElements();
 
-          // ✅ Unlock next level (same pattern as HumanBody)
           await this.unlockNextLevel();
-          
+
           const hasNextLevel = this.currentLevelInCategory < 15;
 
           if (hasNextLevel) {
-            // Go to next level in same category
             const nextGlobalLevel = this.currentLevel + 1;
-            const nextCategoryId = this.currentCategoryId;
-            window.location.href = `/wordwizard?level=${nextGlobalLevel - 1}&category=${nextCategoryId}`;
+            window.location.href = `/wordwizard?level=${nextGlobalLevel - 1}&category=${this.currentCategoryId}`;
           } else {
-            // Completed all levels in category, return to map
             try {
               localStorage.setItem("wordwizard_session_score", "0");
               localStorage.setItem("wordwizard_streak", "0");
@@ -856,48 +1056,24 @@ export default class WordWizardScene extends Phaser.Scene {
     ]);
   }
 
-  // ✅ WORKING - Same pattern as HumanBody's addScore
-  private async addScore(points: number) {
-    if (!this.userId) return;
-    
-    try {
-      // Update score in backend
-      await updateUserProgress(this.userId, points);
-      
-      // Refresh local user data
-      const updated = await getUserProfile(this.userId);
-      if (updated?.total_score !== undefined) {
-        localStorage.setItem("totalScore", updated.total_score.toString());
-      }
-      
-      console.log("✅ Score updated successfully");
-    } catch (e) {
-      console.error("❌ Error updating score:", e);
-    }
-  }
-
-  // ✅ FIXED - Same exact pattern as HumanBody's unlockNextLevel
   private async unlockNextLevel() {
     if (!this.userId) return;
+    const nextLevelInCategory = this.currentLevelInCategory + 1;
+    const currentUnlocked = this.categoryProgress[this.currentCategoryId] || 0;
 
-    const completedLevel = this.currentLevelInCategory;
-    const nextLevel = completedLevel + 1;
-
-    console.log(`🔓 Unlocking Level ${nextLevel} in ${this.currentCategoryId}`);
-
-    try {
-      // Save to backend (same way score is saved)
-      await saveCategoryLevel(this.userId, "WordWizard", this.currentCategoryId, nextLevel);
-      
-      // Update local cache (same way score updates local)
-      this.categoryProgress[this.currentCategoryId] = nextLevel;
-      
-      // Notify map to refresh
-      window.dispatchEvent(new CustomEvent("levels:updated"));
-      
-      console.log(`✅ Level ${nextLevel} unlocked successfully`);
-    } catch (e) {
-      console.error("❌ Error unlocking level:", e);
+    if (nextLevelInCategory > currentUnlocked) {
+      try {
+        await saveCategoryLevel(
+          this.userId,
+          "WordWizard",
+          this.currentCategoryId,
+          nextLevelInCategory
+        );
+        this.categoryProgress[this.currentCategoryId] = nextLevelInCategory;
+        window.dispatchEvent(new CustomEvent("levels:updated"));
+      } catch (e) {
+        console.error("Failed to save category progress:", e);
+      }
     }
   }
 
@@ -983,8 +1159,8 @@ export default class WordWizardScene extends Phaser.Scene {
       return { container, countText };
     };
 
-    const row1 = createInventoryRow(0, "❄️", "Time Freeze", "time_freeze", "#3b82f6");
-    const row2 = createInventoryRow(35, "🔄", "2nd Chance", "second_chance", "#10b981");
+    const row1 = createInventoryRow(0,  "❄️", "Time Freeze",   "time_freeze",   "#3b82f6");
+    const row2 = createInventoryRow(35, "🔄", "2nd Chance",    "second_chance", "#10b981");
     const row3 = createInventoryRow(70, "⭐", "Score Booster", "score_booster", "#f59e0b");
 
     (this as any)._inventoryTexts = { row1, row2, row3 };
@@ -995,11 +1171,7 @@ export default class WordWizardScene extends Phaser.Scene {
     if (!this.userId) return;
     try {
       const res: UserPowerUp[] = await getUserPowerUps(this.userId);
-      this.inventory = {
-        time_freeze: 0,
-        second_chance: 0,
-        score_booster: 0,
-      };
+      this.inventory = { time_freeze: 0, second_chance: 0, score_booster: 0 };
       res.forEach((item) => {
         const type = item.power_up?.type;
         if (type) (this.inventory as any)[type] = item.quantity;
@@ -1018,6 +1190,7 @@ export default class WordWizardScene extends Phaser.Scene {
   private async handleUsePowerUp(type: "time_freeze" | "second_chance" | "score_booster") {
     if (!this.userId) return;
     const qty = this.inventory[type] || 0;
+
     if (qty <= 0) {
       const warning = this.add
         .text(this.scale.width / 2, this.scale.height / 2, "⚠️ No power-up available", {
@@ -1033,8 +1206,7 @@ export default class WordWizardScene extends Phaser.Scene {
       this.time.delayedCall(1600, () => warning.destroy());
       return;
     }
-    
-    // Prevent activating Second Chance if already active
+
     if (type === "second_chance" && this.isSecondChanceActive) {
       const warning = this.add
         .text(this.scale.width / 2, this.scale.height / 2, "♻️ Second Chance already active!", {
@@ -1050,7 +1222,7 @@ export default class WordWizardScene extends Phaser.Scene {
       this.time.delayedCall(1600, () => warning.destroy());
       return;
     }
-    
+
     try {
       if (type === "time_freeze") {
         await PowerUpLogic.activateTimeFreeze(this.userId!, this, 10);
@@ -1059,11 +1231,9 @@ export default class WordWizardScene extends Phaser.Scene {
         this.nextScoreMultiplier = mult || 1;
       } else if (type === "second_chance") {
         await PowerUpLogic.activateSecondChance(this.userId!, this);
-        
-        // Mark Second Chance as active when manually used
+
         this.isSecondChanceActive = true;
-        
-        // ⌨️ Reset based on mode
+
         if (this.isTypingMode) {
           if (this.typingInputField) {
             this.typingInputField.value = "";
@@ -1072,7 +1242,7 @@ export default class WordWizardScene extends Phaser.Scene {
         } else {
           this.resetTiles();
         }
-        
+
         this.resetTimer();
       }
       await this.fetchInventoryAndUpdateHUD();
@@ -1091,7 +1261,6 @@ export default class WordWizardScene extends Phaser.Scene {
 
     if (this.timerText) {
       this.timerText.setText(`⏱ ${this.timeRemaining}s`);
-
       if (this.timeRemaining <= 10) {
         this.timerText.setColor("#ef4444");
       } else if (this.timeRemaining <= 15) {
@@ -1109,7 +1278,6 @@ export default class WordWizardScene extends Phaser.Scene {
 
         if (this.timerText) {
           this.timerText.setText(`⏱ ${this.timeRemaining}s`);
-
           if (this.timeRemaining <= 5) {
             this.timerText.setColor("#dc2626");
             this.tweens.add({
@@ -1135,13 +1303,11 @@ export default class WordWizardScene extends Phaser.Scene {
   }
 
   shutdown() {
-    this.logVisitBeforeExit();
-    
     if (this.timerEvent) {
       this.timerEvent.remove(false);
       this.timerEvent = null;
     }
-    
+
     if (this.typingInputField) {
       this.typingInputField.remove();
       this.typingInputField = undefined;
