@@ -179,8 +179,9 @@ export default class WordWizardScene extends Phaser.Scene {
     );
 
     if (this.currentLevelInCategory === 1) {
-      const totalProgress = Object.values(this.categoryProgress).reduce((sum, val) => sum + val, 0);
-      if (!hasCompletedAnyLevel1 && totalProgress > 0) {
+      // BASIC Level 1 is always the entry point — never block it
+      const isVeryFirstLevel = this.currentCategoryId === WORDWIZARD_CATEGORIES[0];
+      if (!isVeryFirstLevel && !hasCompletedAnyLevel1) {
         alert("🚫 Complete any Level 1 first to unlock all Level 1s!");
         window.location.href = "/wordwizardmap";
         return;
