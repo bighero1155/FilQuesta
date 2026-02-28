@@ -37,7 +37,7 @@ export default class WordWizardScene extends Phaser.Scene {
   private slots: Phaser.GameObjects.Zone[] = [];
   private tiles: Phaser.GameObjects.Container[] = [];
   private infoText?: Phaser.GameObjects.Text;
-  private _levelInfoText?: Phaser.GameObjects.Text;
+  // _levelInfoText removed — was declared but never read (TS6133)
   private activeButtons: Phaser.GameObjects.Container[] = [];
 
   private level!: LevelConfig;
@@ -235,7 +235,8 @@ export default class WordWizardScene extends Phaser.Scene {
     const levelInfoY = isMobile ? 55 : 60;
     const levelInfoX = isMobile ? this.scale.width - 380 : this.scale.width - 1400;
 
-    this._levelInfoText = this.add.text(
+    // No longer stored as a class field — created and managed by Phaser's display list
+    this.add.text(
       levelInfoX,
       levelInfoY,
       `${this.getCategoryDisplayName()}\nLevel ${this.currentLevelInCategory}`,
