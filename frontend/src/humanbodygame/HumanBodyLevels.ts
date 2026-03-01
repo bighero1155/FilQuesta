@@ -527,7 +527,7 @@ const frogCycle: PartConfig[] = [
     assetKey: "frog_egg", scale: 0.26,
     x: 0,    y: -200, mobileX: 0,    mobileY: -130,
     description: "Frog eggs laid in clusters in still water.",
-    imagePath: "/assets/lifecycle/frog_egg.png",
+    imagePath: "/assets/frog_egg.png",
     cycleOrder: 1,
   },
   {
@@ -535,7 +535,7 @@ const frogCycle: PartConfig[] = [
     assetKey: "tadpole", scale: 0.26,
     x: 190,  y: -62,  mobileX: 124,  mobileY: -40,
     description: "A legless larva that swims and breathes through gills.",
-    imagePath: "/assets/lifecycle/tadpole.png",
+    imagePath: "/assets/tadpole.png",
     cycleOrder: 2,
   },
   {
@@ -543,7 +543,7 @@ const frogCycle: PartConfig[] = [
     assetKey: "tadpole_legs", scale: 0.26,
     x: 118,  y: 162,  mobileX: 77,   mobileY: 105,
     description: "A tadpole that has grown hind legs and is changing shape.",
-    imagePath: "/assets/lifecycle/tadpole_legs.png",
+    imagePath: "/assets/tadpole_legs.png",
     cycleOrder: 3,
   },
   {
@@ -551,7 +551,7 @@ const frogCycle: PartConfig[] = [
     assetKey: "froglet", scale: 0.26,
     x: -118, y: 162,  mobileX: -77,  mobileY: 105,
     description: "A young frog that still has a small tail.",
-    imagePath: "/assets/lifecycle/froglet.png",
+    imagePath: "/assets/froglet.png",
     cycleOrder: 4,
   },
   {
@@ -559,7 +559,7 @@ const frogCycle: PartConfig[] = [
     assetKey: "adult_frog", scale: 0.28,
     x: -190, y: -62,  mobileX: -124, mobileY: -40,
     description: "A fully grown frog that can live on land and in water.",
-    imagePath: "/assets/lifecycle/adult_frog.png",
+    imagePath: "/assets/adult_frog.png",
     cycleOrder: 5,
   },
 ];
@@ -571,7 +571,7 @@ const butterflyCycle: PartConfig[] = [
     assetKey: "butterfly_egg", scale: 0.24,
     x: 0,    y: -200, mobileX: 0,    mobileY: -130,
     description: "Tiny eggs laid on the underside of leaves.",
-    imagePath: "/assets/lifecycle/butterfly_egg.png",
+    imagePath: "/assets/butterfly_egg.png",
     cycleOrder: 1,
   },
   {
@@ -579,7 +579,7 @@ const butterflyCycle: PartConfig[] = [
     assetKey: "caterpillar", scale: 0.28,
     x: 190,  y: -62,  mobileX: 124,  mobileY: -40,
     description: "A larva that eats leaves and grows rapidly.",
-    imagePath: "/assets/lifecycle/caterpillar.png",
+    imagePath: "/assets/caterpillar.png",
     cycleOrder: 2,
   },
   {
@@ -587,7 +587,7 @@ const butterflyCycle: PartConfig[] = [
     assetKey: "chrysalis", scale: 0.26,
     x: 118,  y: 162,  mobileX: 77,   mobileY: 105,
     description: "A protective case where the caterpillar transforms.",
-    imagePath: "/assets/lifecycle/chrysalis.png",
+    imagePath: "/assets/chrysalis.png",
     cycleOrder: 3,
   },
   {
@@ -595,7 +595,7 @@ const butterflyCycle: PartConfig[] = [
     assetKey: "emerging_butterfly", scale: 0.26,
     x: -118, y: 162,  mobileX: -77,  mobileY: 105,
     description: "A butterfly breaking free from its chrysalis.",
-    imagePath: "/assets/lifecycle/emerging_butterfly.png",
+    imagePath: "/assets/emerging_butterfly.png",
     cycleOrder: 4,
   },
   {
@@ -603,7 +603,7 @@ const butterflyCycle: PartConfig[] = [
     assetKey: "adult_butterfly", scale: 0.28,
     x: -190, y: -62,  mobileX: -124, mobileY: -40,
     description: "A fully grown butterfly that pollinates flowers.",
-    imagePath: "/assets/lifecycle/adult_butterfly.png",
+    imagePath: "/assets/adult_butterfly.png",
     cycleOrder: 5,
   },
 ];
@@ -615,7 +615,7 @@ const plantCycle: PartConfig[] = [
     assetKey: "seed", scale: 0.26,
     x: 0,    y: -200, mobileX: 0,    mobileY: -130,
     description: "A tiny seed that contains everything needed to grow a plant.",
-    imagePath: "/assets/lifecycle/seed.png",
+    imagePath: "/assets/seed.png",
     cycleOrder: 1,
   },
   {
@@ -623,7 +623,7 @@ const plantCycle: PartConfig[] = [
     assetKey: "sprout", scale: 0.26,
     x: 190,  y: -62,  mobileX: 124,  mobileY: -40,
     description: "A seed cracking open as a tiny root and shoot emerge.",
-    imagePath: "/assets/lifecycle/sprout.png",
+    imagePath: "/assets/sprout.png",
     cycleOrder: 2,
   },
   {
@@ -631,7 +631,7 @@ const plantCycle: PartConfig[] = [
     assetKey: "seedling", scale: 0.26,
     x: 118,  y: 162,  mobileX: 77,   mobileY: 105,
     description: "A young plant with its first small leaves.",
-    imagePath: "/assets/lifecycle/seedling.png",
+    imagePath: "/assets/seedling.png",
     cycleOrder: 3,
   },
   {
@@ -639,7 +639,7 @@ const plantCycle: PartConfig[] = [
     assetKey: "mature_plant", scale: 0.26,
     x: -118, y: 162,  mobileX: -77,  mobileY: 105,
     description: "A fully grown plant with stems and leaves.",
-    imagePath: "/assets/lifecycle/mature_plant.png",
+    imagePath: "/assets/mature_plant.png",
     cycleOrder: 4,
   },
   {
@@ -647,7 +647,7 @@ const plantCycle: PartConfig[] = [
     assetKey: "flowering_plant", scale: 0.28,
     x: -190, y: -62,  mobileX: -124, mobileY: -40,
     description: "A plant in full bloom that produces seeds to restart the cycle.",
-    imagePath: "/assets/lifecycle/flowering_plant.png",
+    imagePath: "/assets/flowering_plant.png",
     cycleOrder: 5,
   },
 ];
