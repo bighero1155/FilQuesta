@@ -6,45 +6,50 @@ import axios from "../auth/axiosInstance";
 const LEVELS_PER_CATEGORY = 15;
 
 const LEVEL_SECTIONS = [
-  { 
-    name: "BASIC", 
+  {
+    name: "BASIC",
     categoryId: "BASIC",
-    subtitle: "Internal Organs",
-    emoji: "🫀",
-    color: "#4CAF50", 
+    subtitle: "Food Groups",
+    emoji: "🥗",
+    color: "#4CAF50",
     darkColor: "#2d5f2e",
+    description: "Sort foods into Grow, Glow & Go groups",
   },
-  { 
-    name: "NORMAL", 
+  {
+    name: "NORMAL",
     categoryId: "NORMAL",
-    subtitle: "External Parts",
-    emoji: "👤",
-    color: "#FF9800", 
+    subtitle: "Body Parts",
+    emoji: "🧍",
+    color: "#FF9800",
     darkColor: "#9d5a00",
+    description: "Place external body parts in the right spots",
   },
-  { 
-    name: "HARD", 
+  {
+    name: "HARD",
     categoryId: "HARD",
-    subtitle: "Skeleton",
-    emoji: "🦴",
-    color: "#2196F3", 
+    subtitle: "Astronomy",
+    emoji: "🔭",
+    color: "#2196F3",
     darkColor: "#0d4a7a",
+    description: "Snap planets & moons onto their moving orbits",
   },
-  { 
-    name: "ADVANCED", 
+  {
+    name: "ADVANCED",
     categoryId: "ADVANCED",
-    subtitle: "Diseases & Viruses",
-    emoji: "🦠",
-    color: "#9C27B0", 
+    subtitle: "Animal Habitats",
+    emoji: "🌍",
+    color: "#9C27B0",
     darkColor: "#5e1668",
+    description: "Sort animals into Sky, Land & Water habitats",
   },
-  { 
-    name: "EXPERT", 
+  {
+    name: "EXPERT",
     categoryId: "EXPERT",
-    subtitle: "Cells",
-    emoji: "🔬",
-    color: "#E91E63", 
+    subtitle: "Life Cycles",
+    emoji: "🔄",
+    color: "#E91E63",
     darkColor: "#8d1139",
+    description: "Order the stages of frog, butterfly & plant cycles",
   },
 ];
 
@@ -92,7 +97,7 @@ const HumanBodyMap: React.FC = () => {
     const fetchData = async () => {
       try {
         const progress = await getAllCategoryProgress(userId, "HumanBody", [
-          "BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"
+          "BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT",
         ]);
         setCategoryProgress(progress);
 
@@ -114,10 +119,9 @@ const HumanBodyMap: React.FC = () => {
   useEffect(() => {
     const handler = async () => {
       if (!userId) return;
-      
       try {
         const progress = await getAllCategoryProgress(userId, "HumanBody", [
-          "BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"
+          "BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT",
         ]);
         setCategoryProgress(progress);
       } catch (err) {
@@ -133,53 +137,78 @@ const HumanBodyMap: React.FC = () => {
 
   // Navigation functions
   const goToPrevious = () => {
-    setCurrentCategoryIndex((prev) => (prev === 0 ? LEVEL_SECTIONS.length - 1 : prev - 1));
+    setCurrentCategoryIndex((prev) =>
+      prev === 0 ? LEVEL_SECTIONS.length - 1 : prev - 1
+    );
   };
 
   const goToNext = () => {
-    setCurrentCategoryIndex((prev) => (prev === LEVEL_SECTIONS.length - 1 ? 0 : prev + 1));
+    setCurrentCategoryIndex((prev) =>
+      prev === LEVEL_SECTIONS.length - 1 ? 0 : prev + 1
+    );
   };
 
   if (!userId) {
     return (
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-        background: "#1a1a2e",
-        color: "#fff",
-        fontSize: "1.2rem",
-        fontFamily: "Fredoka, Arial Black, sans-serif",
-      }}>
-        Please log in to see the Body Explorer map.
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          background: "#1a1a2e",
+          color: "#fff",
+          fontSize: "1.2rem",
+          fontFamily: "Fredoka, Arial Black, sans-serif",
+        }}
+      >
+        Please log in to see the Learning Adventure map.
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-        background: "#1a1a2e",
-        color: "#fff",
-        fontSize: "1.2rem",
-        fontFamily: "Fredoka, Arial Black, sans-serif",
-      }}>
-        Loading Body Explorer map…
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          background: "#1a1a2e",
+          color: "#fff",
+          fontSize: "1.2rem",
+          fontFamily: "Fredoka, Arial Black, sans-serif",
+        }}
+      >
+        Loading Learning Adventure map…
       </div>
     );
   }
 
-  const totalLevelsUnlocked = Object.values(categoryProgress).reduce((sum, val) => sum + val, 0);
+  const totalLevelsUnlocked = Object.values(categoryProgress).reduce(
+    (sum, val) => sum + val,
+    0
+  );
   const totalLevels = LEVEL_SECTIONS.length * LEVELS_PER_CATEGORY;
 
   const currentSection = LEVEL_SECTIONS[currentCategoryIndex];
   const unlockedInCategory = categoryProgress[currentSection.categoryId] || 0;
   const progressPercent = Math.round((unlockedInCategory / LEVELS_PER_CATEGORY) * 100);
+
+  // Badge labels for difficulty tiers
+  const getDifficultyLabel = (name: string) => {
+    switch (name) {
+      case "BASIC":    return { label: "BEGINNER",  bg: "#4CAF50" };
+      case "NORMAL":   return { label: "NORMAL",    bg: "#FF9800" };
+      case "HARD":     return { label: "HARD",      bg: "#2196F3" };
+      case "ADVANCED": return { label: "ADVANCED",  bg: "#9C27B0" };
+      case "EXPERT":   return { label: "EXPERT",    bg: "#E91E63" };
+      default:         return { label: name,         bg: "#888" };
+    }
+  };
+
+  const difficulty = getDifficultyLabel(currentSection.name);
 
   return (
     <div
@@ -194,16 +223,16 @@ const HumanBodyMap: React.FC = () => {
         flexDirection: "column",
       }}
     >
-
-
-      {/* Back Button - Top Left (Desktop only, hidden on mobile) */}
-      <div style={{ 
-        position: "absolute", 
-        top: "20px", 
-        left: "20px", 
-        zIndex: 100,
-        display: window.innerWidth < 768 ? "none" : "block",
-      }}>
+      {/* ── Back Button – Desktop only (top-left) ── */}
+      <div
+        style={{
+          position: "absolute",
+          top: "20px",
+          left: "20px",
+          zIndex: 100,
+          display: window.innerWidth < 768 ? "none" : "block",
+        }}
+      >
         <button
           onClick={() => (window.location.href = "/Science")}
           style={{
@@ -221,14 +250,14 @@ const HumanBodyMap: React.FC = () => {
             boxShadow: "0 4px 15px rgba(0,0,0,0.5)",
             transition: "transform 0.2s",
           }}
-          onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.1)"}
-          onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
+          onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+          onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
           ◀
         </button>
       </div>
 
-      {/* Info Button - Top Right */}
+      {/* ── Info Button (top-right) ── */}
       <div style={{ position: "absolute", top: "20px", right: "20px", zIndex: 100 }}>
         <button
           style={{
@@ -247,66 +276,83 @@ const HumanBodyMap: React.FC = () => {
             boxShadow: "0 4px 15px rgba(33, 150, 243, 0.6)",
             transition: "transform 0.2s",
           }}
-          onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.1)"}
-          onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
-          onClick={() => alert(`Body Explorer Progress\n\n${totalLevelsUnlocked}/${totalLevels} Levels Completed\nGame Score: ${gameScore}`)}
+          onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+          onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+          onClick={() =>
+            alert(
+              `Learning Adventure Progress\n\n` +
+              `${totalLevelsUnlocked}/${totalLevels} Levels Completed\n` +
+              `Game Score: ${gameScore}\n\n` +
+              LEVEL_SECTIONS.map(
+                (s) =>
+                  `${s.emoji} ${s.name} – ${s.subtitle}: ` +
+                  `${categoryProgress[s.categoryId] || 0}/${LEVELS_PER_CATEGORY}`
+              ).join("\n")
+            )
+          }
         >
           ℹ️
         </button>
       </div>
 
-
-
-      {/* Player Card */}
-      <div style={{
-        background: "linear-gradient(135deg, #2d1f3d, #1a1a2e)",
-        borderRadius: "20px",
-        border: "5px solid #fff",
-        padding: "clamp(15px, 3vw, 20px)",
-        marginBottom: "30px",
-        boxShadow: "0 8px 30px rgba(0,0,0,0.8)",
-        display: "flex",
-        alignItems: "center",
-        gap: "clamp(10px, 3vw, 20px)",
-        maxWidth: "clamp(320px, 90%, 600px)",
-        margin: "0 auto 30px auto",
-      }}>
-        {/* Player Icon */}
-        <div style={{
-          width: "clamp(60px, 15vw, 80px)",
-          height: "clamp(60px, 15vw, 80px)",
-          background: "linear-gradient(135deg, #E91E63, #9C27B0)",
-          borderRadius: "50%",
-          border: "4px solid #fff",
+      {/* ── Player Card ── */}
+      <div
+        style={{
+          background: "linear-gradient(135deg, #2d1f3d, #1a1a2e)",
+          borderRadius: "20px",
+          border: "5px solid #fff",
+          padding: "clamp(15px, 3vw, 20px)",
+          marginBottom: "30px",
+          boxShadow: "0 8px 30px rgba(0,0,0,0.8)",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          fontSize: "clamp(30px, 8vw, 40px)",
-          flexShrink: 0,
-          boxShadow: "0 4px 20px rgba(233, 30, 99, 0.6)",
-        }}>
-          🫀
-        </div>
-
-        {/* Player Info */}
-        <div style={{ flex: 1 }}>
-          <div style={{
-            fontSize: "clamp(1.5rem, 4vw, 2rem)",
-            fontWeight: "bold",
-            color: "#fff",
-            textShadow: "3px 3px 6px rgba(0,0,0,0.8)",
-            marginBottom: "8px",
-          }}>
-            BODY EXPLORER
-          </div>
-          
-          <div style={{
+          gap: "clamp(10px, 3vw, 20px)",
+          maxWidth: "clamp(320px, 90%, 600px)",
+          margin: "0 auto 30px auto",
+        }}
+      >
+        {/* Icon */}
+        <div
+          style={{
+            width: "clamp(60px, 15vw, 80px)",
+            height: "clamp(60px, 15vw, 80px)",
+            background: "linear-gradient(135deg, #E91E63, #9C27B0)",
+            borderRadius: "50%",
+            border: "4px solid #fff",
             display: "flex",
             alignItems: "center",
-            gap: "15px",
-            fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)",
-            color: "#fff",
-          }}>
+            justifyContent: "center",
+            fontSize: "clamp(30px, 8vw, 40px)",
+            flexShrink: 0,
+            boxShadow: "0 4px 20px rgba(233, 30, 99, 0.6)",
+          }}
+        >
+          🎮
+        </div>
+
+        {/* Info */}
+        <div style={{ flex: 1 }}>
+          <div
+            style={{
+              fontSize: "clamp(1.5rem, 4vw, 2rem)",
+              fontWeight: "bold",
+              color: "#fff",
+              textShadow: "3px 3px 6px rgba(0,0,0,0.8)",
+              marginBottom: "8px",
+            }}
+          >
+            LEARNING ADVENTURE
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "15px",
+              fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)",
+              color: "#fff",
+            }}
+          >
             <span style={{ color: "#4CAF50", fontWeight: "bold" }}>
               {totalLevelsUnlocked}/{totalLevels} ⭐
             </span>
@@ -317,18 +363,20 @@ const HumanBodyMap: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Carousel Container */}
-      <div style={{
-        flex: 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "20px",
-        maxWidth: "1400px",
-        margin: "0 auto",
-        width: "100%",
-      }}>
-        {/* LEFT ARROW - Desktop only */}
+      {/* ── Main Carousel ── */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "20px",
+          maxWidth: "1400px",
+          margin: "0 auto",
+          width: "100%",
+        }}
+      >
+        {/* LEFT ARROW – Desktop only */}
         <button
           onClick={goToPrevious}
           style={{
@@ -358,7 +406,7 @@ const HumanBodyMap: React.FC = () => {
           ◀
         </button>
 
-        {/* CATEGORY CARD */}
+        {/* ── CATEGORY CARD ── */}
         <div
           style={{
             background: `linear-gradient(135deg, ${currentSection.darkColor}, #1a1a2e)`,
@@ -368,68 +416,126 @@ const HumanBodyMap: React.FC = () => {
             boxShadow: `0 12px 40px ${currentSection.color}60`,
             maxWidth: "clamp(320px, 90%, 800px)",
             width: "100%",
-            minHeight: "clamp(350px, 60vh, 450px)",
+            minHeight: "clamp(380px, 62vh, 480px)",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
           }}
         >
-          {/* Category Header */}
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "clamp(10px, 2vw, 20px)",
-            flexWrap: "wrap",
-            gap: "10px",
-          }}>
+          {/* Card Header */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              marginBottom: "clamp(10px, 2vw, 18px)",
+              flexWrap: "wrap",
+              gap: "10px",
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: "clamp(10px, 2vw, 15px)" }}>
-              <div style={{
-                fontSize: "clamp(2rem, 8vw, 4rem)",
-                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.5))",
-              }}>
+              {/* Big emoji */}
+              <div
+                style={{
+                  fontSize: "clamp(2.2rem, 9vw, 4.5rem)",
+                  filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.6))",
+                  lineHeight: 1,
+                }}
+              >
                 {currentSection.emoji}
               </div>
-              
+
+              {/* Title block */}
               <div>
-                <div style={{
-                  fontSize: "clamp(1.5rem, 6vw, 2.5rem)",
-                  fontWeight: "bold",
-                  color: "#fff",
-                  textShadow: "3px 3px 6px rgba(0,0,0,0.8)",
-                  textTransform: "uppercase",
-                  letterSpacing: "clamp(1px, 0.3vw, 2px)",
-                }}>
-                  {currentSection.name}
-                </div>
-                <div style={{
-                  fontSize: "clamp(0.8rem, 2.5vw, 1.1rem)",
-                  color: "#bbb",
-                  fontStyle: "italic",
-                }}>
+                {/* Difficulty badge */}
+                <span
+                  style={{
+                    display: "inline-block",
+                    background: difficulty.bg,
+                    color: "#fff",
+                    fontSize: "clamp(0.6rem, 1.8vw, 0.8rem)",
+                    fontWeight: "bold",
+                    letterSpacing: "2px",
+                    padding: "2px 10px",
+                    borderRadius: "20px",
+                    marginBottom: "4px",
+                    textTransform: "uppercase",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+                  }}
+                >
+                  {difficulty.label}
+                </span>
+
+                {/* Category name */}
+                <div
+                  style={{
+                    fontSize: "clamp(1.4rem, 5.5vw, 2.4rem)",
+                    fontWeight: "bold",
+                    color: "#fff",
+                    textShadow: "3px 3px 6px rgba(0,0,0,0.8)",
+                    textTransform: "uppercase",
+                    letterSpacing: "clamp(1px, 0.3vw, 2px)",
+                    lineHeight: 1.1,
+                  }}
+                >
                   {currentSection.subtitle}
+                </div>
+
+                {/* Short description */}
+                <div
+                  style={{
+                    fontSize: "clamp(0.7rem, 2vw, 0.95rem)",
+                    color: "#ccc",
+                    fontStyle: "italic",
+                    marginTop: "3px",
+                    maxWidth: "260px",
+                  }}
+                >
+                  {currentSection.description}
                 </div>
               </div>
             </div>
 
-            {/* Stars - REMOVED */}
+            {/* Level counter badge (top-right of card) */}
+            <div
+              style={{
+                background: "rgba(255,255,255,0.12)",
+                border: `2px solid ${currentSection.color}`,
+                borderRadius: "12px",
+                padding: "6px 14px",
+                textAlign: "center",
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ fontSize: "clamp(1rem, 3vw, 1.4rem)", fontWeight: "bold", color: "#fff" }}>
+                {unlockedInCategory}/{LEVELS_PER_CATEGORY}
+              </div>
+              <div style={{ fontSize: "clamp(0.6rem, 1.5vw, 0.75rem)", color: "#aaa", textTransform: "uppercase", letterSpacing: "1px" }}>
+                Levels
+              </div>
+            </div>
           </div>
 
-          {/* Level Grid (1-15) - BIGGER BUTTONS */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(5, 1fr)",
-            gap: "clamp(10px, 2.5vw, 16px)",
-            marginBottom: "25px",
-            padding: "0 clamp(15px, 4vw, 25px)",
-            maxWidth: "clamp(350px, 95%, 650px)",
-            margin: "0 auto 25px auto",
-          }}>
+          {/* ── Level Grid (1-15) ── */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(5, 1fr)",
+              gap: "clamp(10px, 2.5vw, 16px)",
+              marginBottom: "20px",
+              padding: "0 clamp(10px, 3vw, 20px)",
+              maxWidth: "clamp(320px, 95%, 620px)",
+              margin: "0 auto 20px auto",
+            }}
+          >
             {Array.from({ length: LEVELS_PER_CATEGORY }, (_, i) => {
               const levelNumber = i + 1;
               const isUnlocked = levelNumber === 1 || levelNumber <= unlockedInCategory;
-              const categoryIndex = LEVEL_SECTIONS.findIndex(s => s.categoryId === currentSection.categoryId);
-              const globalLevelId = (categoryIndex * LEVELS_PER_CATEGORY) + levelNumber;
+              const isCompleted = levelNumber < unlockedInCategory;
+              const categoryIndex = LEVEL_SECTIONS.findIndex(
+                (s) => s.categoryId === currentSection.categoryId
+              );
+              const globalLevelId = categoryIndex * LEVELS_PER_CATEGORY + levelNumber;
 
               return (
                 <button
@@ -440,16 +546,27 @@ const HumanBodyMap: React.FC = () => {
                       window.location.href = `/body-systems?level=${globalLevelId - 1}&category=${currentSection.categoryId}`;
                     }
                   }}
+                  title={
+                    isUnlocked
+                      ? `${currentSection.subtitle} – Level ${levelNumber}`
+                      : `Complete Level ${levelNumber - 1} to unlock`
+                  }
                   style={{
                     aspectRatio: "1",
                     borderRadius: "50%",
-                    background: isUnlocked
+                    background: isCompleted
+                      ? `linear-gradient(135deg, ${currentSection.color}cc, ${currentSection.darkColor})`
+                      : isUnlocked
                       ? `linear-gradient(135deg, ${currentSection.color}, ${currentSection.darkColor})`
                       : "radial-gradient(circle at top left, #555, #333)",
                     color: "white",
                     fontWeight: "bold",
-                    fontSize: "clamp(16px, 4vw, 20px)",
-                    border: isUnlocked ? "4px solid #fff" : "3px solid #444",
+                    fontSize: "clamp(14px, 3.5vw, 19px)",
+                    border: isCompleted
+                      ? `4px solid ${currentSection.color}`
+                      : isUnlocked
+                      ? "4px solid #fff"
+                      : "3px solid #444",
                     cursor: isUnlocked ? "pointer" : "not-allowed",
                     boxShadow: isUnlocked
                       ? `0 5px 15px ${currentSection.color}80`
@@ -460,11 +577,12 @@ const HumanBodyMap: React.FC = () => {
                     minWidth: "44px",
                     minHeight: "44px",
                     width: "100%",
+                    position: "relative",
                   }}
                   onMouseOver={(e) => {
                     if (isUnlocked) {
-                      e.currentTarget.style.transform = "scale(1.15)";
-                      e.currentTarget.style.boxShadow = `0 8px 20px ${currentSection.color}`;
+                      e.currentTarget.style.transform = "scale(1.18)";
+                      e.currentTarget.style.boxShadow = `0 8px 22px ${currentSection.color}`;
                     }
                   }}
                   onMouseOut={(e) => {
@@ -474,70 +592,63 @@ const HumanBodyMap: React.FC = () => {
                       : "0 3px 8px rgba(0,0,0,0.5)";
                   }}
                 >
-                  {levelNumber}
+                  {isCompleted ? "✓" : levelNumber}
                 </button>
               );
             })}
           </div>
 
-          {/* Progress Bar */}
-          <div style={{
-            background: "rgba(0,0,0,0.5)",
-            borderRadius: "clamp(15px, 3vw, 25px)",
-            height: "clamp(40px, 8vw, 50px)",
-            border: "clamp(3px, 0.6vw, 4px) solid #fff",
-            overflow: "hidden",
-            position: "relative",
-            marginBottom: "clamp(15px, 3vw, 20px)",
-          }}>
+          {/* ── Progress Bar ── */}
+          <div
+            style={{
+              background: "rgba(0,0,0,0.5)",
+              borderRadius: "clamp(15px, 3vw, 25px)",
+              height: "clamp(36px, 7vw, 46px)",
+              border: "clamp(3px, 0.6vw, 4px) solid #fff",
+              overflow: "hidden",
+              position: "relative",
+              marginBottom: "clamp(15px, 3vw, 20px)",
+            }}
+          >
             <div
               style={{
                 height: "100%",
                 width: `${progressPercent}%`,
                 background: `linear-gradient(90deg, ${currentSection.color}, ${currentSection.darkColor})`,
                 transition: "width 0.5s ease",
-                boxShadow: `inset 0 -5px 15px rgba(0,0,0,0.4)`,
+                boxShadow: "inset 0 -5px 15px rgba(0,0,0,0.4)",
               }}
             />
-            
-            <div style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              fontSize: "clamp(1rem, 4vw, 1.6rem)",
-              fontWeight: "bold",
-              color: "#fff",
-              textShadow: "3px 3px 6px rgba(0,0,0,0.9)",
-              pointerEvents: "none",
-            }}>
-              {progressPercent}%
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                fontSize: "clamp(0.9rem, 3.5vw, 1.4rem)",
+                fontWeight: "bold",
+                color: "#fff",
+                textShadow: "3px 3px 6px rgba(0,0,0,0.9)",
+                pointerEvents: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {progressPercent}% Complete
             </div>
           </div>
 
-          {/* Level Count & Navigation Buttons */}
-          <div style={{
-            textAlign: "center",
-          }}>
-            <div style={{
-              marginBottom: "clamp(10px, 2vw, 15px)",
-              fontSize: "clamp(0.9rem, 3vw, 1.2rem)",
-              color: "#fff",
-              fontWeight: "bold",
-              textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
-            }}>
-              {unlockedInCategory} / {LEVELS_PER_CATEGORY} LEVELS
-            </div>
-
-            {/* Button Container - Desktop: single button, Mobile: 3 buttons */}
-            <div style={{
-              display: "flex",
-              gap: "clamp(10px, 2vw, 15px)",
-              justifyContent: "center",
-              alignItems: "center",
-              flexWrap: "wrap",
-            }}>
-              {/* LEFT ARROW - Mobile only */}
+          {/* ── CTA Buttons ── */}
+          <div style={{ textAlign: "center" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "clamp(10px, 2vw, 15px)",
+                justifyContent: "center",
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              {/* LEFT ARROW – Mobile only */}
               <button
                 onClick={goToPrevious}
                 style={{
@@ -559,14 +670,16 @@ const HumanBodyMap: React.FC = () => {
                 ◀
               </button>
 
-              {/* Play/Continue Button */}
+              {/* Play / Continue */}
               <button
                 onClick={() => {
-                  const categoryIndex = LEVEL_SECTIONS.findIndex(s => s.categoryId === currentSection.categoryId);
-                  // If no progress (0), start at level 1 (index 0)
-                  // If there's progress, go to the current level (last unlocked level)
-                  const targetLevelNumber = unlockedInCategory === 0 ? 1 : unlockedInCategory;
-                  const globalLevelId = (categoryIndex * LEVELS_PER_CATEGORY) + targetLevelNumber;
+                  const categoryIndex = LEVEL_SECTIONS.findIndex(
+                    (s) => s.categoryId === currentSection.categoryId
+                  );
+                  const targetLevelNumber =
+                    unlockedInCategory === 0 ? 1 : unlockedInCategory;
+                  const globalLevelId =
+                    categoryIndex * LEVELS_PER_CATEGORY + targetLevelNumber;
                   window.location.href = `/body-systems?level=${globalLevelId - 1}&category=${currentSection.categoryId}`;
                 }}
                 style={{
@@ -584,6 +697,9 @@ const HumanBodyMap: React.FC = () => {
                   transition: "all 0.2s ease",
                   textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
                   flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.transform = "scale(1.05)";
@@ -594,10 +710,11 @@ const HumanBodyMap: React.FC = () => {
                   e.currentTarget.style.boxShadow = `0 6px 25px ${currentSection.color}80`;
                 }}
               >
-                ▶ {unlockedInCategory > 1 ? "CONTINUE" : "PLAY"}
+                {currentSection.emoji}{" "}
+                {unlockedInCategory > 1 ? "▶ CONTINUE" : "▶ PLAY"}
               </button>
 
-              {/* RIGHT ARROW - Mobile only */}
+              {/* RIGHT ARROW – Mobile only */}
               <button
                 onClick={goToNext}
                 style={{
@@ -622,7 +739,7 @@ const HumanBodyMap: React.FC = () => {
           </div>
         </div>
 
-        {/* RIGHT ARROW - Desktop only */}
+        {/* RIGHT ARROW – Desktop only */}
         <button
           onClick={goToNext}
           style={{
@@ -653,40 +770,48 @@ const HumanBodyMap: React.FC = () => {
         </button>
       </div>
 
-      {/* Bottom Decorative Bars */}
-      <div style={{
-        display: "flex",
-        gap: "10px",
-        marginTop: "30px",
-        marginBottom: "20px",
-        justifyContent: "center",
-      }}>
+      {/* ── Bottom Nav Dots ── */}
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          marginTop: "30px",
+          marginBottom: "20px",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         {LEVEL_SECTIONS.map((section, i) => (
-          <div
+          <button
             key={i}
+            onClick={() => setCurrentCategoryIndex(i)}
+            title={section.subtitle}
             style={{
-              width: "clamp(40px, 8vw, 80px)",
-              height: "clamp(15px, 3vw, 25px)",
+              width: i === currentCategoryIndex ? "clamp(50px, 10vw, 90px)" : "clamp(30px, 6vw, 55px)",
+              height: "clamp(14px, 3vw, 22px)",
               background: i === currentCategoryIndex ? section.color : "#444",
               borderRadius: "10px",
-              border: "3px solid #fff",
-              boxShadow: i === currentCategoryIndex 
-                ? `0 4px 15px ${section.color}80` 
-                : "0 2px 8px rgba(0,0,0,0.5)",
+              border: i === currentCategoryIndex ? "3px solid #fff" : "2px solid #555",
+              boxShadow:
+                i === currentCategoryIndex
+                  ? `0 4px 15px ${section.color}80`
+                  : "0 2px 8px rgba(0,0,0,0.5)",
               cursor: "pointer",
               transition: "all 0.3s ease",
+              padding: 0,
             }}
-            onClick={() => setCurrentCategoryIndex(i)}
           />
         ))}
       </div>
 
-      {/* Back Button - Bottom (Mobile only, hidden on desktop) */}
-      <div style={{
-        display: window.innerWidth < 768 ? "flex" : "none",
-        justifyContent: "center",
-        marginBottom: "20px",
-      }}>
+      {/* ── Back Button – Mobile only (bottom) ── */}
+      <div
+        style={{
+          display: window.innerWidth < 768 ? "flex" : "none",
+          justifyContent: "center",
+          marginBottom: "20px",
+        }}
+      >
         <button
           onClick={() => (window.location.href = "/Science")}
           style={{
