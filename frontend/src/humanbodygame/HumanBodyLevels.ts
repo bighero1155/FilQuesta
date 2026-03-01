@@ -603,7 +603,7 @@ const butterflyCycle: PartConfig[] = [
     assetKey: "adult_butterfly", scale: 0.28,
     x: -190, y: -62,  mobileX: -124, mobileY: -40,
     description: "A fully grown butterfly that pollinates flowers.",
-    imagePath: "/assets/adult_butterfly.png",
+    imagePath: "/assets/butterfly.png",
     cycleOrder: 5,
   },
 ];
