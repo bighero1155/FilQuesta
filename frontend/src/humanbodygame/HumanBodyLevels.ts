@@ -242,7 +242,7 @@ const astronomySunParts: PartConfig[] = [
     assetKey: "sun", scale: 0.55,
     x: 0, y: 0, mobileX: 0, mobileY: 0,
     description: "Our star at the center of the solar system.",
-    imagePath: "/assets/astronomy/sun.png",
+    imagePath: "/assets/sun.png",
     isCenter: true,
   },
   {
@@ -250,7 +250,7 @@ const astronomySunParts: PartConfig[] = [
     assetKey: "mercury", scale: 0.22,
     x: 0, y: 0, mobileX: 0, mobileY: 0,
     description: "Closest planet to the Sun.",
-    imagePath: "/assets/astronomy/mercury.png",
+    imagePath: "/assets/mercury.png",
     orbitRadius: 110, mobileOrbitRadius: 70, orbitStartAngle: 0,
   },
   {
@@ -258,7 +258,7 @@ const astronomySunParts: PartConfig[] = [
     assetKey: "venus", scale: 0.26,
     x: 0, y: 0, mobileX: 0, mobileY: 0,
     description: "Hottest planet in the solar system.",
-    imagePath: "/assets/astronomy/venus.png",
+    imagePath: "/assets/venus.png",
     orbitRadius: 160, mobileOrbitRadius: 100, orbitStartAngle: 90,
   },
   {
@@ -266,7 +266,7 @@ const astronomySunParts: PartConfig[] = [
     assetKey: "earth", scale: 0.26,
     x: 0, y: 0, mobileX: 0, mobileY: 0,
     description: "Our home planet.",
-    imagePath: "/assets/astronomy/earth.png",
+    imagePath: "/assets/earth.png",
     orbitRadius: 210, mobileOrbitRadius: 130, orbitStartAngle: 180,
   },
   {
@@ -274,7 +274,7 @@ const astronomySunParts: PartConfig[] = [
     assetKey: "mars", scale: 0.24,
     x: 0, y: 0, mobileX: 0, mobileY: 0,
     description: "The Red Planet.",
-    imagePath: "/assets/astronomy/mars.png",
+    imagePath: "/assets/mars.png",
     orbitRadius: 260, mobileOrbitRadius: 160, orbitStartAngle: 270,
   },
 ];
@@ -286,7 +286,7 @@ const astronomyJupiterParts: PartConfig[] = [
     assetKey: "jupiter", scale: 0.5,
     x: 0, y: 0, mobileX: 0, mobileY: 0,
     description: "Largest planet in our solar system.",
-    imagePath: "/assets/astronomy/jupiter.png",
+    imagePath: "/assets/jupiter.png",
     isCenter: true,
   },
   {
@@ -294,7 +294,7 @@ const astronomyJupiterParts: PartConfig[] = [
     assetKey: "io", scale: 0.2,
     x: 0, y: 0, mobileX: 0, mobileY: 0,
     description: "Most volcanically active moon in the solar system.",
-    imagePath: "/assets/astronomy/io.png",
+    imagePath: "/assets/io.png",
     orbitRadius: 110, mobileOrbitRadius: 70, orbitStartAngle: 0,
   },
   {
@@ -302,7 +302,7 @@ const astronomyJupiterParts: PartConfig[] = [
     assetKey: "europa", scale: 0.2,
     x: 0, y: 0, mobileX: 0, mobileY: 0,
     description: "Icy moon possibly hiding a subsurface ocean.",
-    imagePath: "/assets/astronomy/europa.png",
+    imagePath: "/assets/europa.png",
     orbitRadius: 160, mobileOrbitRadius: 100, orbitStartAngle: 90,
   },
   {
@@ -310,7 +310,7 @@ const astronomyJupiterParts: PartConfig[] = [
     assetKey: "ganymede", scale: 0.22,
     x: 0, y: 0, mobileX: 0, mobileY: 0,
     description: "Largest moon in the solar system.",
-    imagePath: "/assets/astronomy/ganymede.png",
+    imagePath: "/assets/ganymede.png",
     orbitRadius: 210, mobileOrbitRadius: 130, orbitStartAngle: 180,
   },
   {
@@ -318,7 +318,7 @@ const astronomyJupiterParts: PartConfig[] = [
     assetKey: "callisto", scale: 0.22,
     x: 0, y: 0, mobileX: 0, mobileY: 0,
     description: "Most cratered object in the solar system.",
-    imagePath: "/assets/astronomy/callisto.png",
+    imagePath: "/assets/callisto.png",
     orbitRadius: 260, mobileOrbitRadius: 160, orbitStartAngle: 270,
   },
 ];
@@ -330,7 +330,7 @@ const astronomySaturnParts: PartConfig[] = [
     assetKey: "saturn", scale: 0.5,
     x: 0, y: 0, mobileX: 0, mobileY: 0,
     description: "Known for its stunning ring system.",
-    imagePath: "/assets/astronomy/saturn.png",
+    imagePath: "/assets/saturn.png",
     isCenter: true,
   },
   {
@@ -338,7 +338,7 @@ const astronomySaturnParts: PartConfig[] = [
     assetKey: "titan", scale: 0.22,
     x: 0, y: 0, mobileX: 0, mobileY: 0,
     description: "Saturn's largest moon with a thick atmosphere.",
-    imagePath: "/assets/astronomy/titan.png",
+    imagePath: "/assets/titan.png",
     orbitRadius: 110, mobileOrbitRadius: 70, orbitStartAngle: 0,
   },
   {
@@ -346,7 +346,7 @@ const astronomySaturnParts: PartConfig[] = [
     assetKey: "enceladus", scale: 0.18,
     x: 0, y: 0, mobileX: 0, mobileY: 0,
     description: "Shoots water geysers from its south pole.",
-    imagePath: "/assets/astronomy/enceladus.png",
+    imagePath: "/assets/enceladus.png",
     orbitRadius: 160, mobileOrbitRadius: 100, orbitStartAngle: 90,
   },
   {
@@ -354,7 +354,7 @@ const astronomySaturnParts: PartConfig[] = [
     assetKey: "mimas", scale: 0.18,
     x: 0, y: 0, mobileX: 0, mobileY: 0,
     description: "Resembles the Death Star with its huge crater.",
-    imagePath: "/assets/astronomy/mimas.png",
+    imagePath: "/assets/mimas.png",
     orbitRadius: 210, mobileOrbitRadius: 130, orbitStartAngle: 180,
   },
   {
@@ -362,7 +362,7 @@ const astronomySaturnParts: PartConfig[] = [
     assetKey: "rhea", scale: 0.2,
     x: 0, y: 0, mobileX: 0, mobileY: 0,
     description: "Saturn's second-largest moon.",
-    imagePath: "/assets/astronomy/rhea.png",
+    imagePath: "/assets/rhea.png",
     orbitRadius: 260, mobileOrbitRadius: 160, orbitStartAngle: 270,
   },
 ];
