@@ -629,7 +629,7 @@ export default class WordWizardScene extends Phaser.Scene {
     // ✅ FIX: Use fixed percentage-based Y positions from screen top so the
     // yellow tiles, input field, and submit button are always clearly separated
     // and sit above the mobile keyboard (which appears at ~50% screen height).
-    const tilesY  = isMobile ? this.scale.height * 0.69 : this.scale.height / 2 + 80;
+    const tilesY  = isMobile ? this.scale.height * 0.58 : this.scale.height / 2 + 80;
     const inputY  = isMobile ? this.scale.height * 0.66 : this.scale.height / 2 + 180;
     const buttonY = isMobile ? this.scale.height * 0.78 : this.scale.height / 2 + 270;
 
