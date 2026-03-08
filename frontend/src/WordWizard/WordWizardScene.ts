@@ -479,7 +479,7 @@ export default class WordWizardScene extends Phaser.Scene {
   private createMultipleChoiceMode(currentWord: { word: string; description: string; choices?: string[] }) {
     const isMobile = this.scale.width < 768;
     const centerX = this.scale.width / 2;
-    const centerY = isMobile ? this.scale.height * 0.65 : this.scale.height / 2;
+    const centerY = isMobile ? this.scale.height * 0.65: this.scale.height / 2;
 
     const choices = currentWord.choices ?? [currentWord.word, "Option B", "Option C"];
     const shuffled = Phaser.Utils.Array.Shuffle([...choices]);
@@ -639,9 +639,9 @@ export default class WordWizardScene extends Phaser.Scene {
     let buttonY: number;
 
     if (isMobile && isExpert) {
-      inputY   = this.scale.height * 0.68;  // just above keyboard
-      lettersY = inputY - 40;               // yellow boxes snug above input
-      buttonY  = this.scale.height * 0.78;  // submit button below input
+      inputY   = this.scale.height * 0.72;  // text input
+      lettersY = inputY - 70;               // yellow boxes just above input
+      buttonY  = this.scale.height * 0.82;  // submit button
     } else {
       // Original positions for all other cases
       lettersY = isMobile ? centerY - 40  : centerY - 100;
