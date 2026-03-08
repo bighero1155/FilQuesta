@@ -630,8 +630,8 @@ export default class WordWizardScene extends Phaser.Scene {
     // yellow tiles, input field, and submit button are always clearly separated
     // and sit above the mobile keyboard (which appears at ~50% screen height).
     const tilesY  = isMobile ? this.scale.height * 0.62 : this.scale.height / 2 + 80;
-    const inputY  = isMobile ? this.scale.height * 0.74 : this.scale.height / 2 + 180;
-    const buttonY = isMobile ? this.scale.height * 0.86 : this.scale.height / 2 + 270;
+    const inputY  = isMobile ? this.scale.height * 0.66 : this.scale.height / 2 + 180;
+    const buttonY = isMobile ? this.scale.height * 0.80 : this.scale.height / 2 + 270;
 
     const letterDisplay = createStaticLetterDisplay(this, letters, centerX, tilesY);
     this.staticLettersText = letterDisplay as any;
