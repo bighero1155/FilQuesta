@@ -5,7 +5,6 @@ import { logPageVisit, logGameOver } from "../services/pageVisitService";
 import { LevelConfig, getLevelConfig, generateGrammarTiles } from "./levels";
 import { createStyledButtons, createQuitButton } from "./buttons";
 import {
-  createBackground,
   createSlot,
   createTile,
   createInfoText,
@@ -30,6 +29,24 @@ const CATEGORY_TOPIC_TITLE: Record<string, string> = {
   EXPERT:   "🧠 COMPREHENSION",
 };
 
+// 🎨 Per-category background gradient colors (top color, bottom color)
+const CATEGORY_BG_COLORS: Record<string, { top: number; bottom: number; mid?: number }> = {
+  BASIC:    { top: 0x1a4a2e, bottom: 0x0d2b1a, mid: 0x2d6b3f }, // 🟢 Deep forest green
+  NORMAL:   { top: 0x1a3a5c, bottom: 0x0d1f3a, mid: 0x2a5080 }, // 🔵 Deep ocean blue
+  HARD:     { top: 0x5c1a1a, bottom: 0x3a0d0d, mid: 0x802a2a }, // 🔴 Deep crimson red
+  ADVANCED: { top: 0x3a1a00, bottom: 0x261200, mid: 0x5c3000 }, // 🟠 Deep burnt orange
+  EXPERT:   { top: 0x1a0a2e, bottom: 0x0d0519, mid: 0x2d1050 }, // 💀 Deep dark purple
+};
+
+// 🌟 Per-category accent/star colors for decorative elements
+const CATEGORY_ACCENT_COLORS: Record<string, number> = {
+  BASIC:    0x4ade80, // bright green
+  NORMAL:   0x60a5fa, // bright blue
+  HARD:     0xf87171, // bright red
+  ADVANCED: 0xfb923c, // bright orange
+  EXPERT:   0xa78bfa, // bright purple
+};
+
 export default class WordWizardScene extends Phaser.Scene {
   private userId: number | null = null;
   private score = 0;
@@ -37,8 +54,8 @@ export default class WordWizardScene extends Phaser.Scene {
   private slots: Phaser.GameObjects.Zone[] = [];
   private tiles: Phaser.GameObjects.Container[] = [];
   private infoText?: Phaser.GameObjects.Text;
-  // _levelInfoText removed — was declared but never read (TS6133)
   private activeButtons: Phaser.GameObjects.Container[] = [];
+  private backgroundGraphics?: Phaser.GameObjects.Graphics;
 
   private level!: LevelConfig;
   private currentLevel = 1;
@@ -156,8 +173,79 @@ export default class WordWizardScene extends Phaser.Scene {
     return categoryEmojis[this.currentCategoryId] || this.currentCategoryId;
   }
 
+  // 🎨 Draws a full-screen gradient background based on the current category
+  private createCategoryBackground() {
+    const { width, height } = this.scale;
+    const colors = CATEGORY_BG_COLORS[this.currentCategoryId] ?? CATEGORY_BG_COLORS["BASIC"];
+    const accent = CATEGORY_ACCENT_COLORS[this.currentCategoryId] ?? 0x4ade80;
+
+    // Destroy any previous background
+    if (this.backgroundGraphics) {
+      this.backgroundGraphics.destroy();
+    }
+
+    const g = this.add.graphics();
+    this.backgroundGraphics = g;
+    g.setDepth(-10);
+
+    // ── Main gradient (simulate with stacked rects, top → mid → bottom) ──
+    const steps = 80;
+    const topR  = (colors.top  >> 16) & 0xff;
+    const topG  = (colors.top  >> 8)  & 0xff;
+    const topB  =  colors.top         & 0xff;
+    const botR  = (colors.bottom >> 16) & 0xff;
+    const botG  = (colors.bottom >> 8)  & 0xff;
+    const botB  =  colors.bottom        & 0xff;
+
+    for (let i = 0; i < steps; i++) {
+      const t = i / steps;
+      const r = Math.round(topR + (botR - topR) * t);
+      const gC = Math.round(topG + (botG - topG) * t);
+      const b = Math.round(topB + (botB - topB) * t);
+      const hex = (r << 16) | (gC << 8) | b;
+      const sliceH = Math.ceil(height / steps) + 1;
+      g.fillStyle(hex, 1);
+      g.fillRect(0, Math.floor((i / steps) * height), width, sliceH);
+    }
+
+    // ── Decorative glowing orbs ──
+    const orbAlpha = 0.07;
+    g.fillStyle(accent, orbAlpha);
+    g.fillCircle(width * 0.15, height * 0.2, 180);
+    g.fillCircle(width * 0.85, height * 0.75, 220);
+    g.fillCircle(width * 0.5,  height * 0.5,  140);
+
+    // ── Subtle grid lines ──
+    g.lineStyle(1, accent, 0.04);
+    const gridSpacing = 60;
+    for (let x = 0; x < width; x += gridSpacing) {
+      g.lineBetween(x, 0, x, height);
+    }
+    for (let y = 0; y < height; y += gridSpacing) {
+      g.lineBetween(0, y, width, y);
+    }
+
+    // ── Corner accent triangles ──
+    g.fillStyle(accent, 0.06);
+    g.fillTriangle(0, 0, 200, 0, 0, 200);
+    g.fillTriangle(width, height, width - 200, height, width, height - 200);
+
+    // ── Category color strip at top ──
+    g.fillStyle(accent, 0.18);
+    g.fillRect(0, 0, width, 8);
+    g.fillStyle(accent, 0.10);
+    g.fillRect(0, 8, width, 4);
+
+    // ── Category color strip at bottom ──
+    g.fillStyle(accent, 0.18);
+    g.fillRect(0, height - 8, width, 8);
+    g.fillStyle(accent, 0.10);
+    g.fillRect(0, height - 12, width, 4);
+  }
+
   async create() {
-    createBackground(this);
+    // 🎨 Draw category-specific background FIRST
+    this.createCategoryBackground();
 
     if (!this.userId) return;
 
@@ -179,7 +267,6 @@ export default class WordWizardScene extends Phaser.Scene {
     );
 
     if (this.currentLevelInCategory === 1) {
-      // BASIC Level 1 is always the entry point — never block it
       const isVeryFirstLevel = this.currentCategoryId === WORDWIZARD_CATEGORIES[0];
       if (!isVeryFirstLevel && !hasCompletedAnyLevel1) {
         alert("🚫 Complete any Level 1 first to unlock all Level 1s!");
@@ -236,7 +323,6 @@ export default class WordWizardScene extends Phaser.Scene {
     const levelInfoY = isMobile ? 55 : 60;
     const levelInfoX = isMobile ? this.scale.width - 380 : this.scale.width - 1400;
 
-    // No longer stored as a class field — created and managed by Phaser's display list
     this.add.text(
       levelInfoX,
       levelInfoY,
@@ -411,9 +497,9 @@ export default class WordWizardScene extends Phaser.Scene {
       const btnY = startY + i * btnSpacing;
 
       const bg = this.add.graphics();
-      bg.fillStyle(0x4c51bf, 1);
+      bg.fillStyle(0x7c3aed, 1);
       bg.fillRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
-      bg.lineStyle(3, 0x818cf8, 1);
+      bg.lineStyle(3, 0xa78bfa, 1);
       bg.strokeRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
 
       const label = this.add
@@ -434,17 +520,17 @@ export default class WordWizardScene extends Phaser.Scene {
 
       container.on("pointerover", () => {
         bg.clear();
-        bg.fillStyle(0x6366f1, 1);
+        bg.fillStyle(0x8b5cf6, 1);
         bg.fillRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
-        bg.lineStyle(3, 0xa5b4fc, 1);
+        bg.lineStyle(3, 0xc4b5fd, 1);
         bg.strokeRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
       });
 
       container.on("pointerout", () => {
         bg.clear();
-        bg.fillStyle(0x4c51bf, 1);
+        bg.fillStyle(0x7c3aed, 1);
         bg.fillRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
-        bg.lineStyle(3, 0x818cf8, 1);
+        bg.lineStyle(3, 0xa78bfa, 1);
         bg.strokeRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
       });
 
@@ -485,9 +571,9 @@ export default class WordWizardScene extends Phaser.Scene {
 
           this.time.delayedCall(700, () => {
             bg.clear();
-            bg.fillStyle(0x4c51bf, 1);
+            bg.fillStyle(0x7c3aed, 1);
             bg.fillRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
-            bg.lineStyle(3, 0x818cf8, 1);
+            bg.lineStyle(3, 0xa78bfa, 1);
             bg.strokeRoundedRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, btnRadius);
             this.mcButtons.forEach((b) => b.setInteractive());
           });
@@ -647,7 +733,7 @@ export default class WordWizardScene extends Phaser.Scene {
     });
   }
 
-  // ✅ UPDATED: shows topic title above score/streak, then the question description
+  // ✅ Shows topic title above score/streak, then the question description
   private updateInfoText() {
     if (!this.infoText) return;
     const currentWord = this.level.words[0];
