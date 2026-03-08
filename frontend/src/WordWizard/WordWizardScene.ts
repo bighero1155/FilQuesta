@@ -623,15 +623,19 @@ export default class WordWizardScene extends Phaser.Scene {
   private createTypingMode(currentWord: { word: string; description: string }) {
     const isMobile = this.scale.width < 768;
     const centerX = this.scale.width / 2;
-    const centerY = this.scale.height / 2;
 
     const letters = Phaser.Utils.Array.Shuffle(currentWord.word.split(""));
 
-    const lettersY = isMobile ? centerY - 40 : centerY - 100;
-    const letterDisplay = createStaticLetterDisplay(this, letters, centerX, lettersY);
+    // ✅ FIX: Use fixed percentage-based Y positions from screen top so the
+    // yellow tiles, input field, and submit button are always clearly separated
+    // and sit above the mobile keyboard (which appears at ~50% screen height).
+    const tilesY  = isMobile ? this.scale.height * 0.38 : this.scale.height / 2 - 100;
+    const inputY  = isMobile ? this.scale.height * 0.52 : this.scale.height / 2 + 40;
+    const buttonY = isMobile ? this.scale.height * 0.60 : this.scale.height / 2 + 130;
+
+    const letterDisplay = createStaticLetterDisplay(this, letters, centerX, tilesY);
     this.staticLettersText = letterDisplay as any;
 
-    const inputY = isMobile ? centerY + 28 : centerY + 40;
     this.typingInputField = createInputField(
       centerX,
       inputY,
@@ -639,7 +643,6 @@ export default class WordWizardScene extends Phaser.Scene {
       () => this.handleTypingSubmit()
     );
 
-    const buttonY = isMobile ? centerY + 100 : centerY + 130;
     this.typingSubmitButton = createSubmitButton(this, centerX, buttonY, () =>
       this.handleTypingSubmit()
     );
