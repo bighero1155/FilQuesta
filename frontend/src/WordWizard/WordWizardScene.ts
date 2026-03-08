@@ -639,8 +639,8 @@ export default class WordWizardScene extends Phaser.Scene {
     let buttonY: number;
 
     if (isMobile && isExpert) {
-      lettersY = this.scale.height * 0.58;  // yellow boxes — lower
       inputY   = this.scale.height * 0.72;  // text input
+      lettersY = inputY - 70;               // yellow boxes just above input
       buttonY  = this.scale.height * 0.82;  // submit button
     } else {
       // Original positions for all other cases
