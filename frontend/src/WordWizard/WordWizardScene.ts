@@ -479,7 +479,7 @@ export default class WordWizardScene extends Phaser.Scene {
   private createMultipleChoiceMode(currentWord: { word: string; description: string; choices?: string[] }) {
     const isMobile = this.scale.width < 768;
     const centerX = this.scale.width / 2;
-    const centerY = this.scale.height / 2;
+    const centerY = isMobile ? this.scale.height * 0.70 : this.scale.height / 2;
 
     const choices = currentWord.choices ?? [currentWord.word, "Option B", "Option C"];
     const shuffled = Phaser.Utils.Array.Shuffle([...choices]);
