@@ -479,7 +479,7 @@ export default class WordWizardScene extends Phaser.Scene {
   private createMultipleChoiceMode(currentWord: { word: string; description: string; choices?: string[] }) {
     const isMobile = this.scale.width < 768;
     const centerX = this.scale.width / 2;
-    const centerY = isMobile ? this.scale.height * 0.70 : this.scale.height / 2;
+    const centerY = isMobile ? this.scale.height * 0.65 : this.scale.height / 2;
 
     const choices = currentWord.choices ?? [currentWord.word, "Option B", "Option C"];
     const shuffled = Phaser.Utils.Array.Shuffle([...choices]);
@@ -619,19 +619,47 @@ export default class WordWizardScene extends Phaser.Scene {
   // ──────────────────────────────────────────────────────────────
   // TYPING / FILL-IN-THE-BLANK
   // Used by: BASIC/NORMAL/HARD levels 11-15  AND  ALL EXPERT levels
+  //
+  // 💀 EXPERT on mobile: tiles scaled down + everything shifted lower
+  //    so content clears the question/info text at the top of screen.
   // ──────────────────────────────────────────────────────────────
   private createTypingMode(currentWord: { word: string; description: string }) {
     const isMobile = this.scale.width < 768;
-    const centerX = this.scale.width / 2;
-    const centerY = this.scale.height / 2;
+    const isExpert = this.currentCategoryId === "EXPERT";
+    const centerX  = this.scale.width / 2;
+    const centerY  = this.scale.height / 2;
 
     const letters = Phaser.Utils.Array.Shuffle(currentWord.word.split(""));
 
-    const lettersY = isMobile ? centerY - 40 : centerY - 100;
+    // ── Vertical positions ───────────────────────────────────────────────
+    // Expert mobile: shift everything into the lower portion of the screen
+    // so the yellow boxes + input + button don't overlap the question text.
+    let lettersY: number;
+    let inputY: number;
+    let buttonY: number;
+
+    if (isMobile && isExpert) {
+      lettersY = this.scale.height * 0.58;  // yellow boxes — lower
+      inputY   = this.scale.height * 0.72;  // text input
+      buttonY  = this.scale.height * 0.82;  // submit button
+    } else {
+      // Original positions for all other cases
+      lettersY = isMobile ? centerY - 40  : centerY - 100;
+      inputY   = isMobile ? centerY + 28  : centerY + 40;
+      buttonY  = isMobile ? centerY + 100 : centerY + 130;
+    }
+
+    // ── Letter tile display ──────────────────────────────────────────────
     const letterDisplay = createStaticLetterDisplay(this, letters, centerX, lettersY);
+
+    // 💀 Expert mobile: scale tiles down so longer words still fit the width
+    if (isMobile && isExpert) {
+      (letterDisplay as any).setScale?.(0.72);
+    }
+
     this.staticLettersText = letterDisplay as any;
 
-    const inputY = isMobile ? centerY + 28 : centerY + 40;
+    // ── Input field ──────────────────────────────────────────────────────
     this.typingInputField = createInputField(
       centerX,
       inputY,
@@ -639,7 +667,7 @@ export default class WordWizardScene extends Phaser.Scene {
       () => this.handleTypingSubmit()
     );
 
-    const buttonY = isMobile ? centerY + 100 : centerY + 130;
+    // ── Submit button ────────────────────────────────────────────────────
     this.typingSubmitButton = createSubmitButton(this, centerX, buttonY, () =>
       this.handleTypingSubmit()
     );
