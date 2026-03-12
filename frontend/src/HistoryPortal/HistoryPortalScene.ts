@@ -1,4 +1,4 @@
-// src/HistoryPortal/HistoryPortalScene.ts - With Enhanced Blur
+// src/HistoryPortal/HistoryPortalScene.ts - With Pixelate Reveal Effect
 import Phaser from "phaser";
 import { HISTORY_LEVELS } from "./levels";
 import { logPageVisit, logGameOver } from "../services/pageVisitService";
@@ -19,12 +19,12 @@ const HISTORY_CATEGORIES = ["BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"];
 export default class HistoryPortalScene extends Phaser.Scene {
   private portalImage?: Phaser.GameObjects.Image;
 
-  // ── ENHANCED BLUR EFFECT ─────────────────────────────────────────────────
-  // Multiple heavy overlay layers create an almost completely obscured image.
-  // On first correct answer, all layers fade out simultaneously for a dramatic reveal.
-  private blurLayers: Phaser.GameObjects.GameObject[] = [];
+  // ── PIXELATE REVEAL EFFECT ───────────────────────────────────────────────
+  // postFX pixelate is applied directly on the portal image.
+  // On first correct answer, we tween `amount` down to -1 (fully sharp).
+  private pixelateFX?: Phaser.FX.Pixelate;
   private portalRevealed = false;
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
 
   private currentLevelKey = "history-1";
   private items: Array<Phaser.GameObjects.Container> = [];
@@ -87,7 +87,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
     this.currentLevelInCategory = levelInCategory;
   }
 
-  // ✅ NEW: Fisher-Yates shuffle — returns a new shuffled copy of the array
+  // Fisher-Yates shuffle — returns a new shuffled copy of the array
   private shuffleArray<T>(array: T[]): T[] {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -123,15 +123,13 @@ export default class HistoryPortalScene extends Phaser.Scene {
     // Extract category and level from URL or calculate from global level
     if (categoryParam) {
       this.currentCategoryId = categoryParam;
-      // Calculate level within category from global level
       const categoryIndex = HISTORY_CATEGORIES.indexOf(categoryParam);
       this.currentLevelInCategory = this.currentLevel - (categoryIndex * 15);
     } else {
-      // Calculate category and level from global level number
       this.calculateCategoryFromGlobalLevel(this.currentLevel);
     }
 
-    // Derive the level key from currentLevel (replaces the old levelKey path)
+    // Derive the level key from currentLevel
     const keys = Object.keys(HISTORY_LEVELS);
     this.currentLevelKey = keys[this.currentLevel - 1] || "history-1";
     
@@ -142,8 +140,8 @@ export default class HistoryPortalScene extends Phaser.Scene {
     this.sceneStartTime = Date.now();
     this.hasLoggedVisit = false;
 
-    // Reset blur state on every init (covers restarts too)
-    this.blurLayers = [];
+    // Reset pixelate state on every init (covers restarts too)
+    this.pixelateFX = undefined;
     this.portalRevealed = false;
   }
 
@@ -199,8 +197,8 @@ export default class HistoryPortalScene extends Phaser.Scene {
       this.categoryProgress = { BASIC: 0, NORMAL: 0, HARD: 0, ADVANCED: 0, EXPERT: 0 };
     }
 
-    // ✅ Level 1 is ALWAYS playable
-    // ✅ Levels 2-15: Must complete previous level in THIS category
+    // Level 1 is ALWAYS playable
+    // Levels 2-15: Must complete previous level in THIS category
     const unlockedInCategory = this.categoryProgress[this.currentCategoryId] || 0;
     
     if (this.currentLevelInCategory > 1 && this.currentLevelInCategory > unlockedInCategory) {
@@ -239,7 +237,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
       wordWrap: { width: width * 0.85 }
     }).setOrigin(0.5).setDepth(10);
 
-    // BACK TO MAP button at the top-left
+    // BACK TO MAP button
     const backBtnY = isMobile ? (isPortrait ? 15 : 15) : 20;
     const backBtnX = isMobile ? 20 : 30;
     const backBtnStyle = getTextStyle('backButton', isMobile, isPortrait);
@@ -270,7 +268,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
       });
     }
 
-    // HINT BUTTON - Click to show/hide hint
+    // HINT BUTTON
     if (level.hint) {
       const hintButtonStyle = getTextStyle('hintButton', isMobile, isPortrait);
       
@@ -341,7 +339,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
       }
     }
     
-    // ── PORTAL IMAGE + ENHANCED BLUR LAYERS ──────────────────────────────────
+    // ── PORTAL IMAGE + PIXELATE EFFECT ───────────────────────────────────────
     const textureExists = this.textures.exists("portal-image");
     console.log("🖼️ Texture exists?", textureExists);
     
@@ -364,27 +362,19 @@ export default class HistoryPortalScene extends Phaser.Scene {
     }
     
     if (textureExists) {
-      console.log("✅ Creating portal image with real Gaussian blur...");
+      console.log("✅ Creating portal image with pixelate effect...");
       
-      // Base portal image (clear, always visible)
+      // Single portal image — pixelate applied directly, no duplicate layer needed
       this.portalImage = this.add.image(portalX, portalY, "portal-image");
       this.portalImage.setDisplaySize(portalSize, portalSize);
       this.portalImage.setDepth(5);
 
-      // ── REAL GAUSSIAN BLUR with postFX ──────────────────────────────────
-      // Create a blurred copy that sits on top
-      const portalBlurred = this.add.image(portalX, portalY, "portal-image")
-        .setDisplaySize(portalSize, portalSize)
-        .setDepth(6);
-
-      // Apply very heavy Gaussian blur for maximum obscurity
-      portalBlurred.postFX.addBlur(0, 0, 1, 1);
-
-      this.blurLayers = [portalBlurred];
+      // ── PIXELATE postFX ──────────────────────────────────────────────────
+      // amount: 20 = very blocky. Tweened down to -1 (fully sharp) on reveal.
+      this.pixelateFX = this.portalImage.postFX.addPixelate(20);
+      // ─────────────────────────────────────────────────────────────────────
       
-      console.log("✅ Portal image + real Gaussian blur created!");
-      
-      console.log("✅ Portal image + enhanced blur layers created!");
+      console.log("✅ Portal image + pixelate FX created!");
     } else {
       console.error("❌ Portal image texture not found!");
     }
@@ -436,7 +426,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
       };
     });
 
-    // ✅ Shuffle only the items, keeping slots in place
+    // Shuffle only the items, keeping slots in place
     const shuffledItems = this.shuffleArray(level.items);
 
     const itemStyle = getTextStyle('itemButton', isMobile, isPortrait);
@@ -458,7 +448,6 @@ export default class HistoryPortalScene extends Phaser.Scene {
       
       container.add([text]);
       container.setSize(itemWidth, itemHeight);
-      // Depth 15 — always above blur layers (6-10)
       container.setDepth(15);
       container.setInteractive({ useHandCursor: true });
       
@@ -472,7 +461,6 @@ export default class HistoryPortalScene extends Phaser.Scene {
       container.on("pointerdown", () => {
         if (this.gameEnded || !this.portalImage) return;
 
-        // Lift above everything while in flight
         container.setDepth(30);
 
         console.log("🖱️ Clicked item:", item.label);
@@ -489,7 +477,6 @@ export default class HistoryPortalScene extends Phaser.Scene {
             if (item.is_correct) {
               console.log("✅ Correct item!");
               
-              // Destroy item
               container.destroy();
               this.items = this.items.filter(c => c !== container);
               this.correctItemsPlaced++;
@@ -501,10 +488,8 @@ export default class HistoryPortalScene extends Phaser.Scene {
               }
               // ────────────────────────────────────────────────────────────
               
-              // Show success effect
               this.showSuccessEffect(this.portalImage!.x, this.portalImage!.y);
               
-              // Show success text
               const feedbackStyle = getTextStyle('feedback', isMobile, isPortrait);
               const successText = this.add.text(
                 this.portalImage!.x,
@@ -524,7 +509,6 @@ export default class HistoryPortalScene extends Phaser.Scene {
                 onComplete: () => successText.destroy()
               });
               
-              // Check win
               if (this.correctItemsPlaced >= this.totalCorrectItems) {
                 await this.endGame(true);
               }
@@ -532,16 +516,13 @@ export default class HistoryPortalScene extends Phaser.Scene {
             } else {
               console.log("❌ Wrong item!");
               
-              // Show error effect
               this.showErrorEffect(container);
               
-              // Shake
               this.cameras.main.shake(
                 ANIMATIONS.cameraShake.duration, 
                 ANIMATIONS.cameraShake.intensity
               );
               
-              // Return to its assigned slot position
               this.tweens.add({
                 targets: container,
                 x: (container as any).originalX,
@@ -552,7 +533,6 @@ export default class HistoryPortalScene extends Phaser.Scene {
                 onComplete: () => container.setDepth(15),
               });
               
-              // End game
               await this.endGame(false);
             }
           }
@@ -584,7 +564,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
 
   // ── PORTAL REVEAL ──────────────────────────────────────────────────────────
   /**
-   * Instantly destroy all blur layers so the portal image is fully revealed.
+   * Tweens the pixelate amount from blocky (20) down to sharp (-1).
    * Called the first time the player selects a correct answer.
    * Safe to call multiple times (guarded by portalRevealed flag).
    */
@@ -592,13 +572,19 @@ export default class HistoryPortalScene extends Phaser.Scene {
     if (this.portalRevealed) return;
     this.portalRevealed = true;
 
-    console.log("✨ Revealing portal image…");
+    console.log("✨ Revealing portal image with pixelate tween…");
 
-    // Instantly destroy all blur layers — clean and snappy
-    this.blurLayers.forEach((layer) => {
-      if (layer && layer.active) layer.destroy();
+    if (!this.pixelateFX) return;
+
+    this.tweens.add({
+      targets: this.pixelateFX,
+      amount: -1,         // -1 = fully sharp in Phaser's pixelate FX
+      duration: 800,
+      ease: "Sine.easeOut",
+      onComplete: () => {
+        console.log("🖼️ Portal fully revealed!");
+      }
     });
-    this.blurLayers = [];
   }
   // ──────────────────────────────────────────────────────────────────────────
 
@@ -722,10 +708,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
     const isMobile = width < 768;
 
     if (won) {
-      // ✅ Update score first
       await this.addScore(this.score);
-      
-      // ✅ Then unlock next level
       await this.unlockNextLevel();
     } else {
       await this.logGameOverEvent();
@@ -747,7 +730,6 @@ export default class HistoryPortalScene extends Phaser.Scene {
       duration: 300,
     });
     
-    // Title - Simple text, no glow
     const modalTitleStyle = getTextStyle('modalTitle', isMobile, false);
     
     const title = this.add.text(
@@ -757,11 +739,9 @@ export default class HistoryPortalScene extends Phaser.Scene {
       modalTitleStyle
     ).setOrigin(0.5).setDepth(102).setAlpha(0);
     
-    // Button with pill/oval background
     const buttonText = won ? "Sunod na Antas" : "Ulitin";
     const modalBtnStyle = getTextStyle('modalButton', isMobile, false);
     
-    // Create pill-shaped background
     const buttonBg = this.add.graphics().setDepth(102).setAlpha(0);
     const buttonWidth = isMobile ? 200 : 250;
     const buttonHeight = 50;
@@ -774,7 +754,7 @@ export default class HistoryPortalScene extends Phaser.Scene {
       buttonY - buttonHeight / 2,
       buttonWidth,
       buttonHeight,
-      25  // Large border radius for pill shape
+      25
     );
     
     const button = this.add.text(
@@ -784,12 +764,11 @@ export default class HistoryPortalScene extends Phaser.Scene {
       {
         fontSize: modalBtnStyle.fontSize,
         fontFamily: modalBtnStyle.fontFamily,
-        color: "#FFFFFF",  // White text on colored background
+        color: "#FFFFFF",
         fontStyle: "bold",
       }
     ).setOrigin(0.5).setDepth(103).setAlpha(0).setInteractive({ useHandCursor: true });
 
-    // Animate text in (no modal background)
     this.tweens.add({
       targets: [title, buttonBg, button],
       alpha: 1,
@@ -799,7 +778,6 @@ export default class HistoryPortalScene extends Phaser.Scene {
       ease: "Sine.easeOut",
     });
     
-    // Hover effect (desktop only)
     if (!isMobile) {
       button.on("pointerover", () => {
         this.tweens.add({ 
@@ -841,7 +819,6 @@ export default class HistoryPortalScene extends Phaser.Scene {
     });
   }
 
-  // ✅ WORKING - Same pattern as HumanBody's addScore
   private async addScore(points: number) {
     if (!this.userId) return;
     
@@ -859,7 +836,6 @@ export default class HistoryPortalScene extends Phaser.Scene {
     }
   }
 
-  // ✅ FIXED - Same exact pattern as HumanBody's unlockNextLevel
   private async unlockNextLevel() {
     if (!this.userId) return;
 
