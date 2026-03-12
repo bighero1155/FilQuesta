@@ -81,22 +81,36 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
 };
 
 // Font Configuration
-// Press Start 2P is a pixel/NES-style font — add this to your index.html:
-// <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 export const FONTS = {
   primary: "'Press Start 2P', 'Courier New', monospace",
-  secondary: "'Press Start 2P', 'Courier New', monospace",
-  body: "'Press Start 2P', 'Courier New', monospace"
+  secondary: "'Orbitron', 'Arial Black', sans-serif",
+  body: "'Rajdhani', 'Arial', sans-serif"
 };
 
 // Responsive Text Styles
-// NOTE: Press Start 2P runs visually large — all sizes reduced accordingly
 export const TEXT_STYLES = {
   // Title Styles
   title: {
     desktop: {
-      fontSize: "18px",
-      fontFamily: FONTS.primary,
+      fontSize: "32px",
+      fontFamily: FONTS.secondary,
+      color: "#ffffff",
+      fontStyle: "bold",
+      align: "center",
+      stroke: "#000000",
+      strokeThickness: 6,
+      shadow: {
+        offsetX: 4,
+        offsetY: 4,
+        color: "#000000",
+        blur: 8,
+        stroke: true,
+        fill: true
+      }
+    } as TextStyleConfig,
+    mobile: {
+      fontSize: "20px",
+      fontFamily: FONTS.secondary,
       color: "#ffffff",
       fontStyle: "bold",
       align: "center",
@@ -111,31 +125,14 @@ export const TEXT_STYLES = {
         fill: true
       }
     } as TextStyleConfig,
-    mobile: {
-      fontSize: "12px",
-      fontFamily: FONTS.primary,
-      color: "#ffffff",
-      fontStyle: "bold",
-      align: "center",
-      stroke: "#000000",
-      strokeThickness: 3,
-      shadow: {
-        offsetX: 2,
-        offsetY: 2,
-        color: "#000000",
-        blur: 4,
-        stroke: true,
-        fill: true
-      }
-    } as TextStyleConfig,
     mobilePortrait: {
-      fontSize: "10px",
-      fontFamily: FONTS.primary,
+      fontSize: "18px",
+      fontFamily: FONTS.secondary,
       color: "#ffffff",
       fontStyle: "bold",
       align: "center",
       stroke: "#000000",
-      strokeThickness: 3,
+      strokeThickness: 4,
       shadow: {
         offsetX: 2,
         offsetY: 2,
@@ -150,8 +147,42 @@ export const TEXT_STYLES = {
   // Question Styles
   question: {
     desktop: {
-      fontSize: "13px",
-      fontFamily: FONTS.primary,
+      fontSize: "22px",
+      fontFamily: FONTS.body,
+      color: "#7FFF00",
+      fontStyle: "bold",
+      align: "center",
+      stroke: "#0a3d0a",
+      strokeThickness: 5,
+      shadow: {
+        offsetX: 3,
+        offsetY: 3,
+        color: "#000000",
+        blur: 6,
+        stroke: true,
+        fill: true
+      }
+    } as TextStyleConfig,
+    mobile: {
+      fontSize: "16px",
+      fontFamily: FONTS.body,
+      color: "#7FFF00",
+      fontStyle: "bold",
+      align: "center",
+      stroke: "#0a3d0a",
+      strokeThickness: 4,
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: "#000000",
+        blur: 4,
+        stroke: true,
+        fill: true
+      }
+    } as TextStyleConfig,
+    mobilePortrait: {
+      fontSize: "14px",
+      fontFamily: FONTS.body,
       color: "#7FFF00",
       fontStyle: "bold",
       align: "center",
@@ -162,40 +193,6 @@ export const TEXT_STYLES = {
         offsetY: 2,
         color: "#000000",
         blur: 4,
-        stroke: true,
-        fill: true
-      }
-    } as TextStyleConfig,
-    mobile: {
-      fontSize: "9px",
-      fontFamily: FONTS.primary,
-      color: "#7FFF00",
-      fontStyle: "bold",
-      align: "center",
-      stroke: "#0a3d0a",
-      strokeThickness: 2,
-      shadow: {
-        offsetX: 2,
-        offsetY: 2,
-        color: "#000000",
-        blur: 3,
-        stroke: true,
-        fill: true
-      }
-    } as TextStyleConfig,
-    mobilePortrait: {
-      fontSize: "8px",
-      fontFamily: FONTS.primary,
-      color: "#7FFF00",
-      fontStyle: "bold",
-      align: "center",
-      stroke: "#0a3d0a",
-      strokeThickness: 2,
-      shadow: {
-        offsetX: 1,
-        offsetY: 1,
-        color: "#000000",
-        blur: 3,
         stroke: true,
         fill: true
       }
@@ -205,14 +202,32 @@ export const TEXT_STYLES = {
   // Hint Button Styles
   hintButton: {
     desktop: {
-      fontSize: "11px",
-      fontFamily: FONTS.primary,
+      fontSize: "20px",
+      fontFamily: FONTS.body,
+      color: "#FFA500",
+      fontStyle: "bold",
+      align: "center",
+      stroke: "#5C3317",
+      strokeThickness: 4,
+      padding: { x: 15, y: 8 },
+      shadow: {
+        offsetX: 3,
+        offsetY: 3,
+        color: "#000000",
+        blur: 5,
+        stroke: false,
+        fill: true
+      }
+    } as TextStyleConfig,
+    mobile: {
+      fontSize: "16px",
+      fontFamily: FONTS.body,
       color: "#FFA500",
       fontStyle: "bold",
       align: "center",
       stroke: "#5C3317",
       strokeThickness: 3,
-      padding: { x: 15, y: 8 },
+      padding: { x: 12, y: 6 },
       shadow: {
         offsetX: 2,
         offsetY: 2,
@@ -221,57 +236,56 @@ export const TEXT_STYLES = {
         stroke: false,
         fill: true
       }
-    } as TextStyleConfig,
-    mobile: {
-      fontSize: "8px",
-      fontFamily: FONTS.primary,
-      color: "#FFA500",
-      fontStyle: "bold",
-      align: "center",
-      stroke: "#5C3317",
-      strokeThickness: 2,
-      padding: { x: 10, y: 6 },
-      shadow: {
-        offsetX: 1,
-        offsetY: 1,
-        color: "#000000",
-        blur: 3,
-        stroke: false,
-        fill: true
-      }
     } as TextStyleConfig
   },
 
-  // Hint Text Styles — no background
+  // Hint Text Styles
   hintText: {
     desktop: {
-      fontSize: "10px",
-      fontFamily: FONTS.primary,
+      fontSize: "16px",
+      fontFamily: FONTS.body,
       color: "#FFE4B5",
       fontStyle: "normal",
       align: "center",
       stroke: "#2a1810",
-      strokeThickness: 2,
-      padding: { x: 12, y: 8 }
-      // backgroundColor removed — text only
+      strokeThickness: 3,
+      padding: { x: 12, y: 8 },
+      backgroundColor: "#2a1810"
     } as TextStyleConfig,
     mobile: {
-      fontSize: "7px",
-      fontFamily: FONTS.primary,
+      fontSize: "12px",
+      fontFamily: FONTS.body,
       color: "#FFE4B5",
       fontStyle: "normal",
       align: "center",
       stroke: "#2a1810",
       strokeThickness: 2,
-      padding: { x: 10, y: 6 }
-      // backgroundColor removed — text only
+      padding: { x: 10, y: 6 },
+      backgroundColor: "#2a1810"
     } as TextStyleConfig
   },
 
   // Item Button Styles
   itemButton: {
     desktop: {
-      fontSize: "11px",
+      fontSize: "20px",
+      fontFamily: FONTS.primary,
+      color: "#ffffff",
+      fontStyle: "normal",
+      align: "center",
+      stroke: "#000000",
+      strokeThickness: 4,
+      shadow: {
+        offsetX: 3,
+        offsetY: 3,
+        color: "#000000",
+        blur: 0,
+        stroke: false,
+        fill: true
+      }
+    } as TextStyleConfig,
+    mobile: {
+      fontSize: "16px",
       fontFamily: FONTS.primary,
       color: "#ffffff",
       fontStyle: "normal",
@@ -281,23 +295,6 @@ export const TEXT_STYLES = {
       shadow: {
         offsetX: 2,
         offsetY: 2,
-        color: "#000000",
-        blur: 0,
-        stroke: false,
-        fill: true
-      }
-    } as TextStyleConfig,
-    mobile: {
-      fontSize: "8px",
-      fontFamily: FONTS.primary,
-      color: "#ffffff",
-      fontStyle: "normal",
-      align: "center",
-      stroke: "#000000",
-      strokeThickness: 2,
-      shadow: {
-        offsetX: 1,
-        offsetY: 1,
         color: "#000000",
         blur: 0,
         stroke: false,
@@ -309,125 +306,8 @@ export const TEXT_STYLES = {
   // Success/Error Feedback
   feedback: {
     desktop: {
-      fontSize: "16px",
-      fontFamily: FONTS.primary,
-      fontStyle: "bold",
-      stroke: "#000000",
-      strokeThickness: 4,
-      shadow: {
-        offsetX: 2,
-        offsetY: 2,
-        color: "#000000",
-        blur: 6,
-        stroke: true,
-        fill: true
-      }
-    } as TextStyleConfig,
-    mobile: {
-      fontSize: "11px",
-      fontFamily: FONTS.primary,
-      fontStyle: "bold",
-      stroke: "#000000",
-      strokeThickness: 3,
-      shadow: {
-        offsetX: 2,
-        offsetY: 2,
-        color: "#000000",
-        blur: 4,
-        stroke: true,
-        fill: true
-      }
-    } as TextStyleConfig
-  },
-
-  // Navigation Button Styles — no background
-  navButton: {
-    desktop: {
-      fontSize: "11px",
-      fontFamily: FONTS.primary,
-      color: "#ffffff",
-      fontStyle: "bold",
-      stroke: "#000000",
-      strokeThickness: 3,
-      padding: { x: 15, y: 8 }
-      // backgroundColor removed — text only
-    } as TextStyleConfig,
-    mobile: {
-      fontSize: "8px",
-      fontFamily: FONTS.primary,
-      color: "#ffffff",
-      fontStyle: "bold",
-      stroke: "#000000",
-      strokeThickness: 2,
-      padding: { x: 10, y: 6 }
-      // backgroundColor removed — text only
-    } as TextStyleConfig
-  },
-
-  // Back Button Styles — no background
-  backButton: {
-    desktop: {
-      fontSize: "11px",
-      fontFamily: FONTS.primary,
-      color: "#ffffff",
-      fontStyle: "bold",
-      stroke: "#000000",
-      strokeThickness: 3,
-      padding: { x: 20, y: 10 }
-      // No backgroundColor — text only
-    } as TextStyleConfig,
-    mobile: {
-      fontSize: "8px",
-      fontFamily: FONTS.primary,
-      color: "#ffffff",
-      fontStyle: "bold",
-      stroke: "#000000",
-      strokeThickness: 2,
-      padding: { x: 15, y: 8 }
-      // No backgroundColor — text only
-    } as TextStyleConfig
-  },
-
-  // Level Indicator
-  levelIndicator: {
-    desktop: {
-      fontSize: "10px",
-      fontFamily: FONTS.primary,
-      color: "#ffffff",
-      stroke: "#000000",
-      strokeThickness: 2,
-      shadow: {
-        offsetX: 1,
-        offsetY: 1,
-        color: "#000000",
-        blur: 3,
-        stroke: false,
-        fill: true
-      }
-    } as TextStyleConfig,
-    mobile: {
-      fontSize: "8px",
-      fontFamily: FONTS.primary,
-      color: "#ffffff",
-      stroke: "#000000",
-      strokeThickness: 2,
-      shadow: {
-        offsetX: 1,
-        offsetY: 1,
-        color: "#000000",
-        blur: 2,
-        stroke: false,
-        fill: true
-      }
-    } as TextStyleConfig
-  },
-
-  // Modal Title
-  modalTitle: {
-    desktop: {
-      fontSize: "24px",
-      fontFamily: FONTS.primary,
-      color: "#ffffff",
+      fontSize: "28px",
+      fontFamily: FONTS.secondary,
       fontStyle: "bold",
       stroke: "#000000",
       strokeThickness: 5,
@@ -441,9 +321,8 @@ export const TEXT_STYLES = {
       }
     } as TextStyleConfig,
     mobile: {
-      fontSize: "16px",
-      fontFamily: FONTS.primary,
-      color: "#ffffff",
+      fontSize: "20px",
+      fontFamily: FONTS.secondary,
       fontStyle: "bold",
       stroke: "#000000",
       strokeThickness: 4,
@@ -458,14 +337,92 @@ export const TEXT_STYLES = {
     } as TextStyleConfig
   },
 
-  // Modal Button
-  modalButton: {
+  // Navigation Button Styles
+  navButton: {
     desktop: {
-      fontSize: "13px",
-      fontFamily: FONTS.primary,
+      fontSize: "20px",
+      fontFamily: FONTS.body,
       color: "#ffffff",
       fontStyle: "bold",
-      padding: { x: 40, y: 15 },
+      stroke: "#000000",
+      strokeThickness: 3,
+      padding: { x: 15, y: 8 },
+      backgroundColor: "#4a5568",
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: "#000000",
+        blur: 4,
+        stroke: false,
+        fill: true
+      }
+    } as TextStyleConfig,
+    mobile: {
+      fontSize: "16px",
+      fontFamily: FONTS.body,
+      color: "#ffffff",
+      fontStyle: "bold",
+      stroke: "#000000",
+      strokeThickness: 2,
+      padding: { x: 10, y: 6 },
+      backgroundColor: "#4a5568",
+      shadow: {
+        offsetX: 1,
+        offsetY: 1,
+        color: "#000000",
+        blur: 3,
+        stroke: false,
+        fill: true
+      }
+    } as TextStyleConfig
+  },
+
+  // Back Button Styles - NO BACKGROUND
+  backButton: {
+    desktop: {
+      fontSize: "20px",
+      fontFamily: FONTS.body,
+      color: "#ffffff",
+      fontStyle: "bold",
+      stroke: "#000000",
+      strokeThickness: 3,
+      padding: { x: 20, y: 10 },
+      // No backgroundColor - text only
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: "#000000",
+        blur: 4,
+        stroke: false,
+        fill: true
+      }
+    } as TextStyleConfig,
+    mobile: {
+      fontSize: "16px",
+      fontFamily: FONTS.body,
+      color: "#ffffff",
+      fontStyle: "bold",
+      stroke: "#000000",
+      strokeThickness: 2,
+      padding: { x: 15, y: 8 },
+      // No backgroundColor - text only
+      shadow: {
+        offsetX: 1,
+        offsetY: 1,
+        color: "#000000",
+        blur: 3,
+        stroke: false,
+        fill: true
+      }
+    } as TextStyleConfig
+  },
+
+  // Level Indicator
+  levelIndicator: {
+    desktop: {
+      fontSize: "18px",
+      fontFamily: FONTS.body,
+      color: "#ffffff",
       stroke: "#000000",
       strokeThickness: 3,
       shadow: {
@@ -478,11 +435,9 @@ export const TEXT_STYLES = {
       }
     } as TextStyleConfig,
     mobile: {
-      fontSize: "10px",
-      fontFamily: FONTS.primary,
+      fontSize: "14px",
+      fontFamily: FONTS.body,
       color: "#ffffff",
-      fontStyle: "bold",
-      padding: { x: 30, y: 12 },
       stroke: "#000000",
       strokeThickness: 2,
       shadow: {
@@ -490,6 +445,80 @@ export const TEXT_STYLES = {
         offsetY: 1,
         color: "#000000",
         blur: 3,
+        stroke: false,
+        fill: true
+      }
+    } as TextStyleConfig
+  },
+
+  // Modal Title
+  modalTitle: {
+    desktop: {
+      fontSize: "42px",
+      fontFamily: FONTS.secondary,
+      color: "#ffffff",
+      fontStyle: "bold",
+      stroke: "#000000",
+      strokeThickness: 6,
+      shadow: {
+        offsetX: 4,
+        offsetY: 4,
+        color: "#000000",
+        blur: 10,
+        stroke: true,
+        fill: true
+      }
+    } as TextStyleConfig,
+    mobile: {
+      fontSize: "32px",
+      fontFamily: FONTS.secondary,
+      color: "#ffffff",
+      fontStyle: "bold",
+      stroke: "#000000",
+      strokeThickness: 5,
+      shadow: {
+        offsetX: 3,
+        offsetY: 3,
+        color: "#000000",
+        blur: 8,
+        stroke: true,
+        fill: true
+      }
+    } as TextStyleConfig
+  },
+
+  // Modal Button
+  modalButton: {
+    desktop: {
+      fontSize: "24px",
+      fontFamily: FONTS.body,
+      color: "#ffffff",
+      fontStyle: "bold",
+      padding: { x: 40, y: 15 },
+      stroke: "#000000",
+      strokeThickness: 3,
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: "#000000",
+        blur: 5,
+        stroke: false,
+        fill: true
+      }
+    } as TextStyleConfig,
+    mobile: {
+      fontSize: "20px",
+      fontFamily: FONTS.body,
+      color: "#ffffff",
+      fontStyle: "bold",
+      padding: { x: 30, y: 12 },
+      stroke: "#000000",
+      strokeThickness: 2,
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: "#000000",
+        blur: 4,
         stroke: false,
         fill: true
       }
@@ -505,8 +534,8 @@ export const UI_COLORS = {
     hover: 0x3d4758
   },
   navButton: {
-    background: null, // No background
-    backgroundHex: null
+    background: 0x4a5568,
+    backgroundHex: "#4a5568"
   },
   backButton: {
     background: null, // No background
@@ -656,8 +685,10 @@ export function createGradientBackground(
 ): Phaser.GameObjects.Rectangle {
   const theme = getCategoryTheme(categoryId);
   
+  // Create gradient using Graphics (Phaser doesn't support CSS gradients directly)
   const graphics = scene.add.graphics();
   
+  // Create a simple gradient effect by drawing multiple rectangles
   const steps = 20;
   for (let i = 0; i < steps; i++) {
     const color = Phaser.Display.Color.Interpolate.ColorWithColor(
