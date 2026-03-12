@@ -14,20 +14,20 @@ class PowerUpSeeder extends Seeder
                 'name' => 'Time Freeze',
                 'type' => 'time_freeze',
                 'description' => 'Pauses the timer for the current question for 10 seconds.',
-                'price' => 100,
+                'price' => 50,
                 'duration_seconds' => 10,
             ],
             [
                 'name' => 'Second Chance',
                 'type' => 'second_chance',
                 'description' => 'Retry one of your failed questions or levels.',
-                'price' => 150,
+                'price' => 70,
             ],
             [
                 'name' => 'Score Booster',
                 'type' => 'score_booster',
                 'description' => 'Doubles your score when activated.',
-                'price' => 200,
+                'price' => 100,
                 'multiplier' => 2.0,
             ],
         ];
