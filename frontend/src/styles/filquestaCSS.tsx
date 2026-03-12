@@ -13,7 +13,7 @@ export const filQuestaStyles = `
 
   .fq-letter {
     font-family: 'Press Start 2P', cursive;
-    font-size: 4rem;
+    font-size: 3rem;
     font-weight: bold;
     text-shadow: 
       4px 4px 0 rgba(0, 0, 0, 0.3),
