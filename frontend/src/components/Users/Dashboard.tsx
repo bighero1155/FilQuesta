@@ -94,7 +94,8 @@ const Dashboard: React.FC = () => {
           const map = new Map<string, number>();
           users.forEach((u) => {
             const raw = (u.section ?? "").toString().trim();
-            const key = raw.length > 0 ? raw : "Unassigned";
+            if (raw.length === 0) return; // ✅ skip unassigned
+            const key = raw;
             map.set(key, (map.get(key) || 0) + 1);
           });
 
