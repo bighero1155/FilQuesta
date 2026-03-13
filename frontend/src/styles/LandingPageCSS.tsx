@@ -199,10 +199,11 @@ const LandingPageCSS: React.FC = () => {
         gap: 16px;
         width: 100%;
         text-align: center;
+        transform: translateX(-60px);
       }
 
       .main-title-logo {
-        height: 90px;
+        height: 120px;
         width: auto;
         object-fit: contain;
         filter: drop-shadow(0 0 10px rgba(34, 193, 195, 0.8));
@@ -299,10 +300,11 @@ const LandingPageCSS: React.FC = () => {
         .main-title-wrapper {
           order: -2;
           gap: 10px;
+          transform: translateX(-30px);
         }
 
         .main-title-logo {
-          height: 60px;
+          height: 80px;
         }
 
         .quote-carousel {
@@ -328,7 +330,7 @@ const LandingPageCSS: React.FC = () => {
         }
 
         .main-title-logo {
-          height: 48px;
+          height: 64px;
         }
 
         .quote-carousel {
@@ -370,7 +372,7 @@ const LandingPageCSS: React.FC = () => {
         }
 
         .main-title-logo {
-          height: 40px;
+          height: 52px;
         }
 
         .quote-carousel {
