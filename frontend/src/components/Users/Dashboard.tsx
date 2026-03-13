@@ -34,6 +34,9 @@ interface PageVisit {
   updated_at: string;
   user?: {
     username?: string;
+    first_name?: string;   
+    middle_name?: string;  
+    last_name?: string;    
   };
 }
 
@@ -41,6 +44,9 @@ interface QuizResult {
   submission_id: number;
   student_id: number;
   student_name: string;
+  first_name?: string;   
+  middle_name?: string;  
+  last_name?: string;    
   quiz_id: number;
   quiz_title: string;
   score: number;
@@ -52,6 +58,9 @@ interface SharedQuizResult {
   participant_id: number;
   student_id: number;
   student_name: string;
+  first_name?: string;   
+  middle_name?: string;  
+  last_name?: string;    
   quiz_title: string;
   score: number;
   total: number;
