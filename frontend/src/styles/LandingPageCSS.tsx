@@ -294,17 +294,19 @@ const LandingPageCSS: React.FC = () => {
         .main-title {
           font-size: 32px;
           margin-top: 0;
-          order: -2;
+          margin-bottom: 0;
         }
 
         .main-title-wrapper {
           order: -2;
           gap: 10px;
-          transform: translateX(-30px);
+          transform: none;
+          justify-content: center;
+          flex-direction: row;
         }
 
         .main-title-logo {
-          height: 80px;
+          height: 70px;
         }
 
         .quote-carousel {
@@ -327,10 +329,18 @@ const LandingPageCSS: React.FC = () => {
         /* ✅ Adjusted to 26px */
         .main-title {
           font-size: 26px;
+          margin-bottom: 0;
+        }
+
+        .main-title-wrapper {
+          flex-direction: row;
+          justify-content: center;
+          transform: none;
+          gap: 8px;
         }
 
         .main-title-logo {
-          height: 64px;
+          height: 54px;
         }
 
         .quote-carousel {
@@ -369,10 +379,18 @@ const LandingPageCSS: React.FC = () => {
         /* ✅ Adjusted to 22px */
         .main-title {
           font-size: 22px;
+          margin-bottom: 0;
+        }
+
+        .main-title-wrapper {
+          flex-direction: row;
+          justify-content: center;
+          transform: none;
+          gap: 6px;
         }
 
         .main-title-logo {
-          height: 52px;
+          height: 44px;
         }
 
         .quote-carousel {
