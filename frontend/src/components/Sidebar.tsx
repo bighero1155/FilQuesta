@@ -57,7 +57,15 @@ const Sidebar: React.FC<SidebarProps> = ({
           {mobileOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
 
-        <h3 className="topbar-title">FILQUESTA</h3>
+        {/* ✅ Logo + Title in mobile topbar */}
+        <div className="topbar-brand">
+          <img
+            src="/assets/logo.png"
+            alt="FilQuesta Logo"
+            className="topbar-logo"
+          />
+          <h3 className="topbar-title">FILQUESTA</h3>
+        </div>
 
         <button
           className="shop-btn"
@@ -73,8 +81,16 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* SIDEBAR */}
       <div className={`sidebar ${mobileOpen ? "open" : ""}`}>
+        {/* ✅ Logo + Title in desktop sidebar header */}
         <div className="sidebar-header">
-          <span className="brand-text">FILQUESTA</span>
+          <div className="sidebar-brand">
+            <img
+              src="/assets/logo.png"
+              alt="FilQuesta Logo"
+              className="sidebar-logo"
+            />
+            <span className="brand-text">FILQUESTA</span>
+          </div>
         </div>
 
         <div className="profile-wrapper">
@@ -97,8 +113,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           </li>
 
           <li>
-            <button 
-              className="nav-link" 
+            <button
+              className="nav-link"
               onClick={() => {
                 onProfile();
                 setMobileOpen(false);
@@ -110,8 +126,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           </li>
 
           <li>
-            <button 
-              className="nav-link" 
+            <button
+              className="nav-link"
               onClick={() => {
                 onLeaderboard();
                 setMobileOpen(false);
@@ -123,8 +139,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           </li>
 
           <li>
-            <button 
-              className="nav-link" 
+            <button
+              className="nav-link"
               onClick={() => {
                 onProgress();
                 setMobileOpen(false);
@@ -136,8 +152,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           </li>
 
           <li>
-            <button 
-              className="nav-link" 
+            <button
+              className="nav-link"
               onClick={() => {
                 onNavigate("/Classroom");
                 setMobileOpen(false);
@@ -162,8 +178,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           </li>
 
           <li>
-            <button 
-              className="nav-link danger" 
+            <button
+              className="nav-link danger"
               onClick={() => {
                 onLogout();
                 setMobileOpen(false);
@@ -206,6 +222,21 @@ const Sidebar: React.FC<SidebarProps> = ({
           font-size: 1.1rem;
           margin-bottom: 20px;
           line-height: 1.4;
+        }
+
+        /* ✅ Desktop sidebar brand wrapper */
+        .sidebar-brand {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .sidebar-logo {
+          height: 48px;
+          width: auto;
+          object-fit: contain;
+          filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
+          flex-shrink: 0;
         }
 
         .brand-text {
@@ -274,6 +305,20 @@ const Sidebar: React.FC<SidebarProps> = ({
           display: none;
         }
 
+        /* ✅ Mobile topbar brand wrapper */
+        .topbar-brand {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .topbar-logo {
+          height: 32px;
+          width: auto;
+          object-fit: contain;
+          filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
+        }
+
         /* ===== MOBILE SIDEBAR ===== */
         @media (max-width: 768px) {
           body {
@@ -298,7 +343,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             box-sizing: border-box;
           }
 
-          .menu-icon-btn, 
+          .menu-icon-btn,
           .shop-btn {
             background: none;
             border: none;
@@ -321,6 +366,10 @@ const Sidebar: React.FC<SidebarProps> = ({
             margin: 0;
             font-size: 0.9rem;
             line-height: 1.4;
+          }
+
+          .topbar-logo {
+            height: 28px;
           }
 
           .sidebar-overlay {
@@ -360,6 +409,10 @@ const Sidebar: React.FC<SidebarProps> = ({
             border-bottom: 2px solid rgba(255, 255, 255, 0.2);
           }
 
+          .sidebar-logo {
+            height: 38px;
+          }
+
           .profile-wrapper {
             display: none;
           }
@@ -385,6 +438,10 @@ const Sidebar: React.FC<SidebarProps> = ({
             font-size: 0.75rem;
           }
 
+          .topbar-logo {
+            height: 24px;
+          }
+
           .menu-icon-btn svg,
           .shop-btn svg {
             width: 24px;
@@ -393,6 +450,10 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           .sidebar {
             width: 260px;
+          }
+
+          .sidebar-logo {
+            height: 32px;
           }
 
           .nav-link {
