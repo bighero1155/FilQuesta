@@ -65,6 +65,7 @@ const Dashboard: React.FC = () => {
   const [pageVisits, setPageVisits] = useState<PageVisit[]>([]);
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [sharedQuizResults, setSharedQuizResults] = useState<SharedQuizResult[]>([]);
+  const [totalQuizzes, setTotalQuizzes] = useState<number>(0); // ✅ added
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -75,13 +76,14 @@ const Dashboard: React.FC = () => {
       setError(null);
 
       try {
-        const [statsRes, usersRes, visitsRes, resultsRes, sharedResultsRes] =
+        const [statsRes, usersRes, visitsRes, resultsRes, sharedResultsRes, quizzesRes] =
           await Promise.allSettled([
             axios.get("/dashboard-data"),
             axios.get("/users"),
             axios.get("/page-visits"),
             axios.get("/quiz-results"),
             axios.get("/shared-quiz-results"),
+            axios.get("/quizzes"), // ✅ added
           ]);
 
         if (statsRes.status === "fulfilled") {
@@ -94,7 +96,7 @@ const Dashboard: React.FC = () => {
           const map = new Map<string, number>();
           users.forEach((u) => {
             const raw = (u.section ?? "").toString().trim();
-            if (raw.length === 0) return; // ✅ skip unassigned
+            if (raw.length === 0) return;
             const key = raw;
             map.set(key, (map.get(key) || 0) + 1);
           });
@@ -115,8 +117,8 @@ const Dashboard: React.FC = () => {
         if (visitsRes.status === "fulfilled") {
           console.log("🔍 Page Visits Response:", visitsRes.value);
           console.log("🔍 Page Visits Data:", visitsRes.value.data);
-          const visits = Array.isArray(visitsRes.value.data) 
-            ? visitsRes.value.data 
+          const visits = Array.isArray(visitsRes.value.data)
+            ? visitsRes.value.data
             : visitsRes.value.data?.data || [];
           setPageVisits(visits);
         } else {
@@ -144,6 +146,15 @@ const Dashboard: React.FC = () => {
         } else {
           console.error("❌ Shared Quiz Results Failed:", sharedResultsRes);
         }
+
+        // ✅ Total quizzes count
+        if (quizzesRes.status === "fulfilled") {
+          const quizzes = Array.isArray(quizzesRes.value.data)
+            ? quizzesRes.value.data
+            : quizzesRes.value.data?.data || [];
+          setTotalQuizzes(quizzes.length);
+        }
+
       } catch (err: any) {
         console.error("Failed to fetch dashboard resources:", err);
         setError("Failed to load dashboard data.");
@@ -180,7 +191,6 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  const totalUsers = (data?.studentsCount ?? 0) + (data?.teachersCount ?? 0);
   const totalSections = sections.length;
 
   return (
@@ -234,17 +244,18 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* ✅ Replaced ALL USERS with TOTAL QUIZZES */}
         <div className="col-12 col-sm-6 col-xl-3">
           <div className="card border-0 shadow-sm h-100" style={{ borderRadius: '12px' }}>
             <div className="card-body p-4">
               <div className="d-flex align-items-center justify-content-between mb-3">
                 <div className="bg-info bg-gradient text-white rounded-3 p-3">
-                  <i className="bi bi-diagram-3-fill fs-3"></i>
+                  <i className="bi bi-journals fs-3"></i>
                 </div>
                 <span className="badge bg-info-subtle text-info rounded-pill px-3 py-2">Total</span>
               </div>
-              <h2 className="mb-2 fw-bold text-dark">{totalUsers}</h2>
-              <p className="text-muted mb-0 small fw-semibold">ALL USERS</p>
+              <h2 className="mb-2 fw-bold text-dark">{totalQuizzes}</h2>
+              <p className="text-muted mb-0 small fw-semibold">TOTAL QUIZZES</p>
             </div>
           </div>
         </div>
