@@ -15,7 +15,6 @@ interface RawUser {
   user_id: number;
   username?: string;
   first_name?: string | null;
-  middle_name?: string | null; // ✅ added
   last_name?: string | null;
   section?: string | null;
   role?: "student" | "teacher" | "admin" | string;
@@ -35,9 +34,6 @@ interface PageVisit {
   updated_at: string;
   user?: {
     username?: string;
-    first_name?: string;
-    middle_name?: string;
-    last_name?: string;
   };
 }
 
@@ -45,9 +41,6 @@ interface QuizResult {
   submission_id: number;
   student_id: number;
   student_name: string;
-  first_name?: string;
-  middle_name?: string;
-  last_name?: string;
   quiz_id: number;
   quiz_title: string;
   score: number;
@@ -59,9 +52,6 @@ interface SharedQuizResult {
   participant_id: number;
   student_id: number;
   student_name: string;
-  first_name?: string;
-  middle_name?: string;
-  last_name?: string;
   quiz_title: string;
   score: number;
   total: number;
@@ -121,28 +111,38 @@ const Dashboard: React.FC = () => {
           }
         }
 
-        // ✅ Explicit typed casts so first_name/middle_name/last_name pass through correctly
         if (visitsRes.status === "fulfilled") {
-          const visits: PageVisit[] = Array.isArray(visitsRes.value.data)
-            ? visitsRes.value.data
+          console.log("🔍 Page Visits Response:", visitsRes.value);
+          console.log("🔍 Page Visits Data:", visitsRes.value.data);
+          const visits = Array.isArray(visitsRes.value.data) 
+            ? visitsRes.value.data 
             : visitsRes.value.data?.data || [];
           setPageVisits(visits);
+        } else {
+          console.error("❌ Page Visits Failed:", visitsRes);
         }
 
         if (resultsRes.status === "fulfilled") {
-          const results: QuizResult[] = Array.isArray(resultsRes.value.data)
+          console.log("🔍 Quiz Results Response:", resultsRes.value);
+          console.log("🔍 Quiz Results Data:", resultsRes.value.data);
+          const results = Array.isArray(resultsRes.value.data)
             ? resultsRes.value.data
             : resultsRes.value.data?.data || [];
           setQuizResults(results);
+        } else {
+          console.error("❌ Quiz Results Failed:", resultsRes);
         }
 
         if (sharedResultsRes.status === "fulfilled") {
-          const sharedResults: SharedQuizResult[] = Array.isArray(sharedResultsRes.value.data)
+          console.log("🔍 Shared Quiz Results Response:", sharedResultsRes.value);
+          console.log("🔍 Shared Quiz Results Data:", sharedResultsRes.value.data);
+          const sharedResults = Array.isArray(sharedResultsRes.value.data)
             ? sharedResultsRes.value.data
             : sharedResultsRes.value.data?.data || [];
           setSharedQuizResults(sharedResults);
+        } else {
+          console.error("❌ Shared Quiz Results Failed:", sharedResultsRes);
         }
-
       } catch (err: any) {
         console.error("Failed to fetch dashboard resources:", err);
         setError("Failed to load dashboard data.");

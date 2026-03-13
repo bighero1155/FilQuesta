@@ -10,9 +10,6 @@ interface PageVisit {
   updated_at: string;
   user?: {
     username?: string;
-    first_name?: string;
-    middle_name?: string;
-    last_name?: string;
   };
 }
 
@@ -20,10 +17,6 @@ interface QuizResult {
   submission_id: number;
   student_id: number;
   student_name: string;
-  // ✅ Added individual name fields
-  first_name?: string;
-  middle_name?: string;
-  last_name?: string;
   quiz_id: number;
   quiz_title: string;
   score: number;
@@ -35,10 +28,6 @@ interface SharedQuizResult {
   participant_id: number;
   student_id: number;
   student_name: string;
-  // ✅ Added individual name fields
-  first_name?: string;
-  middle_name?: string;
-  last_name?: string;
   quiz_title: string;
   score: number;
   total: number;
@@ -50,18 +39,6 @@ interface QuizResultsTableProps {
   quizResults: QuizResult[] | null | undefined;
   sharedQuizResults: SharedQuizResult[] | null | undefined;
 }
-
-// ✅ Helper: build "First Middle Last" from parts, fallback to student_name
-const getFullName = (
-  first?: string,
-  middle?: string,
-  last?: string,
-  fallback?: string
-): string => {
-  const parts = [first, middle, last].filter(Boolean);
-  if (parts.length > 0) return parts.join(" ");
-  return fallback ?? "Unknown";
-};
 
 const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
   pageVisits,
@@ -117,23 +94,17 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
               ) : (
                 <div className="quiz-results-items-container">
                   {safePageVisits.slice(0, 5).map((visit, index) => (
-                    <div
-                      key={visit.id}
-                      className={`quiz-results-item ${index !== safePageVisits.slice(0, 5).length - 1 ? "with-border" : ""}`}
+                    <div 
+                      key={visit.id} 
+                      className={`quiz-results-item ${index !== safePageVisits.slice(0, 5).length - 1 ? 'with-border' : ''}`}
                     >
                       <div className="quiz-results-item-left">
                         <div className="quiz-results-item-avatar">
                           <i className="bi bi-person-circle quiz-results-avatar-icon"></i>
                         </div>
                         <div className="quiz-results-item-info">
-                          {/* ✅ Full name for page visits */}
                           <div className="quiz-results-item-name">
-                            {getFullName(
-                              visit.user?.first_name,
-                              visit.user?.middle_name,
-                              visit.user?.last_name,
-                              visit.user?.username ?? "Unknown"
-                            )}
+                            {visit.user?.username ?? "Unknown"}
                           </div>
                           <div className="quiz-results-item-page">
                             {visit.page}
@@ -183,23 +154,17 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
               ) : (
                 <div className="quiz-results-items-container">
                   {safeQuizResults.slice(0, 5).map((result, index) => (
-                    <div
-                      key={result.submission_id}
-                      className={`quiz-results-item ${index !== safeQuizResults.slice(0, 5).length - 1 ? "with-border" : ""}`}
+                    <div 
+                      key={result.submission_id} 
+                      className={`quiz-results-item ${index !== safeQuizResults.slice(0, 5).length - 1 ? 'with-border' : ''}`}
                     >
                       <div className="quiz-results-item-left">
                         <div className="quiz-results-item-avatar">
                           <i className="bi bi-person-fill quiz-results-avatar-icon"></i>
                         </div>
                         <div className="quiz-results-item-info">
-                          {/* ✅ Full name for quiz results */}
                           <div className="quiz-results-item-name">
-                            {getFullName(
-                              result.first_name,
-                              result.middle_name,
-                              result.last_name,
-                              result.student_name
-                            )}
+                            {result.student_name}
                           </div>
                           <div className="quiz-results-item-page">
                             {result.quiz_title.length > 25
@@ -251,23 +216,17 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
               ) : (
                 <div className="quiz-results-items-container">
                   {safeSharedQuizResults.slice(0, 5).map((result, index) => (
-                    <div
-                      key={result.participant_id}
-                      className={`quiz-results-item ${index !== safeSharedQuizResults.slice(0, 5).length - 1 ? "with-border" : ""}`}
+                    <div 
+                      key={result.participant_id} 
+                      className={`quiz-results-item ${index !== safeSharedQuizResults.slice(0, 5).length - 1 ? 'with-border' : ''}`}
                     >
                       <div className="quiz-results-item-left">
                         <div className="quiz-results-item-avatar">
                           <i className="bi bi-people-fill quiz-results-avatar-icon"></i>
                         </div>
                         <div className="quiz-results-item-info">
-                          {/* ✅ Full name for shared quiz results */}
                           <div className="quiz-results-item-name">
-                            {getFullName(
-                              result.first_name,
-                              result.middle_name,
-                              result.last_name,
-                              result.student_name
-                            )}
+                            {result.student_name}
                           </div>
                           <div className="quiz-results-item-page">
                             {result.quiz_title.length > 25
