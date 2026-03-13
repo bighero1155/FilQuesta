@@ -24,7 +24,7 @@ class ActivityController extends Controller
             [
                 'visit_count' => 0,
                 'total_time_spent' => 0,
-                'total_gameover' => 0, // ✅ keep total_gameover consistent
+                'total_gameover' => 0,
             ]
         );
 
@@ -42,7 +42,7 @@ class ActivityController extends Controller
      */
     public function getPageVisits()
     {
-        $visits = PageVisit::with('user:user_id,username') // Only load needed fields
+        $visits = PageVisit::with('user:user_id,username,first_name,middle_name,last_name') // ✅ added name fields
             ->orderByDesc('updated_at')
             ->get();
 

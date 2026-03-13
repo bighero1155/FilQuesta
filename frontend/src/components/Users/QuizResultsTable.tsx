@@ -1,4 +1,3 @@
-// src/components/Users/QuizResultsTable.tsx
 import React from "react";
 
 interface PageVisit {
@@ -10,6 +9,9 @@ interface PageVisit {
   updated_at: string;
   user?: {
     username?: string;
+    first_name?: string;   // ✅ added
+    middle_name?: string;  // ✅ added
+    last_name?: string;    // ✅ added
   };
 }
 
@@ -94,8 +96,8 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
               ) : (
                 <div className="quiz-results-items-container">
                   {safePageVisits.slice(0, 5).map((visit, index) => (
-                    <div 
-                      key={visit.id} 
+                    <div
+                      key={visit.id}
                       className={`quiz-results-item ${index !== safePageVisits.slice(0, 5).length - 1 ? 'with-border' : ''}`}
                     >
                       <div className="quiz-results-item-left">
@@ -104,7 +106,10 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
                         </div>
                         <div className="quiz-results-item-info">
                           <div className="quiz-results-item-name">
-                            {visit.user?.username ?? "Unknown"}
+                            {/* ✅ Full name for page visits */}
+                            {[visit.user?.first_name, visit.user?.middle_name, visit.user?.last_name]
+                              .filter(Boolean)
+                              .join(' ') || visit.user?.username || 'Unknown'}
                           </div>
                           <div className="quiz-results-item-page">
                             {visit.page}
@@ -154,8 +159,8 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
               ) : (
                 <div className="quiz-results-items-container">
                   {safeQuizResults.slice(0, 5).map((result, index) => (
-                    <div 
-                      key={result.submission_id} 
+                    <div
+                      key={result.submission_id}
                       className={`quiz-results-item ${index !== safeQuizResults.slice(0, 5).length - 1 ? 'with-border' : ''}`}
                     >
                       <div className="quiz-results-item-left">
@@ -216,8 +221,8 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
               ) : (
                 <div className="quiz-results-items-container">
                   {safeSharedQuizResults.slice(0, 5).map((result, index) => (
-                    <div 
-                      key={result.participant_id} 
+                    <div
+                      key={result.participant_id}
                       className={`quiz-results-item ${index !== safeSharedQuizResults.slice(0, 5).length - 1 ? 'with-border' : ''}`}
                     >
                       <div className="quiz-results-item-left">
