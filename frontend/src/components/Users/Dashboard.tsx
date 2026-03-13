@@ -58,6 +58,20 @@ interface SharedQuizResult {
   finished_at: string | null;
 }
 
+// ✅ added
+interface Recommendation {
+  id: number;
+  student_id: number;
+  game_link: string;
+  message: string | null;
+  created_at: string;
+  student?: {
+    username?: string;
+    first_name?: string;
+    last_name?: string;
+  };
+}
+
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
@@ -66,7 +80,8 @@ const Dashboard: React.FC = () => {
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [sharedQuizResults, setSharedQuizResults] = useState<SharedQuizResult[]>([]);
   const [totalQuizzes, setTotalQuizzes] = useState<number>(0);
-  const [totalClassrooms, setTotalClassrooms] = useState<number>(0); // ✅ added
+  const [totalClassrooms, setTotalClassrooms] = useState<number>(0);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]); // ✅ added
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -77,7 +92,7 @@ const Dashboard: React.FC = () => {
       setError(null);
 
       try {
-        const [statsRes, usersRes, visitsRes, resultsRes, sharedResultsRes, quizzesRes, classroomsRes] =
+        const [statsRes, usersRes, visitsRes, resultsRes, sharedResultsRes, quizzesRes, classroomsRes, recommendationsRes] =
           await Promise.allSettled([
             axios.get("/dashboard-data"),
             axios.get("/users"),
@@ -85,7 +100,8 @@ const Dashboard: React.FC = () => {
             axios.get("/quiz-results"),
             axios.get("/shared-quiz-results"),
             axios.get("/quizzes"),
-            axios.get(`/teacher/${user?.user_id}/classrooms`), // ✅ added
+            axios.get(`/teacher/${user?.user_id}/classrooms`),
+            axios.get(`/recommendations/teacher/${user?.user_id}`), // ✅ added
           ]);
 
         if (statsRes.status === "fulfilled") {
@@ -156,12 +172,19 @@ const Dashboard: React.FC = () => {
           setTotalQuizzes(quizzes.length);
         }
 
-        // ✅ Total classrooms count
         if (classroomsRes.status === "fulfilled") {
           const classrooms = Array.isArray(classroomsRes.value.data)
             ? classroomsRes.value.data
             : classroomsRes.value.data?.data || [];
           setTotalClassrooms(classrooms.length);
+        }
+
+        // ✅ Recommendations
+        if (recommendationsRes.status === "fulfilled") {
+          const recs = Array.isArray(recommendationsRes.value.data)
+            ? recommendationsRes.value.data
+            : recommendationsRes.value.data?.data || [];
+          setRecommendations(recs);
         }
 
       } catch (err: any) {
@@ -238,7 +261,6 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* ✅ Replaced TOTAL TEACHERS with TOTAL CLASSROOMS */}
         <div className="col-12 col-sm-6 col-xl-3">
           <div className="card border-0 shadow-sm h-100" style={{ borderRadius: '12px' }}>
             <div className="card-body p-4">
@@ -372,6 +394,7 @@ const Dashboard: React.FC = () => {
               pageVisits={pageVisits}
               quizResults={quizResults}
               sharedQuizResults={sharedQuizResults}
+              recommendations={recommendations} // ✅ added
             />
           </div>
         </div>

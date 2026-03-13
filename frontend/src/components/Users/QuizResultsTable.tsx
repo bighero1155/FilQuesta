@@ -1,3 +1,4 @@
+// src/components/Users/QuizResultsTable.tsx
 import React from "react";
 
 interface PageVisit {
@@ -9,9 +10,9 @@ interface PageVisit {
   updated_at: string;
   user?: {
     username?: string;
-    first_name?: string;   // ✅ added
-    middle_name?: string;  // ✅ added
-    last_name?: string;    // ✅ added
+    first_name?: string;
+    middle_name?: string;
+    last_name?: string;
   };
 }
 
@@ -36,22 +37,39 @@ interface SharedQuizResult {
   finished_at: string | null;
 }
 
+// ✅ added
+interface Recommendation {
+  id: number;
+  student_id: number;
+  game_link: string;
+  message: string | null;
+  created_at: string;
+  student?: {
+    username?: string;
+    first_name?: string;
+    last_name?: string;
+  };
+}
+
 interface QuizResultsTableProps {
   pageVisits: PageVisit[] | null | undefined;
   quizResults: QuizResult[] | null | undefined;
   sharedQuizResults: SharedQuizResult[] | null | undefined;
+  recommendations: Recommendation[] | null | undefined; // ✅ added
 }
 
 const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
   pageVisits,
   quizResults,
   sharedQuizResults,
+  recommendations, // ✅ added
 }) => {
   const safePageVisits = Array.isArray(pageVisits) ? pageVisits : [];
   const safeQuizResults = Array.isArray(quizResults) ? quizResults : [];
   const safeSharedQuizResults = Array.isArray(sharedQuizResults)
     ? sharedQuizResults
     : [];
+  const safeRecommendations = Array.isArray(recommendations) ? recommendations : []; // ✅ added
 
   const formatTime = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`;
@@ -106,7 +124,6 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
                         </div>
                         <div className="quiz-results-item-info">
                           <div className="quiz-results-item-name">
-                            {/* ✅ Full name for page visits */}
                             {[visit.user?.first_name, visit.user?.middle_name, visit.user?.last_name]
                               .filter(Boolean)
                               .join(' ') || visit.user?.username || 'Unknown'}
@@ -257,6 +274,71 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
             </div>
           </div>
         </div>
+
+        {/* ✅ Recommendations */}
+        <div className="quiz-results-card-wrapper">
+          <div className="quiz-results-card card-orange">
+            <div className="quiz-results-card-header">
+              <div className="quiz-results-header-left">
+                <div className="quiz-results-icon-circle orange">
+                  <i className="bi bi-lightbulb quiz-results-icon"></i>
+                </div>
+                <div>
+                  <h5 className="quiz-results-card-title">Recommendations</h5>
+                  <p className="quiz-results-card-subtitle">Game links sent to students</p>
+                </div>
+              </div>
+              <div className="quiz-results-badge">
+                {safeRecommendations.length}
+              </div>
+            </div>
+            <div className="quiz-results-card-body">
+              {safeRecommendations.length === 0 ? (
+                <div className="quiz-results-empty-state">
+                  <i className="bi bi-lightbulb quiz-results-empty-icon"></i>
+                  <h6 className="quiz-results-empty-title">No recommendations yet</h6>
+                  <p className="quiz-results-empty-text">Sent recommendations will appear here</p>
+                </div>
+              ) : (
+                <div className="quiz-results-items-container">
+                  {safeRecommendations.slice(0, 5).map((rec, index) => (
+                    <div
+                      key={rec.id}
+                      className={`quiz-results-item ${index !== safeRecommendations.slice(0, 5).length - 1 ? 'with-border' : ''}`}
+                    >
+                      <div className="quiz-results-item-left">
+                        <div className="quiz-results-item-avatar">
+                          <i className="bi bi-person-fill quiz-results-avatar-icon"></i>
+                        </div>
+                        <div className="quiz-results-item-info">
+                          <div className="quiz-results-item-name">
+                            {[rec.student?.first_name, rec.student?.last_name]
+                              .filter(Boolean)
+                              .join(' ') || rec.student?.username || 'Unknown'}
+                          </div>
+                          <div className="quiz-results-item-page">
+                            {rec.message
+                              ? rec.message.length > 25
+                                ? `${rec.message.substring(0, 25)}...`
+                                : rec.message
+                              : rec.game_link.length > 25
+                                ? `${rec.game_link.substring(0, 25)}...`
+                                : rec.game_link}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="quiz-results-item-right">
+                        <div className="quiz-results-item-time">
+                          {new Date(rec.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       <style>{`
@@ -297,6 +379,11 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
           border-color: rgba(168, 85, 247, 0.3);
         }
 
+        /* ✅ added */
+        .quiz-results-card.card-orange {
+          border-color: rgba(249, 115, 22, 0.3);
+        }
+
         .quiz-results-card-header {
           padding: 1.5rem;
           background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(249, 250, 251, 0.9) 100%);
@@ -333,6 +420,11 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
 
         .quiz-results-icon-circle.purple {
           background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+        }
+
+        /* ✅ added */
+        .quiz-results-icon-circle.orange {
+          background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
         }
 
         .quiz-results-icon {
