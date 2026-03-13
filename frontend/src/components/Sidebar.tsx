@@ -214,13 +214,13 @@ const Sidebar: React.FC<SidebarProps> = ({
           flex-direction: column;
           z-index: 995;
           transition: transform 0.3s ease;
-          overflow-y: auto;
+          overflow: hidden;
         }
 
         .sidebar-header {
           font-family: 'Press Start 2P';
           font-size: 1.1rem;
-          margin-bottom: 20px;
+          margin-bottom: 10px;
           line-height: 1.4;
         }
 
@@ -247,10 +247,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           list-style: none;
           padding: 0;
           margin: 0;
-          margin-top: 15px;
+          margin-top: 8px;
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 4px;
         }
 
         .sidebar-nav li {
@@ -261,7 +261,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 12px;
+          padding: 9px 12px;
           border-radius: 6px;
           background: none;
           border: none;
@@ -293,7 +293,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         }
 
         .profile-wrapper {
-          margin-bottom: 10px;
+          margin-bottom: 4px;
         }
 
         /* ===== MOBILE TOPBAR ===== */
