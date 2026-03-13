@@ -65,7 +65,8 @@ const Dashboard: React.FC = () => {
   const [pageVisits, setPageVisits] = useState<PageVisit[]>([]);
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [sharedQuizResults, setSharedQuizResults] = useState<SharedQuizResult[]>([]);
-  const [totalQuizzes, setTotalQuizzes] = useState<number>(0); // ✅ added
+  const [totalQuizzes, setTotalQuizzes] = useState<number>(0);
+  const [totalClassrooms, setTotalClassrooms] = useState<number>(0); // ✅ added
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -76,14 +77,15 @@ const Dashboard: React.FC = () => {
       setError(null);
 
       try {
-        const [statsRes, usersRes, visitsRes, resultsRes, sharedResultsRes, quizzesRes] =
+        const [statsRes, usersRes, visitsRes, resultsRes, sharedResultsRes, quizzesRes, classroomsRes] =
           await Promise.allSettled([
             axios.get("/dashboard-data"),
             axios.get("/users"),
             axios.get("/page-visits"),
             axios.get("/quiz-results"),
             axios.get("/shared-quiz-results"),
-            axios.get("/quizzes"), // ✅ added
+            axios.get("/quizzes"),
+            axios.get(`/teacher/${user?.user_id}/classrooms`), // ✅ added
           ]);
 
         if (statsRes.status === "fulfilled") {
@@ -147,12 +149,19 @@ const Dashboard: React.FC = () => {
           console.error("❌ Shared Quiz Results Failed:", sharedResultsRes);
         }
 
-        // ✅ Total quizzes count
         if (quizzesRes.status === "fulfilled") {
           const quizzes = Array.isArray(quizzesRes.value.data)
             ? quizzesRes.value.data
             : quizzesRes.value.data?.data || [];
           setTotalQuizzes(quizzes.length);
+        }
+
+        // ✅ Total classrooms count
+        if (classroomsRes.status === "fulfilled") {
+          const classrooms = Array.isArray(classroomsRes.value.data)
+            ? classroomsRes.value.data
+            : classroomsRes.value.data?.data || [];
+          setTotalClassrooms(classrooms.length);
         }
 
       } catch (err: any) {
@@ -229,22 +238,22 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* ✅ Replaced TOTAL TEACHERS with TOTAL CLASSROOMS */}
         <div className="col-12 col-sm-6 col-xl-3">
           <div className="card border-0 shadow-sm h-100" style={{ borderRadius: '12px' }}>
             <div className="card-body p-4">
               <div className="d-flex align-items-center justify-content-between mb-3">
                 <div className="bg-success bg-gradient text-white rounded-3 p-3">
-                  <i className="bi bi-person-workspace fs-3"></i>
+                  <i className="bi bi-door-open-fill fs-3"></i>
                 </div>
                 <span className="badge bg-success-subtle text-success rounded-pill px-3 py-2">Active</span>
               </div>
-              <h2 className="mb-2 fw-bold text-dark">{data?.teachersCount ?? 0}</h2>
-              <p className="text-muted mb-0 small fw-semibold">TOTAL TEACHERS</p>
+              <h2 className="mb-2 fw-bold text-dark">{totalClassrooms}</h2>
+              <p className="text-muted mb-0 small fw-semibold">TOTAL CLASSROOMS</p>
             </div>
           </div>
         </div>
 
-        {/* ✅ Replaced ALL USERS with TOTAL QUIZZES */}
         <div className="col-12 col-sm-6 col-xl-3">
           <div className="card border-0 shadow-sm h-100" style={{ borderRadius: '12px' }}>
             <div className="card-body p-4">
@@ -252,7 +261,7 @@ const Dashboard: React.FC = () => {
                 <div className="bg-info bg-gradient text-white rounded-3 p-3">
                   <i className="bi bi-journals fs-3"></i>
                 </div>
-                <span className="badge bg-info-subtle text-info rounded-pill px-3 py-2">Total</span>
+                <span className="badge bg-info-subtle text-info rounded-pill px-3 py-2">Active</span>
               </div>
               <h2 className="mb-2 fw-bold text-dark">{totalQuizzes}</h2>
               <p className="text-muted mb-0 small fw-semibold">TOTAL QUIZZES</p>
