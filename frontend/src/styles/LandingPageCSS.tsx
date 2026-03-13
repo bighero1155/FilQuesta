@@ -336,7 +336,7 @@ const LandingPageCSS: React.FC = () => {
 
         /* ✅ Decreased from 28px → 16px */
         .main-title {
-          font-size: 16px;
+          font-size: 24px;
         }
 
         .quote-carousel {
