@@ -21,6 +21,22 @@ use App\Models\SharedQuizAnswer;
 
 class QuizController extends Controller
 {
+    // ✅ Helper: build "First Middle Last", fallback to username
+    private function getFullName($student): string
+    {
+        $parts = array_filter([
+            $student?->first_name,
+            $student?->middle_name,
+            $student?->last_name,
+        ]);
+
+        if (!empty($parts)) {
+            return implode(' ', $parts);
+        }
+
+        return $student?->username ?? 'Unknown';
+    }
+
     private function transformQuestionImages($questions)
     {
         return $questions->transform(function ($question) {
@@ -345,11 +361,15 @@ class QuizController extends Controller
             ->map(function ($s) use ($total) {
                 return [
                     'submission_id' => $s->id,
-                    'student_id' => $s->student_id,
-                    'first_name' => optional($s->student)->first_name,
-                    'score' => (int) $s->score,
-                    'total' => (int) $total,
-                    'submitted_at' => optional($s->created_at)->toDateTimeString(),
+                    'student_id'    => $s->student_id,
+                    // ✅ Full name
+                    'student_name'  => $this->getFullName($s->student),
+                    'first_name'    => $s->student?->first_name,
+                    'middle_name'   => $s->student?->middle_name,
+                    'last_name'     => $s->student?->last_name,
+                    'score'         => (int) $s->score,
+                    'total'         => (int) $total,
+                    'submitted_at'  => optional($s->created_at)->toDateTimeString(),
                 ];
             });
 
@@ -367,15 +387,17 @@ class QuizController extends Controller
 
                 return [
                     'submission_id' => $s->id,
-                    'student_id' => $s->student_id,
-                    'student_name' => $student?->first_name
-                        ?: $student?->username
-                        ?: 'Unknown',
-                    'quiz_id' => $s->quiz_id,
-                    'quiz_title' => $quiz?->title ?? 'Untitled Quiz',
-                    'score' => (int) $s->score,
-                    'total' => $quiz ? $quiz->questions()->count() : 0,
-                    'submitted_at' => optional($s->created_at)->toDateTimeString(),
+                    'student_id'    => $s->student_id,
+                    // ✅ Full name: first + middle + last, fallback to username
+                    'student_name'  => $this->getFullName($student),
+                    'first_name'    => $student?->first_name,
+                    'middle_name'   => $student?->middle_name,
+                    'last_name'     => $student?->last_name,
+                    'quiz_id'       => $s->quiz_id,
+                    'quiz_title'    => $quiz?->title ?? 'Untitled Quiz',
+                    'score'         => (int) $s->score,
+                    'total'         => $quiz ? $quiz->questions()->count() : 0,
+                    'submitted_at'  => optional($s->created_at)->toDateTimeString(),
                 ];
             });
 
@@ -443,10 +465,12 @@ class QuizController extends Controller
 
             $session->participants->transform(function ($p) {
                 $student = $p->student;
-                $p->student_name = $student?->first_name
-                    ?: $student?->username
-                    ?: 'Unknown';
-                $p->avatar = $student?->avatar;
+                // ✅ Full name in shared session participants
+                $p->student_name  = $this->getFullName($student);
+                $p->first_name    = $student?->first_name;
+                $p->middle_name   = $student?->middle_name;
+                $p->last_name     = $student?->last_name;
+                $p->avatar        = $student?->avatar;
                 return $p;
             });
 
@@ -509,12 +533,14 @@ class QuizController extends Controller
             ->get()
             ->map(function ($p) {
                 return [
-                    'student_id'   => $p->student_id,
-                    'student_name' => $p->student?->first_name
-                        ?: $p->student?->username
-                        ?: 'Unknown',
-                    'score'        => $p->score,
-                    'finished_at'  => optional($p->finished_at)->toDateTimeString(),
+                    'student_id'    => $p->student_id,
+                    // ✅ Full name
+                    'student_name'  => $this->getFullName($p->student),
+                    'first_name'    => $p->student?->first_name,
+                    'middle_name'   => $p->student?->middle_name,
+                    'last_name'     => $p->student?->last_name,
+                    'score'         => $p->score,
+                    'finished_at'   => optional($p->finished_at)->toDateTimeString(),
                 ];
             });
 
@@ -632,14 +658,16 @@ class QuizController extends Controller
 
                 return [
                     'participant_id' => $participant->id,
-                    'student_id' => $participant->student_id,
-                    'student_name' => $student?->first_name
-                        ?: $student?->username
-                        ?: 'Unknown',
-                    'quiz_title' => $quiz?->title ?? 'Untitled Quiz',
-                    'score' => (int) $participant->score,
-                    'total' => $totalQuestions,
-                    'finished_at' => optional($participant->finished_at)->toDateTimeString(),
+                    'student_id'     => $participant->student_id,
+                    // ✅ Full name: first + middle + last, fallback to username
+                    'student_name'   => $this->getFullName($student),
+                    'first_name'     => $student?->first_name,
+                    'middle_name'    => $student?->middle_name,
+                    'last_name'      => $student?->last_name,
+                    'quiz_title'     => $quiz?->title ?? 'Untitled Quiz',
+                    'score'          => (int) $participant->score,
+                    'total'          => $totalQuestions,
+                    'finished_at'    => optional($participant->finished_at)->toDateTimeString(),
                 ];
             });
 
@@ -700,15 +728,15 @@ class QuizController extends Controller
             }
 
             return [
-                'question_id' => $question->question_id,
-                'question_text' => $question->question_text,
+                'question_id'    => $question->question_id,
+                'question_text'  => $question->question_text,
                 'question_image' => $question->question_image,
                 'is_identification' => $isIdentification,
                 'options' => $question->options->map(function ($option) {
                     return [
-                        'option_id' => $option->option_id,
+                        'option_id'   => $option->option_id,
                         'option_text' => $option->option_text,
-                        'is_correct' => $option->is_correct,
+                        'is_correct'  => $option->is_correct,
                     ];
                 }),
                 'student_answer' => $studentAnswerValue,
@@ -721,13 +749,13 @@ class QuizController extends Controller
 
         return response()->json([
             'participant' => [
-                'student_id' => $participant->student_id,
-                'score' => $participant->score,
+                'student_id'  => $participant->student_id,
+                'score'       => $participant->score,
                 'finished_at' => $participant->finished_at,
             ],
-            'quiz_title' => $quiz->title,
+            'quiz_title'      => $quiz->title,
             'total_questions' => $questions->count(),
-            'questions' => $reviewData,
+            'questions'       => $reviewData,
         ]);
     }
 
@@ -764,15 +792,15 @@ class QuizController extends Controller
             }
 
             return [
-                'question_id' => $question->question_id,
-                'question_text' => $question->question_text,
+                'question_id'    => $question->question_id,
+                'question_text'  => $question->question_text,
                 'question_image' => $question->question_image,
                 'is_identification' => $isIdentification,
                 'options' => $question->options->map(function ($option) {
                     return [
-                        'option_id' => $option->option_id,
+                        'option_id'   => $option->option_id,
                         'option_text' => $option->option_text,
-                        'is_correct' => $option->is_correct,
+                        'is_correct'  => $option->is_correct,
                     ];
                 }),
                 'student_answer' => $studentAnswerValue,
@@ -786,13 +814,13 @@ class QuizController extends Controller
         return response()->json([
             'submission' => [
                 'submission_id' => $submission->id,
-                'student_id' => $submission->student_id,
-                'score' => $submission->score,
-                'submitted_at' => $submission->created_at,
+                'student_id'    => $submission->student_id,
+                'score'         => $submission->score,
+                'submitted_at'  => $submission->created_at,
             ],
-            'quiz_title' => $quiz->title,
+            'quiz_title'      => $quiz->title,
             'total_questions' => $questions->count(),
-            'questions' => $reviewData,
+            'questions'       => $reviewData,
         ]);
     }
 
@@ -808,12 +836,12 @@ class QuizController extends Controller
                 $quiz = $session?->quiz;
 
                 return [
-                    'session_id' => $session->session_id,
-                    'code' => $session->code,
-                    'quiz_title' => $quiz?->title ?? 'Untitled Quiz',
-                    'score' => $participant->score,
-                    'total_questions' => $quiz ? $quiz->questions()->count() : 0,
-                    'finished_at' => $participant->finished_at,
+                    'session_id'     => $session->session_id,
+                    'code'           => $session->code,
+                    'quiz_title'     => $quiz?->title ?? 'Untitled Quiz',
+                    'score'          => $participant->score,
+                    'total_questions'=> $quiz ? $quiz->questions()->count() : 0,
+                    'finished_at'    => $participant->finished_at,
                 ];
             });
 
