@@ -139,7 +139,15 @@ const LandingPage: React.FC = () => {
       </form>
 
       <div className="content-area">
-        <h1 className="main-title">FILQUESTA</h1>
+        {/* ✅ Title with logo */}
+        <div className="main-title-wrapper">
+          <img
+            src="/assets/logo.png"
+            alt="FilQuesta Logo"
+            className="main-title-logo"
+          />
+          <h1 className="main-title">FILQUESTA</h1>
+        </div>
 
         <div className="quote-carousel">{QUOTES[0]}</div>
 
