@@ -65,11 +65,13 @@ class QuizController extends Controller
     {
         $user = $request->user();
         
+        // ✅ Admin gets all quizzes unfiltered; teacher gets only their own
         if ($user && $user->role === 'teacher') {
             $quizzes = Quiz::with('questions.options', 'teacher')
                 ->where('teacher_id', $user->user_id)
                 ->get();
         } else {
+            // admin and any other role get everything
             $quizzes = Quiz::with('questions.options', 'teacher')->get();
         }
         
@@ -362,7 +364,6 @@ class QuizController extends Controller
                 return [
                     'submission_id' => $s->id,
                     'student_id'    => $s->student_id,
-                    // ✅ Full name
                     'student_name'  => $this->getFullName($s->student),
                     'first_name'    => $s->student?->first_name,
                     'middle_name'   => $s->student?->middle_name,
@@ -388,7 +389,6 @@ class QuizController extends Controller
                 return [
                     'submission_id' => $s->id,
                     'student_id'    => $s->student_id,
-                    // ✅ Full name: first + middle + last, fallback to username
                     'student_name'  => $this->getFullName($student),
                     'first_name'    => $student?->first_name,
                     'middle_name'   => $student?->middle_name,
@@ -465,7 +465,6 @@ class QuizController extends Controller
 
             $session->participants->transform(function ($p) {
                 $student = $p->student;
-                // ✅ Full name in shared session participants
                 $p->student_name  = $this->getFullName($student);
                 $p->first_name    = $student?->first_name;
                 $p->middle_name   = $student?->middle_name;
@@ -534,7 +533,6 @@ class QuizController extends Controller
             ->map(function ($p) {
                 return [
                     'student_id'    => $p->student_id,
-                    // ✅ Full name
                     'student_name'  => $this->getFullName($p->student),
                     'first_name'    => $p->student?->first_name,
                     'middle_name'   => $p->student?->middle_name,
@@ -659,7 +657,6 @@ class QuizController extends Controller
                 return [
                     'participant_id' => $participant->id,
                     'student_id'     => $participant->student_id,
-                    // ✅ Full name: first + middle + last, fallback to username
                     'student_name'   => $this->getFullName($student),
                     'first_name'     => $student?->first_name,
                     'middle_name'    => $student?->middle_name,
@@ -728,9 +725,9 @@ class QuizController extends Controller
             }
 
             return [
-                'question_id'    => $question->question_id,
-                'question_text'  => $question->question_text,
-                'question_image' => $question->question_image,
+                'question_id'       => $question->question_id,
+                'question_text'     => $question->question_text,
+                'question_image'    => $question->question_image,
                 'is_identification' => $isIdentification,
                 'options' => $question->options->map(function ($option) {
                     return [
@@ -792,9 +789,9 @@ class QuizController extends Controller
             }
 
             return [
-                'question_id'    => $question->question_id,
-                'question_text'  => $question->question_text,
-                'question_image' => $question->question_image,
+                'question_id'       => $question->question_id,
+                'question_text'     => $question->question_text,
+                'question_image'    => $question->question_image,
                 'is_identification' => $isIdentification,
                 'options' => $question->options->map(function ($option) {
                     return [
@@ -836,12 +833,12 @@ class QuizController extends Controller
                 $quiz = $session?->quiz;
 
                 return [
-                    'session_id'     => $session->session_id,
-                    'code'           => $session->code,
-                    'quiz_title'     => $quiz?->title ?? 'Untitled Quiz',
-                    'score'          => $participant->score,
-                    'total_questions'=> $quiz ? $quiz->questions()->count() : 0,
-                    'finished_at'    => $participant->finished_at,
+                    'session_id'      => $session->session_id,
+                    'code'            => $session->code,
+                    'quiz_title'      => $quiz?->title ?? 'Untitled Quiz',
+                    'score'           => $participant->score,
+                    'total_questions' => $quiz ? $quiz->questions()->count() : 0,
+                    'finished_at'     => $participant->finished_at,
                 ];
             });
 

@@ -50,6 +50,17 @@ export const adminReportsStyles = {
     textShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
   } as CSSProperties,
 
+  // ✅ NEW: section label above each group of cards
+  overviewSectionLabel: {
+    color: 'rgba(255,255,255,0.92)',
+    fontWeight: 700,
+    fontSize: '1rem',
+    letterSpacing: '0.04em',
+    textTransform: 'uppercase' as const,
+    margin: 0,
+    textShadow: '0 2px 8px rgba(0,0,0,0.15)',
+  } as CSSProperties,
+
   statCard: {
     background: 'rgba(255, 255, 255, 0.95)',
     borderRadius: '20px',
@@ -85,6 +96,23 @@ export const adminReportsStyles = {
     background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
   } as CSSProperties,
 
+  // ✅ NEW icon colors
+  statIconIndigo: {
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  } as CSSProperties,
+
+  statIconTeal: {
+    background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+  } as CSSProperties,
+
+  statIconOrange: {
+    background: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
+  } as CSSProperties,
+
+  statIconPink: {
+    background: 'linear-gradient(135deg, #f953c6 0%, #b91d73 100%)',
+  } as CSSProperties,
+
   statContent: {
     flex: 1,
   } as CSSProperties,
@@ -102,6 +130,14 @@ export const adminReportsStyles = {
     fontSize: '1rem',
     margin: '0.5rem 0 0 0',
     fontWeight: 600,
+  } as CSSProperties,
+
+  // ✅ NEW: small sub-label under main label (e.g. "32 students · 8 teachers")
+  statSubLabel: {
+    color: '#b0bec5',
+    fontSize: '0.82rem',
+    margin: '0.25rem 0 0 0',
+    fontWeight: 500,
   } as CSSProperties,
 
   dataSection: {
