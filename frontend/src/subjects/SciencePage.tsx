@@ -36,14 +36,13 @@ const SciencePage: React.FC = () => {
 
       <div className="container text-center position-relative" style={{ zIndex: 2 }}>
         <h1 className="display-4 fw-bold mb-3 text-glow">
-          🔬 Science 
+          🔬 Science
         </h1>
         <p className="lead mb-5 px-3" style={{ maxWidth: "600px", margin: "0 auto" }}>
           Explore the wonders of science through fun and interactive learning games
         </p>
 
         <div className="row justify-content-center">
-          {/* Internal Human Body Card - Centered */}
           <div className="col-md-8 col-lg-6 mb-4">
             <div
               className="game-card shadow-lg border-0 text-white position-relative"
@@ -67,15 +66,15 @@ const SciencePage: React.FC = () => {
                 }}
               >
                 <div className="emoji-icon mb-3" style={{ fontSize: "5rem" }}>
-                  🫀
+                  🚀
                 </div>
                 <h4 className="fw-bold mb-2" style={{ fontSize: "1.8rem" }}>
-                  Human Body
+                  Sciventure
                 </h4>
                 <p className="mb-4 px-4" style={{ fontSize: "1.1rem" }}>
-                  Explore organs and systems!
+                  Discover science topics through adventure!
                 </p>
-                <button 
+                <button
                   className="btn btn-light fw-semibold px-5 py-3 play-btn"
                   style={{
                     borderRadius: "30px",
@@ -85,7 +84,7 @@ const SciencePage: React.FC = () => {
                     fontSize: "1.1rem",
                   }}
                 >
-                  Play Now →
+                  Start Adventure →
                 </button>
               </div>
             </div>
@@ -116,41 +115,12 @@ const SciencePage: React.FC = () => {
           animation: float 20s infinite ease-in-out;
         }
 
-        .molecule-1 {
-          top: 10%;
-          left: 15%;
-          animation-delay: 0s;
-        }
-
-        .molecule-2 {
-          top: 60%;
-          left: 10%;
-          animation-delay: 3s;
-        }
-
-        .molecule-3 {
-          top: 20%;
-          right: 20%;
-          animation-delay: 1.5s;
-        }
-
-        .molecule-4 {
-          bottom: 15%;
-          right: 15%;
-          animation-delay: 4s;
-        }
-
-        .molecule-5 {
-          top: 70%;
-          right: 25%;
-          animation-delay: 2s;
-        }
-
-        .molecule-6 {
-          bottom: 30%;
-          left: 25%;
-          animation-delay: 5s;
-        }
+        .molecule-1 { top: 10%; left: 15%; animation-delay: 0s; }
+        .molecule-2 { top: 60%; left: 10%; animation-delay: 3s; }
+        .molecule-3 { top: 20%; right: 20%; animation-delay: 1.5s; }
+        .molecule-4 { bottom: 15%; right: 15%; animation-delay: 4s; }
+        .molecule-5 { top: 70%; right: 25%; animation-delay: 2s; }
+        .molecule-6 { bottom: 30%; left: 25%; animation-delay: 5s; }
 
         .circle {
           position: absolute;
@@ -159,55 +129,20 @@ const SciencePage: React.FC = () => {
           animation: pulse 15s infinite ease-in-out;
         }
 
-        .circle-1 {
-          width: 300px;
-          height: 300px;
-          top: -100px;
-          right: -100px;
-          animation-delay: 0s;
-        }
-
-        .circle-2 {
-          width: 400px;
-          height: 400px;
-          bottom: -150px;
-          left: -150px;
-          animation-delay: 3s;
-        }
-
-        .circle-3 {
-          width: 250px;
-          height: 250px;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          animation-delay: 1.5s;
-        }
+        .circle-1 { width: 300px; height: 300px; top: -100px; right: -100px; animation-delay: 0s; }
+        .circle-2 { width: 400px; height: 400px; bottom: -150px; left: -150px; animation-delay: 3s; }
+        .circle-3 { width: 250px; height: 250px; top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: 1.5s; }
 
         @keyframes float {
-          0%, 100% {
-            transform: translateY(0) rotate(0deg);
-          }
-          25% {
-            transform: translateY(-30px) rotate(5deg);
-          }
-          50% {
-            transform: translateY(-50px) rotate(-5deg);
-          }
-          75% {
-            transform: translateY(-30px) rotate(3deg);
-          }
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          25% { transform: translateY(-30px) rotate(5deg); }
+          50% { transform: translateY(-50px) rotate(-5deg); }
+          75% { transform: translateY(-30px) rotate(3deg); }
         }
 
         @keyframes pulse {
-          0%, 100% {
-            transform: scale(1);
-            opacity: 0.05;
-          }
-          50% {
-            transform: scale(1.1);
-            opacity: 0.1;
-          }
+          0%, 100% { transform: scale(1); opacity: 0.05; }
+          50% { transform: scale(1.1); opacity: 0.1; }
         }
 
         .game-card {
@@ -228,9 +163,7 @@ const SciencePage: React.FC = () => {
           transition: transform 0.4s ease;
         }
 
-        .play-btn {
-          transition: all 0.3s ease;
-        }
+        .play-btn { transition: all 0.3s ease; }
 
         .game-card:hover .play-btn {
           background: white !important;
@@ -243,30 +176,12 @@ const SciencePage: React.FC = () => {
         }
 
         @media (max-width: 768px) {
-          .molecule {
-            font-size: 2rem;
-          }
-          
-          .display-4 {
-            font-size: 2.5rem;
-          }
-
-          .game-card {
-            height: 280px !important;
-          }
-
-          .emoji-icon {
-            font-size: 4rem !important;
-          }
-
-          h4 {
-            font-size: 1.5rem !important;
-          }
-
-          .play-btn {
-            font-size: 1rem !important;
-            padding: 0.75rem 2rem !important;
-          }
+          .molecule { font-size: 2rem; }
+          .display-4 { font-size: 2.5rem; }
+          .game-card { height: 280px !important; }
+          .emoji-icon { font-size: 4rem !important; }
+          h4 { font-size: 1.5rem !important; }
+          .play-btn { font-size: 1rem !important; padding: 0.75rem 2rem !important; }
         }
       `}</style>
     </div>
