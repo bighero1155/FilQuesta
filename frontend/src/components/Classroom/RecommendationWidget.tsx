@@ -300,14 +300,13 @@ const RecommendationWidget: React.FC = () => {
           color: #374151;
         }
 
-        /* ✅ Mobile responsive */
         @media (max-width: 576px) {
           .rec-widget-btn {
             width: 50px;
             height: 50px;
             right: 12px;
             top: auto;
-            bottom: 24px;
+            bottom: 120px;
             transform: none;
           }
 
@@ -321,7 +320,7 @@ const RecommendationWidget: React.FC = () => {
 
           .rec-panel {
             top: auto;
-            bottom: 90px;
+            bottom: 180px;
             right: 12px;
             left: 12px;
             width: auto;
@@ -341,7 +340,6 @@ const RecommendationWidget: React.FC = () => {
 
       {/* Floating Button */}
       <div className="rec-widget-btn" onClick={handleToggle}>
-        {/* ✅ Using bi-lightbulb — same icon as dashboard Recommendations card */}
         <i className="bi bi-lightbulb"></i>
         {hasUnread && <span className="rec-unread-dot" />}
       </div>
