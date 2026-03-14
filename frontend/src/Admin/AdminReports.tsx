@@ -47,11 +47,19 @@ interface SharedQuizResult {
   finished_at: string | null;
 }
 
+interface User {
+  user_id: number;
+  username: string;
+  role: string;
+}
+
 const AdminReports: React.FC = () => {
   const [pageVisits, setPageVisits] = useState<PageVisit[]>([]);
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [sharedQuizResults, setSharedQuizResults] = useState<SharedQuizResult[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [totalTeachers, setTotalTeachers] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,11 +68,12 @@ const AdminReports: React.FC = () => {
     setError(null);
     
     try {
-      const [pageVisitsRes, quizResultsRes, sharedQuizResultsRes, leaderboardRes] = await Promise.all([
+      const [pageVisitsRes, quizResultsRes, sharedQuizResultsRes, leaderboardRes, usersRes] = await Promise.all([
         axios.get("/page-visits"),
         axios.get("/quiz-results"),
         axios.get("/shared-quiz-results"),
         axios.get("/leaderboard"),
+        axios.get("/users"),
       ]);
 
       // ✅ Handle both response formats
@@ -79,6 +88,12 @@ const AdminReports: React.FC = () => {
         avatar: player.avatar ? getImageUrl(player.avatar) : undefined
       }));
       setLeaderboard(normalizedLeaderboard);
+
+      // Derive student and teacher counts from existing /users endpoint
+      const usersData: User[] = Array.isArray(usersRes.data) ? usersRes.data : usersRes.data.data || [];
+      setTotalStudents(usersData.filter((u) => u.role === "student").length);
+      setTotalTeachers(usersData.filter((u) => u.role === "teacher").length);
+
     } catch (err: any) {
       console.error("Failed to fetch reports:", err);
       setError(err.response?.data?.message || "Failed to load reports");
@@ -192,8 +207,8 @@ const AdminReports: React.FC = () => {
           </p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="row mb-5">
+        {/* Stats Cards - Row 1 */}
+        <div className="row mb-4">
           <div className="col-md-4 mb-4">
             <div className="stat-card" style={styles.statCard}>
               <div style={{...styles.statIcon, ...styles.statIconBlue}}>👥</div>
@@ -220,6 +235,39 @@ const AdminReports: React.FC = () => {
               <div style={styles.statContent}>
                 <h3 style={styles.statNumber}>{stats.avgScore}%</h3>
                 <p style={styles.statLabel}>Average Score</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Cards - Row 2 (User Counts) */}
+        <div className="row mb-5">
+          <div className="col-md-6 mb-4">
+            <div className="stat-card" style={styles.statCard}>
+              <div style={{
+                ...styles.statIcon,
+                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              }}>
+                🎓
+              </div>
+              <div style={styles.statContent}>
+                <h3 style={styles.statNumber}>{totalStudents}</h3>
+                <p style={styles.statLabel}>Total Students</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6 mb-4">
+            <div className="stat-card" style={styles.statCard}>
+              <div style={{
+                ...styles.statIcon,
+                background: 'linear-gradient(135deg, #4facfe 0%, #00c6ff 100%)',
+              }}>
+                👩‍🏫
+              </div>
+              <div style={styles.statContent}>
+                <h3 style={styles.statNumber}>{totalTeachers}</h3>
+                <p style={styles.statLabel}>Total Teachers</p>
               </div>
             </div>
           </div>
