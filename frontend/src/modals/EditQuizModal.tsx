@@ -1,5 +1,5 @@
 // src/modals/EditQuizModal.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Quiz, Question, updateQuiz } from "../services/quizService";
 import { getImageUrl } from "../services/cosmeticService";
 
@@ -24,21 +24,38 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
   // Track which questions originally had an image but had it removed without replacement
   const [imageRemovedFlags, setImageRemovedFlags] = useState<boolean[]>([]);
 
-  useEffect(() => {
-    if (quiz) {
-      setTitle(quiz.title);
-      setDescription(quiz.description || "");
-      setQuestions(quiz.questions || []);
+  // Snapshot of the original quiz state taken when the modal first opens
+  const snapshotRef = useRef<{
+    title: string;
+    description: string;
+    questions: Question[];
+    questionTypes: string[];
+  } | null>(null);
 
-      const types = (quiz.questions || []).map(q =>
+  useEffect(() => {
+    if (quiz && isOpen) {
+      const initialTitle = quiz.title;
+      const initialDescription = quiz.description || "";
+      const initialQuestions: Question[] = (quiz.questions || []).map(q => ({ ...q }));
+      const initialTypes = initialQuestions.map(q =>
         q.options?.length === 1 ? "identification" : "multiple_choice"
       );
-      setQuestionTypes(types);
 
-      // Initialize flags as false for all questions
-      setImageRemovedFlags((quiz.questions || []).map(() => false));
+      setTitle(initialTitle);
+      setDescription(initialDescription);
+      setQuestions(initialQuestions);
+      setQuestionTypes(initialTypes);
+      setImageRemovedFlags(initialQuestions.map(() => false));
+
+      // Take a snapshot so Cancel can restore everything back
+      snapshotRef.current = {
+        title: initialTitle,
+        description: initialDescription,
+        questions: initialQuestions.map(q => ({ ...q })),
+        questionTypes: [...initialTypes],
+      };
     }
-  }, [quiz]);
+  }, [quiz, isOpen]);
 
   // Cleanup object URLs on unmount
   useEffect(() => {
@@ -64,6 +81,18 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
 
     // Existing image - use centralized getImageUrl
     return getImageUrl(imagePath);
+  };
+
+  // Restore everything from the snapshot and close — nothing is saved
+  const handleCancel = () => {
+    if (snapshotRef.current) {
+      setTitle(snapshotRef.current.title);
+      setDescription(snapshotRef.current.description);
+      setQuestions(snapshotRef.current.questions.map(q => ({ ...q })));
+      setQuestionTypes([...snapshotRef.current.questionTypes]);
+      setImageRemovedFlags(snapshotRef.current.questions.map(() => false));
+    }
+    onClose();
   };
 
   const handleAddQuestion = () => {
@@ -108,7 +137,6 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
       updatedFlags[index] = false;
       setImageRemovedFlags(updatedFlags);
     } else {
-      // Remove image
       updated[index].question_image = undefined;
     }
     setQuestions(updated);
@@ -122,7 +150,7 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
     updated[index].question_image = undefined;
     setQuestions(updated);
 
-    // Only flag as "removed" if the question originally had a saved image
+    // Only flag as "removed" if the question originally had a saved image (string path)
     if (hadExistingImage) {
       const updatedFlags = [...imageRemovedFlags];
       updatedFlags[index] = true;
@@ -224,7 +252,7 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
       <div
         className="modal-backdrop fade show"
         style={{ zIndex: 1040 }}
-        onClick={onClose}
+        onClick={handleCancel}
       ></div>
 
       <div
@@ -562,7 +590,7 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
                   <button
                     type="button"
                     className="btn btn-outline-secondary"
-                    onClick={onClose}
+                    onClick={handleCancel}
                     disabled={loading}
                   >
                     Cancel
