@@ -1,5 +1,5 @@
 // src/modals/EditQuizModal.tsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Quiz, Question, updateQuiz } from "../services/quizService";
 import { getImageUrl } from "../services/cosmeticService";
 
@@ -21,41 +21,19 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
   const [questions, setQuestions] = useState<Question[]>(quiz.questions || []);
   const [loading, setLoading] = useState(false);
   const [questionTypes, setQuestionTypes] = useState<string[]>([]);
-  // Track which questions originally had an image but had it removed without replacement
-  const [imageRemovedFlags, setImageRemovedFlags] = useState<boolean[]>([]);
-
-  // Snapshot of the original quiz state taken when the modal first opens
-  const snapshotRef = useRef<{
-    title: string;
-    description: string;
-    questions: Question[];
-    questionTypes: string[];
-  } | null>(null);
 
   useEffect(() => {
-    if (quiz && isOpen) {
-      const initialTitle = quiz.title;
-      const initialDescription = quiz.description || "";
-      const initialQuestions: Question[] = (quiz.questions || []).map(q => ({ ...q }));
-      const initialTypes = initialQuestions.map(q =>
+    if (quiz) {
+      setTitle(quiz.title);
+      setDescription(quiz.description || "");
+      setQuestions(quiz.questions || []);
+      
+      const types = (quiz.questions || []).map(q => 
         q.options?.length === 1 ? "identification" : "multiple_choice"
       );
-
-      setTitle(initialTitle);
-      setDescription(initialDescription);
-      setQuestions(initialQuestions);
-      setQuestionTypes(initialTypes);
-      setImageRemovedFlags(initialQuestions.map(() => false));
-
-      // Take a snapshot so Cancel can restore everything back
-      snapshotRef.current = {
-        title: initialTitle,
-        description: initialDescription,
-        questions: initialQuestions.map(q => ({ ...q })),
-        questionTypes: [...initialTypes],
-      };
+      setQuestionTypes(types);
     }
-  }, [quiz, isOpen]);
+  }, [quiz]);
 
   // Cleanup object URLs on unmount
   useEffect(() => {
@@ -73,32 +51,19 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
   // Helper to get preview URL for images
   const getPreviewUrl = (imagePath: string | File | undefined): string | undefined => {
     if (!imagePath) return undefined;
-
+    
     // New file upload - create blob URL
     if (imagePath instanceof File) {
       return URL.createObjectURL(imagePath);
     }
-
+    
     // Existing image - use centralized getImageUrl
     return getImageUrl(imagePath);
-  };
-
-  // Restore everything from the snapshot and close — nothing is saved
-  const handleCancel = () => {
-    if (snapshotRef.current) {
-      setTitle(snapshotRef.current.title);
-      setDescription(snapshotRef.current.description);
-      setQuestions(snapshotRef.current.questions.map(q => ({ ...q })));
-      setQuestionTypes([...snapshotRef.current.questionTypes]);
-      setImageRemovedFlags(snapshotRef.current.questions.map(() => false));
-    }
-    onClose();
   };
 
   const handleAddQuestion = () => {
     setQuestions((prev) => [...prev, { question_text: "", options: [] }]);
     setQuestionTypes((prev) => [...prev, "multiple_choice"]);
-    setImageRemovedFlags((prev) => [...prev, false]);
   };
 
   const handleQuestionTypeChange = (index: number, type: string) => {
@@ -131,12 +96,8 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
       }
       // New file uploaded - replace any existing image
       updated[index].question_image = file;
-
-      // Clear the removed flag since a new image was provided
-      const updatedFlags = [...imageRemovedFlags];
-      updatedFlags[index] = false;
-      setImageRemovedFlags(updatedFlags);
     } else {
+      // Remove image
       updated[index].question_image = undefined;
     }
     setQuestions(updated);
@@ -144,18 +105,8 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
 
   const handleRemoveImage = (index: number) => {
     const updated = [...questions];
-    const hadExistingImage =
-      typeof updated[index].question_image === "string" && updated[index].question_image;
-
     updated[index].question_image = undefined;
     setQuestions(updated);
-
-    // Only flag as "removed" if the question originally had a saved image (string path)
-    if (hadExistingImage) {
-      const updatedFlags = [...imageRemovedFlags];
-      updatedFlags[index] = true;
-      setImageRemovedFlags(updatedFlags);
-    }
   };
 
   const handleRemoveQuestion = (index: number) => {
@@ -166,10 +117,6 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
     const updatedTypes = [...questionTypes];
     updatedTypes.splice(index, 1);
     setQuestionTypes(updatedTypes);
-
-    const updatedFlags = [...imageRemovedFlags];
-    updatedFlags.splice(index, 1);
-    setImageRemovedFlags(updatedFlags);
   };
 
   const handleAddOption = (qIndex: number) => {
@@ -198,19 +145,9 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
     setQuestions(updated);
   };
 
-  // Returns true if any question had its image removed without a replacement
-  const hasRemovedImages = (): boolean => {
-    return imageRemovedFlags.some((flag) => flag === true);
-  };
-
   const handleSubmit = async () => {
     if (!title.trim()) {
       alert("Quiz title is required");
-      return;
-    }
-
-    // Block submission if any question had its image removed without replacement
-    if (hasRemovedImages()) {
       return;
     }
 
@@ -230,7 +167,7 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
     try {
       setLoading(true);
       const updatedQuiz = await updateQuiz(quiz.quiz_id!, updatedQuizData);
-
+      
       console.log("✅ Quiz updated successfully:", updatedQuiz);
       console.log("✅ Updated questions:", updatedQuiz.questions?.map(q => ({
         text: q.question_text,
@@ -252,7 +189,7 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
       <div
         className="modal-backdrop fade show"
         style={{ zIndex: 1040 }}
-        onClick={handleCancel}
+        onClick={onClose}
       ></div>
 
       <div
@@ -347,7 +284,7 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
                   </button>
                 </div>
               ) : (
-                <div className="questions-container">
+                <div className="questions-container"> 
                   {questions.map((q, qIndex) => (
                     <div key={qIndex} className="card mb-3 border">
                       <div className="card-header d-flex justify-content-between align-items-center">
@@ -417,7 +354,7 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
                           <label className="form-label fw-semibold">
                             Question Image (Optional)
                           </label>
-
+                          
                           {/* Show preview for any image (new File or existing string URL) */}
                           {q.question_image && (
                             <div className="mb-2">
@@ -442,18 +379,10 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
                             </div>
                           )}
 
-                          {/* Warning shown when a saved image was removed without replacement */}
-                          {imageRemovedFlags[qIndex] && (
-                            <div className="alert alert-danger py-2 px-3 mb-2 d-flex align-items-center gap-2">
-                              <i className="bi bi-exclamation-triangle-fill"></i>
-                              <span>Please insert an image again to continue.</span>
-                            </div>
-                          )}
-
                           <div className="d-flex align-items-start gap-2">
                             <input
                               type="file"
-                              className={`form-control ${imageRemovedFlags[qIndex] ? "is-invalid" : ""}`}
+                              className="form-control"
                               accept="image/*"
                               onChange={(e) => {
                                 const file = e.target.files?.[0] || null;
@@ -466,11 +395,9 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
                           </div>
                           <small className="text-muted">
                             {q.question_image instanceof File
-                              ? '✅ New image selected. This will replace any existing image.'
+                              ? '✅ New image selected. This will replace any existing image.' 
                               : typeof q.question_image === 'string' && q.question_image
-                              ? '⚠️ Current image will be kept. Upload a new file to replace it.'
-                              : imageRemovedFlags[qIndex]
-                              ? ''
+                              ? '⚠️ Current image will be kept. Upload a new file to replace it.' 
                               : 'Select an image file to upload'}
                           </small>
                         </div>
@@ -590,7 +517,7 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
                   <button
                     type="button"
                     className="btn btn-outline-secondary"
-                    onClick={handleCancel}
+                    onClick={onClose}
                     disabled={loading}
                   >
                     Cancel
@@ -599,8 +526,7 @@ const EditQuizModal: React.FC<EditQuizModalProps> = ({
                     type="button"
                     className="btn btn-warning"
                     onClick={handleSubmit}
-                    disabled={loading || !title.trim() || hasRemovedImages()}
-                    title={hasRemovedImages() ? "Please insert an image again to continue" : undefined}
+                    disabled={loading || !title.trim()}
                   >
                     {loading ? (
                       <>
