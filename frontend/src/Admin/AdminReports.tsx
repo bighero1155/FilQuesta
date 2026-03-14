@@ -47,15 +47,6 @@ interface SharedQuizResult {
   finished_at: string | null;
 }
 
-// ✅ NEW: Overview counts
-interface OverviewStats {
-  totalUsers: number;
-  totalStudents: number;
-  totalTeachers: number;
-  totalQuizzes: number;
-  totalClassrooms: number;
-}
-
 const AdminReports: React.FC = () => {
   const [pageVisits, setPageVisits] = useState<PageVisit[]>([]);
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
@@ -64,71 +55,30 @@ const AdminReports: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ NEW: Overview stats state
-  const [overviewStats, setOverviewStats] = useState<OverviewStats>({
-    totalUsers: 0,
-    totalStudents: 0,
-    totalTeachers: 0,
-    totalQuizzes: 0,
-    totalClassrooms: 0,
-  });
-
   const fetchAllReports = useCallback(async () => {
     setLoading(true);
     setError(null);
     
     try {
-      const [
-        pageVisitsRes,
-        quizResultsRes,
-        sharedQuizResultsRes,
-        leaderboardRes,
-        // ✅ NEW: fetch overview data
-        allUsersRes,
-        studentsRes,
-        teachersRes,
-        quizzesRes,
-        classroomsRes,
-      ] = await Promise.all([
+      const [pageVisitsRes, quizResultsRes, sharedQuizResultsRes, leaderboardRes] = await Promise.all([
         axios.get("/page-visits"),
         axios.get("/quiz-results"),
         axios.get("/shared-quiz-results"),
         axios.get("/leaderboard"),
-        // ✅ NEW calls
-        axios.get("/users"),
-        axios.get("/users?role=student"),
-        axios.get("/users?role=teacher"),
-        axios.get("/quizzes"),
-        axios.get("/classrooms"),
       ]);
 
-      // existing
+      // ✅ Handle both response formats
       setPageVisits(Array.isArray(pageVisitsRes.data) ? pageVisitsRes.data : pageVisitsRes.data.data || []);
       setQuizResults(Array.isArray(quizResultsRes.data) ? quizResultsRes.data : quizResultsRes.data.data || []);
       setSharedQuizResults(Array.isArray(sharedQuizResultsRes.data) ? sharedQuizResultsRes.data : sharedQuizResultsRes.data.data || []);
-
+      
+      // Normalize avatar URLs using centralized getImageUrl
       const leaderboardData = Array.isArray(leaderboardRes.data) ? leaderboardRes.data : leaderboardRes.data.data || [];
       const normalizedLeaderboard = leaderboardData.map((player: LeaderboardUser) => ({
         ...player,
-        avatar: player.avatar ? getImageUrl(player.avatar) : undefined,
+        avatar: player.avatar ? getImageUrl(player.avatar) : undefined
       }));
       setLeaderboard(normalizedLeaderboard);
-
-      // ✅ NEW: set overview counts
-      const allUsers   = Array.isArray(allUsersRes.data)    ? allUsersRes.data    : allUsersRes.data.data    || [];
-      const students   = Array.isArray(studentsRes.data)    ? studentsRes.data    : studentsRes.data.data    || [];
-      const teachers   = Array.isArray(teachersRes.data)    ? teachersRes.data    : teachersRes.data.data    || [];
-      const quizzes    = Array.isArray(quizzesRes.data)     ? quizzesRes.data     : quizzesRes.data.data     || [];
-      const classrooms = Array.isArray(classroomsRes.data)  ? classroomsRes.data  : classroomsRes.data.data  || [];
-
-      setOverviewStats({
-        totalUsers:      allUsers.length,
-        totalStudents:   students.length,
-        totalTeachers:   teachers.length,
-        totalQuizzes:    quizzes.length,
-        totalClassrooms: classrooms.length,
-      });
-
     } catch (err: any) {
       console.error("Failed to fetch reports:", err);
       setError(err.response?.data?.message || "Failed to load reports");
@@ -242,80 +192,11 @@ const AdminReports: React.FC = () => {
           </p>
         </div>
 
-        {/* ✅ NEW: Overview Stats Row */}
-        <div className="row mb-4">
-          <div className="col-12 mb-3">
-            <p style={styles.overviewSectionLabel}>📋 Overview</p>
-          </div>
-
-          {/* Total Users */}
-          <div className="col-md-4 col-sm-6 mb-4">
-            <div className="stat-card" style={styles.statCard}>
-              <div style={{ ...styles.statIcon, ...styles.statIconIndigo }}>👤</div>
-              <div style={styles.statContent}>
-                <h3 style={styles.statNumber}>{overviewStats.totalUsers}</h3>
-                <p style={styles.statLabel}>Total Users</p>
-                <p style={styles.statSubLabel}>
-                  {overviewStats.totalStudents} students · {overviewStats.totalTeachers} teachers
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Total Students */}
-          <div className="col-md-4 col-sm-6 mb-4">
-            <div className="stat-card" style={styles.statCard}>
-              <div style={{ ...styles.statIcon, ...styles.statIconTeal }}>🎒</div>
-              <div style={styles.statContent}>
-                <h3 style={styles.statNumber}>{overviewStats.totalStudents}</h3>
-                <p style={styles.statLabel}>Total Students</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Total Teachers */}
-          <div className="col-md-4 col-sm-6 mb-4">
-            <div className="stat-card" style={styles.statCard}>
-              <div style={{ ...styles.statIcon, ...styles.statIconOrange }}>🧑‍🏫</div>
-              <div style={styles.statContent}>
-                <h3 style={styles.statNumber}>{overviewStats.totalTeachers}</h3>
-                <p style={styles.statLabel}>Total Teachers</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Total Quizzes */}
-          <div className="col-md-6 col-sm-6 mb-4">
-            <div className="stat-card" style={styles.statCard}>
-              <div style={{ ...styles.statIcon, ...styles.statIconGreen }}>📝</div>
-              <div style={styles.statContent}>
-                <h3 style={styles.statNumber}>{overviewStats.totalQuizzes}</h3>
-                <p style={styles.statLabel}>Total Quizzes</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Total Classrooms */}
-          <div className="col-md-6 col-sm-6 mb-4">
-            <div className="stat-card" style={styles.statCard}>
-              <div style={{ ...styles.statIcon, ...styles.statIconPink }}>🏫</div>
-              <div style={styles.statContent}>
-                <h3 style={styles.statNumber}>{overviewStats.totalClassrooms}</h3>
-                <p style={styles.statLabel}>Total Classrooms</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Existing Stats Cards */}
+        {/* Stats Cards */}
         <div className="row mb-5">
-          <div className="col-12 mb-3">
-            <p style={styles.overviewSectionLabel}>📈 Activity</p>
-          </div>
-
           <div className="col-md-4 mb-4">
             <div className="stat-card" style={styles.statCard}>
-              <div style={{ ...styles.statIcon, ...styles.statIconBlue }}>👥</div>
+              <div style={{...styles.statIcon, ...styles.statIconBlue}}>👥</div>
               <div style={styles.statContent}>
                 <h3 style={styles.statNumber}>{stats.totalVisits}</h3>
                 <p style={styles.statLabel}>Total Page Visits</p>
@@ -325,7 +206,7 @@ const AdminReports: React.FC = () => {
 
           <div className="col-md-4 mb-4">
             <div className="stat-card" style={styles.statCard}>
-              <div style={{ ...styles.statIcon, ...styles.statIconGreen }}>📝</div>
+              <div style={{...styles.statIcon, ...styles.statIconGreen}}>📝</div>
               <div style={styles.statContent}>
                 <h3 style={styles.statNumber}>{stats.totalQuizzes}</h3>
                 <p style={styles.statLabel}>Quiz Submissions</p>
@@ -335,7 +216,7 @@ const AdminReports: React.FC = () => {
 
           <div className="col-md-4 mb-4">
             <div className="stat-card" style={styles.statCard}>
-              <div style={{ ...styles.statIcon, ...styles.statIconPurple }}>🎯</div>
+              <div style={{...styles.statIcon, ...styles.statIconPurple}}>🎯</div>
               <div style={styles.statContent}>
                 <h3 style={styles.statNumber}>{stats.avgScore}%</h3>
                 <p style={styles.statLabel}>Average Score</p>
@@ -358,12 +239,12 @@ const AdminReports: React.FC = () => {
           <h2 className="text-center mb-4" style={styles.sectionTitle}>🏆 Top Players Leaderboard</h2>
           <div style={styles.leaderboardContainer}>
             {leaderboard.slice(0, 10).map((player, index) => (
-              <div
-                key={player.user_id}
+              <div 
+                key={player.user_id} 
                 className={`leaderboard-row ${index < 3 ? 'top-three' : ''}`}
-                style={index < 3 ? { ...styles.leaderboardRow, ...styles.leaderboardRowTopThree } : styles.leaderboardRow}
+                style={index < 3 ? {...styles.leaderboardRow, ...styles.leaderboardRowTopThree} : styles.leaderboardRow}
               >
-                <div style={index < 3 ? { ...styles.rankBadge, ...styles.rankBadgeTopThree } : styles.rankBadge}>
+                <div style={index < 3 ? {...styles.rankBadge, ...styles.rankBadgeTopThree} : styles.rankBadge}>
                   {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                 </div>
                 <div style={styles.playerInfoSection}>
@@ -371,9 +252,9 @@ const AdminReports: React.FC = () => {
                     {player.avatar?.startsWith("bi") ? (
                       <i className={`${player.avatar} fs-3`}></i>
                     ) : player.avatar ? (
-                      <img
-                        src={player.avatar}
-                        alt="avatar"
+                      <img 
+                        src={player.avatar} 
+                        alt="avatar" 
                         style={styles.playerAvatarImg}
                         onError={(e) => {
                           console.error("Failed to load avatar:", player.avatar);
@@ -394,7 +275,7 @@ const AdminReports: React.FC = () => {
                   </div>
                 </div>
                 <div style={styles.playerScores}>
-                  <div style={index < 3 ? { ...styles.combinedScore, ...styles.combinedScoreTopThree } : styles.combinedScore}>
+                  <div style={index < 3 ? {...styles.combinedScore, ...styles.combinedScoreTopThree} : styles.combinedScore}>
                     {player.combined_score || player.total_score}
                   </div>
                   <div style={styles.scoreDetails}>

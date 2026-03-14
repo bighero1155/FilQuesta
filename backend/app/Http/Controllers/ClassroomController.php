@@ -10,13 +10,6 @@ use Illuminate\Routing\Controller;
 
 class ClassroomController extends Controller 
 {
-    // ✅ NEW: Get all classrooms (admin use — total count + list)
-    public function index()
-    {
-        $classrooms = Classroom::with(['teacher', 'students'])->get();
-        return response()->json($classrooms, 200);
-    }
-
     // Create classroom
     public function store(Request $request)
     {
@@ -101,7 +94,6 @@ class ClassroomController extends Controller
             'message' => 'Successfully left the classroom',
         ]);
     }
-
     public function destroy($id)
     {
         $classroom = Classroom::findOrFail($id);
