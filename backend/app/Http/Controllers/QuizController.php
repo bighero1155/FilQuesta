@@ -203,7 +203,8 @@ class QuizController extends Controller
 
     public function destroy(Quiz $quiz, Request $request)
     {
-        if ($quiz->teacher_id !== $request->user()->user_id) {
+        // ✅ Admin can delete any quiz; teachers can only delete their own
+        if ($request->user()->role !== 'admin' && $quiz->teacher_id !== $request->user()->user_id) {
             return response()->json([
                 'message' => 'Unauthorized. You can only delete your own quizzes.'
             ], 403);

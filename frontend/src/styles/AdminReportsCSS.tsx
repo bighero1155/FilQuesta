@@ -85,6 +85,15 @@ export const adminReportsStyles = {
     background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
   } as CSSProperties,
 
+  // ✅ New icon colors for students and teachers
+  statIconPink: {
+    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+  } as CSSProperties,
+
+  statIconCyan: {
+    background: 'linear-gradient(135deg, #4facfe 0%, #00c6ff 100%)',
+  } as CSSProperties,
+
   statContent: {
     flex: 1,
   } as CSSProperties,
@@ -124,6 +133,68 @@ export const adminReportsStyles = {
     color: '#2c3e50',
     fontSize: '2rem',
     fontWeight: 'bold',
+  } as CSSProperties,
+
+  // ✅ Quiz table styles
+  quizTable: {
+    width: '100%',
+    borderCollapse: 'collapse' as const,
+    fontSize: '0.95rem',
+  } as CSSProperties,
+
+  quizTh: {
+    padding: '0.85rem 1rem',
+    background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    color: 'white',
+    fontWeight: 600,
+    textAlign: 'left' as const,
+    whiteSpace: 'nowrap' as const,
+  } as CSSProperties,
+
+  quizTr: {
+    borderBottom: '1px solid rgba(0,0,0,0.06)',
+    transition: 'background 0.2s',
+  } as CSSProperties,
+
+  quizTd: {
+    padding: '0.85rem 1rem',
+    color: '#2c3e50',
+    verticalAlign: 'middle' as const,
+  } as CSSProperties,
+
+  quizBadge: {
+    display: 'inline-block',
+    background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    color: 'white',
+    borderRadius: '20px',
+    padding: '0.2rem 0.75rem',
+    fontWeight: 600,
+    fontSize: '0.85rem',
+  } as CSSProperties,
+
+  quizDeleteBtn: {
+    background: '#e74c3c',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '0.4rem 0.75rem',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    transition: 'all 0.2s ease',
+  } as CSSProperties,
+
+  deleteSuccessAlert: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    background: '#d4edda',
+    color: '#155724',
+    border: '1px solid #c3e6cb',
+    borderRadius: '10px',
+    padding: '0.75rem 1.25rem',
+    marginBottom: '1rem',
+    fontSize: '0.95rem',
+    fontWeight: 500,
   } as CSSProperties,
 
   leaderboardContainer: {
@@ -301,73 +372,31 @@ export const adminReportsStyleString = `
     animation: float 20s infinite ease-in-out;
   }
 
-  .icon-1 {
-    top: 10%;
-    left: 15%;
-    animation-delay: 0s;
-  }
+  .icon-1 { top: 10%; left: 15%; animation-delay: 0s; }
+  .icon-2 { top: 60%; left: 10%; animation-delay: 3s; }
+  .icon-3 { top: 20%; right: 20%; animation-delay: 1.5s; }
+  .icon-4 { bottom: 15%; right: 15%; animation-delay: 4s; }
+  .icon-5 { top: 70%; right: 25%; animation-delay: 2s; }
+  .icon-6 { bottom: 30%; left: 25%; animation-delay: 5s; }
 
-  .icon-2 {
-    top: 60%;
-    left: 10%;
-    animation-delay: 3s;
-  }
-
-  .icon-3 {
-    top: 20%;
-    right: 20%;
-    animation-delay: 1.5s;
-  }
-
-  .icon-4 {
-    bottom: 15%;
-    right: 15%;
-    animation-delay: 4s;
-  }
-
-  .icon-5 {
-    top: 70%;
-    right: 25%;
-    animation-delay: 2s;
-  }
-
-  .icon-6 {
-    bottom: 30%;
-    left: 25%;
-    animation-delay: 5s;
-  }
-
-  .circle {
-    animation: pulse 15s infinite ease-in-out;
-  }
-
-  .circle-1 {
-    width: 300px;
-    height: 300px;
-    top: -100px;
-    right: -100px;
-  }
-
-  .circle-2 {
-    width: 400px;
-    height: 400px;
-    bottom: -150px;
-    left: -150px;
-    animation-delay: 3s;
-  }
-
-  .circle-3 {
-    width: 250px;
-    height: 250px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    animation-delay: 1.5s;
-  }
+  .circle { animation: pulse 15s infinite ease-in-out; }
+  .circle-1 { width: 300px; height: 300px; top: -100px; right: -100px; }
+  .circle-2 { width: 400px; height: 400px; bottom: -150px; left: -150px; animation-delay: 3s; }
+  .circle-3 { width: 250px; height: 250px; top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: 1.5s; }
 
   .stat-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  }
+
+  .quiz-table-row:hover {
+    background: rgba(79, 172, 254, 0.06);
+  }
+
+  .quiz-delete-btn:hover {
+    background: #c0392b !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
   }
 
   .leaderboard-row:hover {
@@ -386,70 +415,18 @@ export const adminReportsStyleString = `
   }
 
   @media (max-width: 768px) {
-    .report-icon {
-      font-size: 2rem;
-    }
-
-    .page-title {
-      font-size: 2rem;
-    }
-
-    .page-subtitle {
-      font-size: 1rem;
-    }
-
-    .stat-card {
-      padding: 1.5rem;
-    }
-
-    .stat-icon {
-      font-size: 2.5rem;
-      width: 60px;
-      height: 60px;
-    }
-
-    .stat-number {
-      font-size: 2rem;
-    }
-
-    .data-section {
-      padding: 1.5rem;
-    }
-
-    .leaderboard-section {
-      padding: 1.5rem;
-    }
-
-    .section-title {
-      font-size: 1.5rem;
-    }
-
-    .leaderboard-row {
-      padding: 1rem;
-      gap: 1rem;
-    }
-
-    .rank-badge {
-      min-width: 40px;
-      height: 40px;
-      font-size: 1rem;
-    }
-
-    .player-avatar-wrapper {
-      width: 40px;
-      height: 40px;
-    }
-
-    .player-username {
-      font-size: 1rem;
-    }
-
-    .combined-score {
-      font-size: 1.4rem;
-    }
-
-    .score-details {
-      font-size: 0.75rem;
-    }
+    .report-icon { font-size: 2rem; }
+    .stat-card { padding: 1.5rem; }
+    .stat-icon { font-size: 2.5rem; width: 60px; height: 60px; }
+    .stat-number { font-size: 2rem; }
+    .data-section { padding: 1.5rem; }
+    .leaderboard-section { padding: 1.5rem; }
+    .section-title { font-size: 1.5rem; }
+    .leaderboard-row { padding: 1rem; gap: 1rem; }
+    .rank-badge { min-width: 40px; height: 40px; font-size: 1rem; }
+    .player-avatar-wrapper { width: 40px; height: 40px; }
+    .player-username { font-size: 1rem; }
+    .combined-score { font-size: 1.4rem; }
+    .score-details { font-size: 0.75rem; }
   }
 `;
