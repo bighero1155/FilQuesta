@@ -182,7 +182,7 @@ const UserManagementCSS: React.FC = () => {
       }
 
       .btn-edit {
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: linear-gradient(135deg, #667eea, #b0ad48);
         color: white;
         box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
       }
