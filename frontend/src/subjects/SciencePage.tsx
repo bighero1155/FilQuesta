@@ -51,7 +51,7 @@ const SciencePage: React.FC = () => {
                 overflow: "hidden",
                 cursor: "pointer",
                 height: "320px",
-                backgroundImage: `url('/assets/humanbody.jpg')`,
+                backgroundImage: `url('/assets/earth.png')`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 transition: "all 0.4s ease",
