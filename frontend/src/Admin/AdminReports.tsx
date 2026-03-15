@@ -293,7 +293,7 @@ const AdminReports: React.FC = () => {
               <div className="admin-stat-icon" style={{...styles.statIcon, ...styles.statIconBlue}}>👥</div>
               <div style={styles.statContent}>
                 <h3 className="admin-stat-number" style={styles.statNumber}>{stats.totalVisits}</h3>
-                <p style={styles.statLabel}>Total Page Visits</p>
+                <p style={styles.statLabel}>Total Game Visits</p>
               </div>
             </div>
           </div>
