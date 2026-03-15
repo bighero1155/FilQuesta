@@ -55,11 +55,10 @@ const StudentLoginModal = ({
         <div className="sl-modal" onClick={(e) => e.stopPropagation()}>
           
           <div className="sl-header">
-            <img
-            src="/assets/logo.png"
-            alt="FilQuesta Logo"
-            className="topbar-logo"
-          />
+            {/* ✅ Replaced emoji with logo image */}
+            <div className="sl-logo">
+              <img src="/assets/logo.png" alt="FILQUESTA Logo" className="sl-logo-img" />
+            </div>
             <h2 className="sl-title">FILQUESTA</h2>
             <p className="sl-subtitle">Student Login Portal</p>
           </div>

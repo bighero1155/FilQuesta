@@ -51,9 +51,16 @@ const StudentLoginModalCSS = () => (
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2.5rem;
       border: 4px solid #fff;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    /* ✅ Logo image styles */
+    .sl-logo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     .sl-title {
@@ -220,7 +227,6 @@ const StudentLoginModalCSS = () => (
       .sl-logo {
         width: 70px;
         height: 70px;
-        font-size: 2rem;
       }
 
       .sl-title {
@@ -236,7 +242,6 @@ const StudentLoginModalCSS = () => (
       .sl-logo {
         width: 60px;
         height: 60px;
-        font-size: 1.8rem;
       }
 
       .sl-title {
