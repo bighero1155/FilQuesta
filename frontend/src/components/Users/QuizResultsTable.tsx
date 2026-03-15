@@ -9,9 +9,9 @@ interface PageVisit {
   updated_at: string;
   user?: {
     username?: string;
-    first_name?: string;   // ✅ added
-    middle_name?: string;  // ✅ added
-    last_name?: string;    // ✅ added
+    first_name?: string;
+    middle_name?: string;
+    last_name?: string;
   };
 }
 
@@ -49,9 +49,7 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
 }) => {
   const safePageVisits = Array.isArray(pageVisits) ? pageVisits : [];
   const safeQuizResults = Array.isArray(quizResults) ? quizResults : [];
-  const safeSharedQuizResults = Array.isArray(sharedQuizResults)
-    ? sharedQuizResults
-    : [];
+  const safeSharedQuizResults = Array.isArray(sharedQuizResults) ? sharedQuizResults : [];
 
   const formatTime = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`;
@@ -68,61 +66,51 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
 
   return (
     <>
-      <div className="quiz-results-container">
-        {/* Page Visits */}
-        <div className="quiz-results-card-wrapper">
-          <div className="quiz-results-card card-blue">
-            <div className="quiz-results-card-header">
-              <div className="quiz-results-header-left">
-                <div className="quiz-results-icon-circle blue">
-                  <i className="bi bi-activity quiz-results-icon"></i>
+      {/* Outer scroll wrapper — allows horizontal scroll on very small screens as fallback */}
+      <div className="qrt-scroll-wrapper">
+        <div className="qrt-container">
+
+          {/* ── Recent Game Visits ── */}
+          <div className="qrt-card qrt-card-blue">
+            <div className="qrt-header">
+              <div className="qrt-header-left">
+                <div className="qrt-icon-circle qrt-blue">
+                  <i className="bi bi-activity qrt-icon"></i>
                 </div>
-                <div>
-                  <h5 className="quiz-results-card-title">Recent Game Visits</h5>
-                  <p className="quiz-results-card-subtitle">User activity tracking</p>
+                <div className="qrt-header-text">
+                  <h5 className="qrt-title">Recent Game Visits</h5>
+                  <p className="qrt-subtitle">User activity tracking</p>
                 </div>
               </div>
-              <div className="quiz-results-badge">
-                {safePageVisits.length}
-              </div>
+              <span className="qrt-count-badge">{safePageVisits.length}</span>
             </div>
-            <div className="quiz-results-card-body">
+
+            <div className="qrt-body">
               {safePageVisits.length === 0 ? (
-                <div className="quiz-results-empty-state">
-                  <i className="bi bi-graph-up quiz-results-empty-icon"></i>
-                  <h6 className="quiz-results-empty-title">No page visits logged</h6>
-                  <p className="quiz-results-empty-text">User activity will appear here</p>
+                <div className="qrt-empty">
+                  <i className="bi bi-graph-up qrt-empty-icon"></i>
+                  <h6 className="qrt-empty-title">No page visits logged</h6>
+                  <p className="qrt-empty-text">User activity will appear here</p>
                 </div>
               ) : (
-                <div className="quiz-results-items-container">
+                <div className="qrt-list">
                   {safePageVisits.slice(0, 5).map((visit, index) => (
-                    <div
-                      key={visit.id}
-                      className={`quiz-results-item ${index !== safePageVisits.slice(0, 5).length - 1 ? 'with-border' : ''}`}
-                    >
-                      <div className="quiz-results-item-left">
-                        <div className="quiz-results-item-avatar">
-                          <i className="bi bi-person-circle quiz-results-avatar-icon"></i>
+                    <div key={visit.id} className={`qrt-item ${index < safePageVisits.slice(0, 5).length - 1 ? 'qrt-item-border' : ''}`}>
+                      <div className="qrt-item-left">
+                        <div className="qrt-avatar">
+                          <i className="bi bi-person-circle qrt-avatar-icon"></i>
                         </div>
-                        <div className="quiz-results-item-info">
-                          <div className="quiz-results-item-name">
-                            {/* ✅ Full name for page visits */}
+                        <div className="qrt-item-info">
+                          <div className="qrt-item-name">
                             {[visit.user?.first_name, visit.user?.middle_name, visit.user?.last_name]
-                              .filter(Boolean)
-                              .join(' ') || visit.user?.username || 'Unknown'}
+                              .filter(Boolean).join(' ') || visit.user?.username || 'Unknown'}
                           </div>
-                          <div className="quiz-results-item-page">
-                            {visit.page}
-                          </div>
+                          <div className="qrt-item-sub">{visit.page}</div>
                         </div>
                       </div>
-                      <div className="quiz-results-item-right">
-                        <div className="quiz-results-item-badge blue">
-                          {visit.visit_count} visits
-                        </div>
-                        <div className="quiz-results-item-time">
-                          {formatTime(visit.total_time_spent)}
-                        </div>
+                      <div className="qrt-item-right">
+                        <span className="qrt-badge qrt-badge-blue">{visit.visit_count} visits</span>
+                        <span className="qrt-time">{formatTime(visit.total_time_spent)}</span>
                       </div>
                     </div>
                   ))}
@@ -130,61 +118,51 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
               )}
             </div>
           </div>
-        </div>
 
-        {/* Quiz Results */}
-        <div className="quiz-results-card-wrapper">
-          <div className="quiz-results-card card-green">
-            <div className="quiz-results-card-header">
-              <div className="quiz-results-header-left">
-                <div className="quiz-results-icon-circle green">
-                  <i className="bi bi-clipboard-check quiz-results-icon"></i>
+          {/* ── Quick Quiz Results ── */}
+          <div className="qrt-card qrt-card-green">
+            <div className="qrt-header">
+              <div className="qrt-header-left">
+                <div className="qrt-icon-circle qrt-green">
+                  <i className="bi bi-clipboard-check qrt-icon"></i>
                 </div>
-                <div>
-                  <h5 className="quiz-results-card-title">Quick Quiz Results</h5>
-                  <p className="quiz-results-card-subtitle">Student performance overview</p>
+                <div className="qrt-header-text">
+                  <h5 className="qrt-title">Quick Quiz Results</h5>
+                  <p className="qrt-subtitle">Student performance overview</p>
                 </div>
               </div>
-              <div className="quiz-results-badge">
-                {safeQuizResults.length}
-              </div>
+              <span className="qrt-count-badge">{safeQuizResults.length}</span>
             </div>
-            <div className="quiz-results-card-body">
+
+            <div className="qrt-body">
               {safeQuizResults.length === 0 ? (
-                <div className="quiz-results-empty-state">
-                  <i className="bi bi-clipboard-data quiz-results-empty-icon"></i>
-                  <h6 className="quiz-results-empty-title">No quiz results yet</h6>
-                  <p className="quiz-results-empty-text">Quiz submissions will appear here</p>
+                <div className="qrt-empty">
+                  <i className="bi bi-clipboard-data qrt-empty-icon"></i>
+                  <h6 className="qrt-empty-title">No quiz results yet</h6>
+                  <p className="qrt-empty-text">Quiz submissions will appear here</p>
                 </div>
               ) : (
-                <div className="quiz-results-items-container">
+                <div className="qrt-list">
                   {safeQuizResults.slice(0, 5).map((result, index) => (
-                    <div
-                      key={result.submission_id}
-                      className={`quiz-results-item ${index !== safeQuizResults.slice(0, 5).length - 1 ? 'with-border' : ''}`}
-                    >
-                      <div className="quiz-results-item-left">
-                        <div className="quiz-results-item-avatar">
-                          <i className="bi bi-person-fill quiz-results-avatar-icon"></i>
+                    <div key={result.submission_id} className={`qrt-item ${index < safeQuizResults.slice(0, 5).length - 1 ? 'qrt-item-border' : ''}`}>
+                      <div className="qrt-item-left">
+                        <div className="qrt-avatar">
+                          <i className="bi bi-person-fill qrt-avatar-icon"></i>
                         </div>
-                        <div className="quiz-results-item-info">
-                          <div className="quiz-results-item-name">
-                            {result.student_name}
-                          </div>
-                          <div className="quiz-results-item-page">
-                            {result.quiz_title.length > 25
-                              ? `${result.quiz_title.substring(0, 25)}...`
+                        <div className="qrt-item-info">
+                          <div className="qrt-item-name">{result.student_name}</div>
+                          <div className="qrt-item-sub">
+                            {result.quiz_title.length > 22
+                              ? `${result.quiz_title.substring(0, 22)}...`
                               : result.quiz_title}
                           </div>
                         </div>
                       </div>
-                      <div className="quiz-results-item-right">
-                        <div className={`quiz-results-item-badge ${getScoreBadgeClass(result.score, result.total)}`}>
+                      <div className="qrt-item-right">
+                        <span className={`qrt-badge qrt-badge-${getScoreBadgeClass(result.score, result.total)}`}>
                           {result.score}/{result.total}
-                        </div>
-                        <div className="quiz-results-item-time">
-                          {new Date(result.submitted_at).toLocaleDateString()}
-                        </div>
+                        </span>
+                        <span className="qrt-time">{new Date(result.submitted_at).toLocaleDateString()}</span>
                       </div>
                     </div>
                   ))}
@@ -192,63 +170,55 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
               )}
             </div>
           </div>
-        </div>
 
-        {/* Shared Quiz Results */}
-        <div className="quiz-results-card-wrapper">
-          <div className="quiz-results-card card-purple">
-            <div className="quiz-results-card-header">
-              <div className="quiz-results-header-left">
-                <div className="quiz-results-icon-circle purple">
-                  <i className="bi bi-share quiz-results-icon"></i>
+          {/* ── Shared Quiz Results ── */}
+          <div className="qrt-card qrt-card-purple">
+            <div className="qrt-header">
+              <div className="qrt-header-left">
+                <div className="qrt-icon-circle qrt-purple">
+                  <i className="bi bi-share qrt-icon"></i>
                 </div>
-                <div>
-                  <h5 className="quiz-results-card-title">Shared Quiz Results</h5>
-                  <p className="quiz-results-card-subtitle">Collaborative assessments</p>
+                <div className="qrt-header-text">
+                  <h5 className="qrt-title">Shared Quiz Results</h5>
+                  <p className="qrt-subtitle">Collaborative assessments</p>
                 </div>
               </div>
-              <div className="quiz-results-badge">
-                {safeSharedQuizResults.length}
-              </div>
+              <span className="qrt-count-badge">{safeSharedQuizResults.length}</span>
             </div>
-            <div className="quiz-results-card-body">
+
+            <div className="qrt-body">
               {safeSharedQuizResults.length === 0 ? (
-                <div className="quiz-results-empty-state">
-                  <i className="bi bi-share-fill quiz-results-empty-icon"></i>
-                  <h6 className="quiz-results-empty-title">No shared quiz results yet</h6>
-                  <p className="quiz-results-empty-text">Shared quiz submissions will appear here</p>
+                <div className="qrt-empty">
+                  <i className="bi bi-share-fill qrt-empty-icon"></i>
+                  <h6 className="qrt-empty-title">No shared quiz results yet</h6>
+                  <p className="qrt-empty-text">Shared quiz submissions will appear here</p>
                 </div>
               ) : (
-                <div className="quiz-results-items-container">
+                <div className="qrt-list">
                   {safeSharedQuizResults.slice(0, 5).map((result, index) => (
-                    <div
-                      key={result.participant_id}
-                      className={`quiz-results-item ${index !== safeSharedQuizResults.slice(0, 5).length - 1 ? 'with-border' : ''}`}
-                    >
-                      <div className="quiz-results-item-left">
-                        <div className="quiz-results-item-avatar">
-                          <i className="bi bi-people-fill quiz-results-avatar-icon"></i>
+                    <div key={result.participant_id} className={`qrt-item ${index < safeSharedQuizResults.slice(0, 5).length - 1 ? 'qrt-item-border' : ''}`}>
+                      <div className="qrt-item-left">
+                        <div className="qrt-avatar">
+                          <i className="bi bi-people-fill qrt-avatar-icon"></i>
                         </div>
-                        <div className="quiz-results-item-info">
-                          <div className="quiz-results-item-name">
-                            {result.student_name}
-                          </div>
-                          <div className="quiz-results-item-page">
-                            {result.quiz_title.length > 25
-                              ? `${result.quiz_title.substring(0, 25)}...`
+                        <div className="qrt-item-info">
+                          <div className="qrt-item-name">{result.student_name}</div>
+                          <div className="qrt-item-sub">
+                            {result.quiz_title.length > 22
+                              ? `${result.quiz_title.substring(0, 22)}...`
                               : result.quiz_title}
                           </div>
                         </div>
                       </div>
-                      <div className="quiz-results-item-right">
-                        <div className={`quiz-results-item-badge ${getScoreBadgeClass(result.score, result.total)}`}>
+                      <div className="qrt-item-right">
+                        <span className={`qrt-badge qrt-badge-${getScoreBadgeClass(result.score, result.total)}`}>
                           {result.score}/{result.total}
-                        </div>
-                        <div className="quiz-results-item-time">
+                        </span>
+                        <span className="qrt-time">
                           {result.finished_at
                             ? new Date(result.finished_at).toLocaleDateString()
                             : "In Progress"}
-                        </div>
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -256,66 +226,73 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
               )}
             </div>
           </div>
+
         </div>
       </div>
 
       <style>{`
-        .quiz-results-container {
+        /* ── Scroll wrapper: fallback horizontal scroll on tiny screens ── */
+        .qrt-scroll-wrapper {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        /* ── Grid container ── */
+        .qrt-container {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-          gap: 1.5rem;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1.25rem;
+          min-width: 0;
         }
 
-        .quiz-results-card-wrapper {
-          display: flex;
-        }
-
-        .quiz-results-card {
-          flex: 1;
-          border-radius: 20px;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-          overflow: hidden;
+        /* ── Card ── */
+        .qrt-card {
           background: white;
-          transition: all 0.3s ease;
+          border-radius: 20px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+          overflow: hidden;
           border: 2px solid transparent;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          min-width: 0;
         }
 
-        .quiz-results-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        .qrt-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 15px 40px rgba(0,0,0,0.18);
         }
 
-        .quiz-results-card.card-blue {
-          border-color: rgba(59, 130, 246, 0.3);
-        }
+        .qrt-card-blue  { border-color: rgba(59,130,246,0.3); }
+        .qrt-card-green { border-color: rgba(16,185,129,0.3); }
+        .qrt-card-purple{ border-color: rgba(168,85,247,0.3); }
 
-        .quiz-results-card.card-green {
-          border-color: rgba(16, 185, 129, 0.3);
-        }
-
-        .quiz-results-card.card-purple {
-          border-color: rgba(168, 85, 247, 0.3);
-        }
-
-        .quiz-results-card-header {
-          padding: 1.5rem;
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(249, 250, 251, 0.9) 100%);
-          border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+        /* ── Header ── */
+        .qrt-header {
+          padding: 1rem 1.1rem;
+          background: linear-gradient(135deg,rgba(255,255,255,.9) 0%,rgba(249,250,251,.9) 100%);
+          border-bottom: 2px solid rgba(0,0,0,.05);
           display: flex;
           justify-content: space-between;
           align-items: center;
+          gap: 0.5rem;
         }
 
-        .quiz-results-header-left {
+        .qrt-header-left {
           display: flex;
           align-items: center;
-          gap: 1rem;
+          gap: 0.75rem;
           flex: 1;
+          min-width: 0;
         }
 
-        .quiz-results-icon-circle {
-          width: 50px;
-          height: 50px;
+        .qrt-header-text {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .qrt-icon-circle {
+          width: 44px;
+          height: 44px;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -323,219 +300,173 @@ const QuizResultsTable: React.FC<QuizResultsTableProps> = ({
           flex-shrink: 0;
         }
 
-        .quiz-results-icon-circle.blue {
-          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        }
+        .qrt-blue   { background: linear-gradient(135deg,#3b82f6,#2563eb); }
+        .qrt-green  { background: linear-gradient(135deg,#10b981,#059669); }
+        .qrt-purple { background: linear-gradient(135deg,#a855f7,#9333ea); }
 
-        .quiz-results-icon-circle.green {
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        }
+        .qrt-icon { font-size: 1.3rem; color: white; }
 
-        .quiz-results-icon-circle.purple {
-          background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
-        }
-
-        .quiz-results-icon {
-          font-size: 1.5rem;
-          color: white;
-        }
-
-        .quiz-results-card-title {
+        .qrt-title {
           margin: 0;
-          font-size: 1.1rem;
+          font-size: clamp(0.82rem, 2vw, 1.05rem);
           font-weight: 700;
           color: #1f2937;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
-        .quiz-results-card-subtitle {
-          margin: 0.25rem 0 0 0;
-          font-size: 0.85rem;
+        .qrt-subtitle {
+          margin: 0.2rem 0 0;
+          font-size: clamp(0.7rem, 1.6vw, 0.82rem);
           color: #6b7280;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
-        .quiz-results-badge {
-          background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        .qrt-count-badge {
+          background: linear-gradient(135deg,#f3f4f6,#e5e7eb);
           color: #374151;
-          padding: 0.5rem 1rem;
+          padding: 0.3rem 0.7rem;
           border-radius: 50px;
-          font-size: 0.9rem;
+          font-size: clamp(0.75rem, 1.8vw, 0.9rem);
           font-weight: 700;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 6px rgba(0,0,0,.08);
+          flex-shrink: 0;
         }
 
-        .quiz-results-card-body {
-          padding: 1.5rem;
-        }
+        /* ── Body ── */
+        .qrt-body { padding: 1rem 1.1rem; }
 
-        .quiz-results-empty-state {
-          text-align: center;
-          padding: 2rem 1rem;
-        }
+        /* ── Empty state ── */
+        .qrt-empty { text-align: center; padding: 1.5rem 0.5rem; }
+        .qrt-empty-icon { font-size: 2.5rem; color: #d1d5db; display: block; margin-bottom: 0.75rem; }
+        .qrt-empty-title { font-size: 0.95rem; font-weight: 600; color: #6b7280; margin-bottom: 0.35rem; }
+        .qrt-empty-text  { font-size: 0.8rem; color: #9ca3af; margin: 0; }
 
-        .quiz-results-empty-icon {
-          font-size: 3rem;
-          color: #d1d5db;
-          margin-bottom: 1rem;
-        }
+        /* ── List items ── */
+        .qrt-list { display: flex; flex-direction: column; }
 
-        .quiz-results-empty-title {
-          font-size: 1rem;
-          font-weight: 600;
-          color: #6b7280;
-          margin-bottom: 0.5rem;
-        }
-
-        .quiz-results-empty-text {
-          font-size: 0.875rem;
-          color: #9ca3af;
-          margin: 0;
-        }
-
-        .quiz-results-items-container {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .quiz-results-item {
+        .qrt-item {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 1rem 0;
+          padding: 0.75rem 0;
+          gap: 0.5rem;
         }
 
-        .quiz-results-item.with-border {
-          border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
+        .qrt-item-border { border-bottom: 1px solid rgba(0,0,0,.05); }
 
-        .quiz-results-item-left {
+        .qrt-item-left {
           display: flex;
           align-items: center;
-          gap: 1rem;
+          gap: 0.65rem;
           flex: 1;
           min-width: 0;
         }
 
-        .quiz-results-item-avatar {
-          width: 40px;
-          height: 40px;
+        .qrt-avatar {
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+          background: linear-gradient(135deg,#e5e7eb,#d1d5db);
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
         }
 
-        .quiz-results-avatar-icon {
-          font-size: 1.5rem;
-          color: #6b7280;
-        }
+        .qrt-avatar-icon { font-size: 1.3rem; color: #6b7280; }
 
-        .quiz-results-item-info {
-          flex: 1;
-          min-width: 0;
-        }
+        .qrt-item-info { flex: 1; min-width: 0; }
 
-        .quiz-results-item-name {
-          font-size: 0.95rem;
+        .qrt-item-name {
+          font-size: clamp(0.78rem, 2vw, 0.92rem);
           font-weight: 600;
           color: #1f2937;
-          margin-bottom: 0.25rem;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
 
-        .quiz-results-item-page {
-          font-size: 0.85rem;
+        .qrt-item-sub {
+          font-size: clamp(0.7rem, 1.7vw, 0.82rem);
           color: #6b7280;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
 
-        .quiz-results-item-right {
+        .qrt-item-right {
           display: flex;
           flex-direction: column;
           align-items: flex-end;
-          gap: 0.25rem;
+          gap: 0.2rem;
           flex-shrink: 0;
-          margin-left: 1rem;
         }
 
-        .quiz-results-item-badge {
-          padding: 0.375rem 0.75rem;
+        .qrt-badge {
+          padding: 0.25rem 0.6rem;
           border-radius: 50px;
-          font-size: 0.85rem;
+          font-size: clamp(0.68rem, 1.7vw, 0.82rem);
           font-weight: 700;
           color: white;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
           white-space: nowrap;
         }
 
-        .quiz-results-item-badge.blue {
-          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        }
+        .qrt-badge-blue   { background: linear-gradient(135deg,#3b82f6,#2563eb); }
+        .qrt-badge-green  { background: linear-gradient(135deg,#10b981,#059669); }
+        .qrt-badge-yellow { background: linear-gradient(135deg,#f59e0b,#d97706); }
+        .qrt-badge-red    { background: linear-gradient(135deg,#ef4444,#dc2626); }
 
-        .quiz-results-item-badge.green {
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        }
-
-        .quiz-results-item-badge.yellow {
-          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        }
-
-        .quiz-results-item-badge.red {
-          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        }
-
-        .quiz-results-item-time {
-          font-size: 0.75rem;
+        .qrt-time {
+          font-size: clamp(0.65rem, 1.5vw, 0.75rem);
           color: #9ca3af;
           white-space: nowrap;
         }
 
-        /* Responsive design */
-        @media (max-width: 768px) {
-          .quiz-results-container {
+        /* ── Responsive breakpoints ── */
+
+        /* Tablet: 2 columns */
+        @media (max-width: 992px) {
+          .qrt-container {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        /* Mobile: 1 column, no horizontal scroll needed */
+        @media (max-width: 640px) {
+          .qrt-scroll-wrapper {
+            overflow-x: visible;
+          }
+
+          .qrt-container {
             grid-template-columns: 1fr;
+            gap: 1rem;
           }
 
-          .quiz-results-card-header {
-            padding: 1rem;
+          .qrt-header { padding: 0.85rem 1rem; }
+          .qrt-body   { padding: 0.85rem 1rem; }
+
+          .qrt-icon-circle { width: 38px; height: 38px; }
+          .qrt-icon { font-size: 1.1rem; }
+
+          .qrt-item { padding: 0.65rem 0; }
+
+          .qrt-avatar { width: 32px; height: 32px; }
+          .qrt-avatar-icon { font-size: 1.1rem; }
+        }
+
+        /* Extra small: ensure nothing overflows */
+        @media (max-width: 360px) {
+          .qrt-header {
+            flex-wrap: wrap;
+            gap: 0.4rem;
           }
 
-          .quiz-results-card-body {
-            padding: 1rem;
-          }
-
-          .quiz-results-icon-circle {
-            width: 40px;
-            height: 40px;
-          }
-
-          .quiz-results-icon {
-            font-size: 1.2rem;
-          }
-
-          .quiz-results-card-title {
-            font-size: 1rem;
-          }
-
-          .quiz-results-card-subtitle {
-            font-size: 0.75rem;
-          }
-
-          .quiz-results-item {
-            padding: 0.75rem 0;
-          }
-
-          .quiz-results-item-name {
-            font-size: 0.875rem;
-          }
-
-          .quiz-results-item-page {
-            font-size: 0.75rem;
+          .qrt-count-badge {
+            margin-left: auto;
           }
         }
       `}</style>
