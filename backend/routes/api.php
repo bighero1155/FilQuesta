@@ -84,6 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/shared-sessions/{code}/reaction', [QuizController::class, 'storeReaction']);
     Route::delete('/shared-sessions/{session}', [QuizController::class, 'deleteSharedSession']);
 
+    Route::get('/classrooms', [ClassroomController::class, 'index']);
     Route::post('/classrooms', [ClassroomController::class, 'store']);              
     Route::post('/classrooms/join', [ClassroomController::class, 'join']);          
     Route::get('/classrooms/{id}', [ClassroomController::class, 'show']);    

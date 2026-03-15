@@ -104,4 +104,8 @@ class ClassroomController extends Controller
             'message' => 'Classroom deleted successfully',
         ], 200);
     }
+    public function index()
+    {
+        return Classroom::with(['teacher', 'students'])->get();
+    }
 }
