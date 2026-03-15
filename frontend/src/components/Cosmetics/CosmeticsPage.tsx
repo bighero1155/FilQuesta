@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   Cosmetic,
   getCosmetics,
@@ -19,14 +19,25 @@ const CosmeticsPage: React.FC = () => {
   });
 
   const [existingImageUrl, setExistingImageUrl] = useState<string | undefined>(undefined);
-
-  // ✅ FIX: Track a cache-bust timestamp that only updates after a successful save
   const [cacheBust, setCacheBust] = useState<number>(Date.now());
+
+  // ✅ FIX: useRef so fetchCosmetics always reads the LATEST bust value
+  // without needing to be recreated (avoids stale closure)
+  const cacheBustRef = useRef<number>(cacheBust);
 
   const fetchCosmetics = useCallback(async () => {
     try {
       const data = await getCosmetics();
-      setCosmetics(data);
+      // ✅ FIX: Bake the latest ?t= directly into each image URL on the data
+      // so card <img> srcs are already correct when setCosmetics fires
+      const busted = data.map((c) => ({
+        ...c,
+        image:
+          typeof c.image === "string"
+            ? `${c.image.split("?")[0]}?t=${cacheBustRef.current}`
+            : c.image,
+      }));
+      setCosmetics(busted);
     } catch (err) {
       console.error("Failed to fetch cosmetics:", err);
       alert("Failed to load cosmetics. Are you logged in?");
@@ -46,8 +57,10 @@ const CosmeticsPage: React.FC = () => {
         await createCosmetic(form);
       }
 
-      // ✅ FIX: Bump cache bust BEFORE re-fetching so new images load fresh
-      setCacheBust(Date.now());
+      // ✅ FIX: Update ref FIRST so fetchCosmetics uses the new timestamp
+      const newBust = Date.now();
+      cacheBustRef.current = newBust;
+      setCacheBust(newBust);
 
       setForm({
         cosmetic_id: undefined,
@@ -58,6 +71,8 @@ const CosmeticsPage: React.FC = () => {
         image: undefined,
       });
       setExistingImageUrl(undefined);
+
+      // fetchCosmetics now reads cacheBustRef.current = newBust already
       await fetchCosmetics();
     } catch (err) {
       console.error("Failed to save cosmetic:", err);
@@ -86,9 +101,9 @@ const CosmeticsPage: React.FC = () => {
       image: undefined,
     });
 
-    // ✅ FIX: Store existing image URL with current cache bust so preview shows immediately
     if (typeof cosmetic.image === "string") {
-      setExistingImageUrl(`${cosmetic.image}?t=${cacheBust}`);
+      const base = cosmetic.image.split("?")[0];
+      setExistingImageUrl(`${base}?t=${cacheBustRef.current}`);
     }
   };
 
@@ -100,12 +115,11 @@ const CosmeticsPage: React.FC = () => {
     }
   };
 
-  // ✅ FIX: Stable preview URL — blob for new file, stored URL (with cache bust) for existing
   const getPreviewUrl = (): string | undefined => {
     if (form.image instanceof File) {
       return URL.createObjectURL(form.image);
     }
-    return existingImageUrl; // already has ?t=... baked in from handleEdit
+    return existingImageUrl;
   };
 
   return (
@@ -225,7 +239,8 @@ const CosmeticsPage: React.FC = () => {
                                 (c) => c.cosmetic_id === form.cosmetic_id
                               );
                               if (original && typeof original.image === "string") {
-                                setExistingImageUrl(`${original.image}?t=${cacheBust}`);
+                                const base = original.image.split("?")[0];
+                                setExistingImageUrl(`${base}?t=${cacheBustRef.current}`);
                               }
                             }
                           }}
@@ -279,11 +294,11 @@ const CosmeticsPage: React.FC = () => {
                   </span>
                 </div>
 
-                {/* ✅ FIX: Use cacheBust in card images so they refresh after edit */}
+                {/* ✅ image URL already has ?t= baked in from fetchCosmetics */}
                 {c.image && typeof c.image === "string" && (
                   <div className="cosmetic-image-wrapper">
                     <img
-                      src={`${c.image}?t=${cacheBust}`}
+                      src={c.image}
                       alt={c.name}
                       className="cosmetic-image"
                       onError={(e) => {
