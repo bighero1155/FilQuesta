@@ -319,23 +319,62 @@ export default class WordWizardScene extends Phaser.Scene {
 
   private createLevelInfoText() {
     const isMobile = this.scale.width < 768;
-    const levelInfoFontSize = isMobile ? "16px" : "22px";
-    const levelInfoY = isMobile ? 55 : 60;
-    const levelInfoX = isMobile ? this.scale.width - 380 : this.scale.width - 1400;
-
-    this.add.text(
-      levelInfoX,
-      levelInfoY,
-      `${this.getCategoryDisplayName()}\nLevel ${this.currentLevelInCategory}`,
-      {
-        fontSize: levelInfoFontSize,
+ 
+    const x = 80; // ← moved right (was 20)
+    const y = isMobile ? 56 : 58;
+ 
+    const accentColor = this.getCategoryAccentColor();
+ 
+    // ── Category name ──
+    this.add
+      .text(x, y, this.getCategoryDisplayName(), {
+        fontSize: isMobile ? "28px" : "34px",
+        fontFamily: '"Courier New", Courier, monospace',
+        fontStyle: "bold",
+        color: accentColor,
+        stroke: "#000000",
+        strokeThickness: 6,
+        shadow: {
+          offsetX: 4,
+          offsetY: 4,
+          color: "#000000",
+          blur: 0,
+          fill: true,
+        },
+      })
+      .setDepth(50);
+ 
+    // ── Level line ──
+    this.add
+      .text(x, y + (isMobile ? 38 : 44), `▸ LEVEL  ${this.currentLevelInCategory}`, {
+        fontSize: isMobile ? "22px" : "28px",
+        fontFamily: '"Courier New", Courier, monospace',
         fontStyle: "bold",
         color: "#ffffff",
-        backgroundColor: "#4a5568dd",
-        padding: isMobile ? { x: 8, y: 4 } : { x: 12, y: 6 },
-        align: "center",
-      }
-    );
+        stroke: "#000000",
+        strokeThickness: 5,
+        shadow: {
+          offsetX: 3,
+          offsetY: 3,
+          color: "#000000",
+          blur: 0,
+          fill: true,
+        },
+        letterSpacing: 2,
+      })
+      .setDepth(50);
+  }
+ 
+  // 🎨 Returns a hex color string matching the current category accent
+  private getCategoryAccentColor(): string {
+    const colors: Record<string, string> = {
+      BASIC:    "#4ade80",
+      NORMAL:   "#60a5fa",
+      HARD:     "#f87171",
+      ADVANCED: "#fb923c",
+      EXPERT:   "#a78bfa",
+    };
+    return colors[this.currentCategoryId] ?? "#ffffff";
   }
 
   private async handleSceneEnd() {

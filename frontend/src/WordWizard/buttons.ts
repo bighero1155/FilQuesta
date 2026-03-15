@@ -123,7 +123,7 @@ export function createQuitButton(scene: Phaser.Scene) {
   const isMobile = scene.scale.width < 768;
   
   const x = isMobile ? 80 : 95;
-  const y = isMobile ? 630 : 750;
+  const y = isMobile ? 630 : 700;
   
   const width = isMobile ? 140 : 150;
   const height = isMobile ? 60 : 65;
