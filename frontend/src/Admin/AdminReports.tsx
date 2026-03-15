@@ -23,9 +23,7 @@ interface PageVisit {
   visit_count: number;
   total_time_spent: number;
   updated_at: string;
-  user?: {
-    username?: string;
-  };
+  user?: { username?: string };
 }
 
 interface QuizResult {
@@ -125,30 +123,24 @@ const AdminReports: React.FC = () => {
         axios.get("/classrooms"),
       ]);
 
-      // ✅ Handle both response formats
       setPageVisits(Array.isArray(pageVisitsRes.data) ? pageVisitsRes.data : pageVisitsRes.data.data || []);
       setQuizResults(Array.isArray(quizResultsRes.data) ? quizResultsRes.data : quizResultsRes.data.data || []);
       setSharedQuizResults(Array.isArray(sharedQuizResultsRes.data) ? sharedQuizResultsRes.data : sharedQuizResultsRes.data.data || []);
 
-      // Normalize avatar URLs
       const leaderboardData = Array.isArray(leaderboardRes.data) ? leaderboardRes.data : leaderboardRes.data.data || [];
-      const normalizedLeaderboard = leaderboardData.map((player: LeaderboardUser) => ({
+      setLeaderboard(leaderboardData.map((player: LeaderboardUser) => ({
         ...player,
         avatar: player.avatar ? getImageUrl(player.avatar) : undefined,
-      }));
-      setLeaderboard(normalizedLeaderboard);
+      })));
 
-      // User counts
       const usersData: User[] = Array.isArray(usersRes.data) ? usersRes.data : usersRes.data.data || [];
       setTotalStudents(usersData.filter((u) => u.role === "student").length);
       setTotalTeachers(usersData.filter((u) => u.role === "teacher").length);
 
-      // Quizzes
       const quizzesData: Quiz[] = Array.isArray(quizzesRes.data) ? quizzesRes.data : quizzesRes.data.data || [];
       setQuizzes(quizzesData);
       setTotalQuizzes(quizzesData.length);
 
-      // Classrooms
       const classroomsData: Classroom[] = Array.isArray(classroomsRes.data) ? classroomsRes.data : classroomsRes.data.data || [];
       setClassrooms(classroomsData);
       setTotalClassrooms(classroomsData.length);
@@ -197,9 +189,7 @@ const AdminReports: React.FC = () => {
 
   const handleQuizUpdated = (updatedQuiz: QuizServiceType) => {
     setQuizzes((prev) =>
-      prev.map((q) =>
-        q.quiz_id === updatedQuiz.quiz_id ? (updatedQuiz as unknown as Quiz) : q
-      )
+      prev.map((q) => q.quiz_id === updatedQuiz.quiz_id ? (updatedQuiz as unknown as Quiz) : q)
     );
     setEditQuiz(null);
     showSuccess("Quiz updated successfully!");
@@ -209,11 +199,10 @@ const AdminReports: React.FC = () => {
     const safePageVisits = Array.isArray(pageVisits) ? pageVisits : [];
     const safeQuizResults = Array.isArray(quizResults) ? quizResults : [];
     const safeSharedQuizResults = Array.isArray(sharedQuizResults) ? sharedQuizResults : [];
-
-    const totalVisits = safePageVisits.reduce((sum, visit) => sum + visit.visit_count, 0);
-    const totalSubmissions = safeQuizResults.length + safeSharedQuizResults.length;
-
-    return { totalVisits, totalSubmissions };
+    return {
+      totalVisits: safePageVisits.reduce((sum, visit) => sum + visit.visit_count, 0),
+      totalSubmissions: safeQuizResults.length + safeSharedQuizResults.length,
+    };
   };
 
   const stats = calculateStats();
@@ -280,108 +269,105 @@ const AdminReports: React.FC = () => {
       {bgElements}
 
       <div className="container position-relative" style={{ zIndex: 2 }}>
-        <div className="text-center mb-5" style={styles.pageHeader}>
-          <h1 style={styles.pageTitle}>📊 Reports & Analytics</h1>
-          <p style={styles.pageSubtitle}>
+
+        {/* Page Header */}
+        <div className="text-center mb-4 admin-reports-header" style={styles.pageHeader}>
+          <h1 className="admin-page-title" style={styles.pageTitle}>📊 Reports & Analytics</h1>
+          <p className="admin-page-subtitle" style={styles.pageSubtitle}>
             Track student activity, quiz performance, and engagement metrics
           </p>
         </div>
 
         {/* Global success alert */}
         {actionSuccess && (
-          <div style={styles.deleteSuccessAlert} className="mb-4">
+          <div style={styles.deleteSuccessAlert} className="mb-3">
             <i className="bi bi-check-circle-fill"></i>
             <span>{actionSuccess}</span>
           </div>
         )}
 
-        {/* Stats Cards - Row 1 */}
-        <div className="row mb-4">
-          <div className="col-md-4 mb-4">
+        {/* ── Stats Row 1: Visits · Submissions · Quizzes ── */}
+        <div className="row g-3 mb-3 admin-reports-row">
+          <div className="col-6 col-md-4">
             <div className="stat-card" style={styles.statCard}>
-              <div style={{...styles.statIcon, ...styles.statIconBlue}}>👥</div>
+              <div className="admin-stat-icon" style={{...styles.statIcon, ...styles.statIconBlue}}>👥</div>
               <div style={styles.statContent}>
-                <h3 style={styles.statNumber}>{stats.totalVisits}</h3>
+                <h3 className="admin-stat-number" style={styles.statNumber}>{stats.totalVisits}</h3>
                 <p style={styles.statLabel}>Total Page Visits</p>
               </div>
             </div>
           </div>
-
-          <div className="col-md-4 mb-4">
+          <div className="col-6 col-md-4">
             <div className="stat-card" style={styles.statCard}>
-              <div style={{...styles.statIcon, ...styles.statIconGreen}}>📝</div>
+              <div className="admin-stat-icon" style={{...styles.statIcon, ...styles.statIconGreen}}>📝</div>
               <div style={styles.statContent}>
-                <h3 style={styles.statNumber}>{stats.totalSubmissions}</h3>
+                <h3 className="admin-stat-number" style={styles.statNumber}>{stats.totalSubmissions}</h3>
                 <p style={styles.statLabel}>Quiz Submissions</p>
               </div>
             </div>
           </div>
-
-          <div className="col-md-4 mb-4">
+          <div className="col-6 col-md-4">
             <div className="stat-card" style={styles.statCard}>
-              <div style={{...styles.statIcon, ...styles.statIconPurple}}>📋</div>
+              <div className="admin-stat-icon" style={{...styles.statIcon, ...styles.statIconPurple}}>📋</div>
               <div style={styles.statContent}>
-                <h3 style={styles.statNumber}>{totalQuizzes}</h3>
+                <h3 className="admin-stat-number" style={styles.statNumber}>{totalQuizzes}</h3>
                 <p style={styles.statLabel}>Total Quizzes</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Stats Cards - Row 2 */}
-        <div className="row mb-5">
-          <div className="col-md-4 mb-4">
+        {/* ── Stats Row 2: Students · Teachers · Classrooms ── */}
+        <div className="row g-3 mb-4 admin-reports-row">
+          <div className="col-6 col-md-4">
             <div className="stat-card" style={styles.statCard}>
-              <div style={{...styles.statIcon, ...styles.statIconPink}}>🎓</div>
+              <div className="admin-stat-icon" style={{...styles.statIcon, ...styles.statIconPink}}>🎓</div>
               <div style={styles.statContent}>
-                <h3 style={styles.statNumber}>{totalStudents}</h3>
+                <h3 className="admin-stat-number" style={styles.statNumber}>{totalStudents}</h3>
                 <p style={styles.statLabel}>Total Students</p>
               </div>
             </div>
           </div>
-
-          <div className="col-md-4 mb-4">
+          <div className="col-6 col-md-4">
             <div className="stat-card" style={styles.statCard}>
-              <div style={{...styles.statIcon, ...styles.statIconCyan}}>👩‍🏫</div>
+              <div className="admin-stat-icon" style={{...styles.statIcon, ...styles.statIconCyan}}>👩‍🏫</div>
               <div style={styles.statContent}>
-                <h3 style={styles.statNumber}>{totalTeachers}</h3>
+                <h3 className="admin-stat-number" style={styles.statNumber}>{totalTeachers}</h3>
                 <p style={styles.statLabel}>Total Teachers</p>
               </div>
             </div>
           </div>
-
-          <div className="col-md-4 mb-4">
+          <div className="col-6 col-md-4">
             <div className="stat-card" style={styles.statCard}>
-              <div style={{...styles.statIcon, ...styles.statIconOrange}}>🏫</div>
+              <div className="admin-stat-icon" style={{...styles.statIcon, ...styles.statIconOrange}}>🏫</div>
               <div style={styles.statContent}>
-                <h3 style={styles.statNumber}>{totalClassrooms}</h3>
+                <h3 className="admin-stat-number" style={styles.statNumber}>{totalClassrooms}</h3>
                 <p style={styles.statLabel}>Total Classrooms</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Quizzes Table */}
-        <div className="mb-5" style={styles.dataSection}>
-          <h2 className="mb-4" style={{...styles.sectionTitle, fontSize: '1.5rem'}}>
+        {/* ── Quizzes Table ── */}
+        <div className="mb-4 admin-data-section" style={styles.dataSection}>
+          <h2 className="mb-3 admin-section-title" style={{...styles.sectionTitle, fontSize: 'clamp(1.1rem, 3vw, 1.5rem)'}}>
             📋 All Quizzes
           </h2>
-
           {quizzes.length === 0 ? (
             <div className="text-center py-4" style={{ color: '#7f8c8d' }}>
               <i className="bi bi-journal-x" style={{ fontSize: '2.5rem' }}></i>
-              <p className="mt-2">No quizzes found.</p>
+              <p className="mt-2 mb-0">No quizzes found.</p>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
+            <div className="admin-table-wrapper" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
               <table style={styles.quizTable}>
                 <thead>
                   <tr>
                     <th style={styles.quizTh}>#</th>
                     <th style={styles.quizTh}>Title</th>
-                    <th style={styles.quizTh}>Description</th>
+                    <th style={{...styles.quizTh, display: 'none' as any}} className="d-none d-md-table-cell">Description</th>
                     <th style={styles.quizTh}>Teacher</th>
-                    <th style={{...styles.quizTh, textAlign: 'center'}}>Questions</th>
+                    <th style={{...styles.quizTh, textAlign: 'center'}}>Qs</th>
                     <th style={{...styles.quizTh, textAlign: 'center'}}>Actions</th>
                   </tr>
                 </thead>
@@ -389,32 +375,26 @@ const AdminReports: React.FC = () => {
                   {quizzes.map((quiz, index) => (
                     <tr key={quiz.quiz_id} className="quiz-table-row" style={styles.quizTr}>
                       <td style={styles.quizTd}>{index + 1}</td>
-                      <td style={{...styles.quizTd, fontWeight: 600, color: '#2c3e50'}}>{quiz.title}</td>
-                      <td style={styles.quizTd}>
+                      <td style={{...styles.quizTd, fontWeight: 600, color: '#2c3e50', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>
+                        {quiz.title}
+                      </td>
+                      <td className="d-none d-md-table-cell" style={styles.quizTd}>
                         <span style={{ color: '#7f8c8d' }}>{quiz.description || "No description"}</span>
                       </td>
-                      <td style={styles.quizTd}>{getTeacherName(quiz)}</td>
+                      <td style={{...styles.quizTd, maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>
+                        {getTeacherName(quiz)}
+                      </td>
                       <td style={{...styles.quizTd, textAlign: 'center'}}>
                         <span style={styles.quizBadge}>
                           {Array.isArray(quiz.questions) ? quiz.questions.length : 0}
                         </span>
                       </td>
                       <td style={{...styles.quizTd, textAlign: 'center'}}>
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                          <button
-                            className="quiz-edit-btn"
-                            onClick={() => handleEditClick(quiz)}
-                            style={styles.quizEditBtn}
-                            title="Edit Quiz"
-                          >
+                        <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                          <button className="quiz-edit-btn" onClick={() => handleEditClick(quiz)} style={styles.quizEditBtn} title="Edit Quiz">
                             <i className="bi bi-pencil"></i>
                           </button>
-                          <button
-                            className="quiz-delete-btn"
-                            onClick={() => handleDeleteQuiz(quiz.quiz_id)}
-                            style={styles.quizDeleteBtn}
-                            title="Delete Quiz"
-                          >
+                          <button className="quiz-delete-btn" onClick={() => handleDeleteQuiz(quiz.quiz_id)} style={styles.quizDeleteBtn} title="Delete Quiz">
                             <i className="bi bi-trash"></i>
                           </button>
                         </div>
@@ -427,25 +407,24 @@ const AdminReports: React.FC = () => {
           )}
         </div>
 
-        {/* Classrooms Table */}
-        <div className="mb-5" style={styles.dataSection}>
-          <h2 className="mb-4" style={{...styles.sectionTitle, fontSize: '1.5rem'}}>
+        {/* ── Classrooms Table ── */}
+        <div className="mb-4 admin-data-section" style={styles.dataSection}>
+          <h2 className="mb-3 admin-section-title" style={{...styles.sectionTitle, fontSize: 'clamp(1.1rem, 3vw, 1.5rem)'}}>
             🏫 All Classrooms
           </h2>
-
           {classrooms.length === 0 ? (
             <div className="text-center py-4" style={{ color: '#7f8c8d' }}>
               <i className="bi bi-building-x" style={{ fontSize: '2.5rem' }}></i>
-              <p className="mt-2">No classrooms found.</p>
+              <p className="mt-2 mb-0">No classrooms found.</p>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
+            <div className="admin-table-wrapper" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
               <table style={styles.quizTable}>
                 <thead>
                   <tr>
                     <th style={styles.quizTh}>#</th>
                     <th style={styles.quizTh}>Title</th>
-                    <th style={styles.quizTh}>Description</th>
+                    <th className="d-none d-md-table-cell" style={styles.quizTh}>Description</th>
                     <th style={styles.quizTh}>Teacher</th>
                     <th style={{...styles.quizTh, textAlign: 'center'}}>Code</th>
                     <th style={{...styles.quizTh, textAlign: 'center'}}>Students</th>
@@ -456,11 +435,15 @@ const AdminReports: React.FC = () => {
                   {classrooms.map((classroom, index) => (
                     <tr key={classroom.classroom_id} className="quiz-table-row" style={styles.quizTr}>
                       <td style={styles.quizTd}>{index + 1}</td>
-                      <td style={{...styles.quizTd, fontWeight: 600, color: '#2c3e50'}}>{classroom.title}</td>
-                      <td style={styles.quizTd}>
+                      <td style={{...styles.quizTd, fontWeight: 600, color: '#2c3e50', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>
+                        {classroom.title}
+                      </td>
+                      <td className="d-none d-md-table-cell" style={styles.quizTd}>
                         <span style={{ color: '#7f8c8d' }}>{classroom.description || "No description"}</span>
                       </td>
-                      <td style={styles.quizTd}>{getTeacherName(classroom)}</td>
+                      <td style={{...styles.quizTd, maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>
+                        {getTeacherName(classroom)}
+                      </td>
                       <td style={{...styles.quizTd, textAlign: 'center'}}>
                         <span style={{...styles.quizBadge, background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'}}>
                           {classroom.code}
@@ -489,8 +472,8 @@ const AdminReports: React.FC = () => {
           )}
         </div>
 
-        {/* Quiz Results / Submissions Table */}
-        <div className="mb-5" style={styles.dataSection}>
+        {/* ── Quiz Results / Submissions Table ── */}
+        <div className="mb-4 admin-data-section" style={styles.dataSection}>
           <QuizResultsTable
             pageVisits={pageVisits}
             quizResults={quizResults}
@@ -498,9 +481,11 @@ const AdminReports: React.FC = () => {
           />
         </div>
 
-        {/* Leaderboard Section */}
+        {/* ── Leaderboard ── */}
         <div style={styles.leaderboardSection}>
-          <h2 className="text-center mb-4" style={styles.sectionTitle}>🏆 Top Players Leaderboard</h2>
+          <h2 className="text-center mb-3 admin-section-title" style={styles.sectionTitle}>
+            🏆 Top Players Leaderboard
+          </h2>
           <div style={styles.leaderboardContainer}>
             {leaderboard.slice(0, 10).map((player, index) => (
               <div
@@ -514,23 +499,20 @@ const AdminReports: React.FC = () => {
                 <div style={styles.playerInfoSection}>
                   <div style={styles.playerAvatarWrapper}>
                     {player.avatar?.startsWith("bi") ? (
-                      <i className={`${player.avatar} fs-3`}></i>
+                      <i className={`${player.avatar} fs-4`}></i>
                     ) : player.avatar ? (
                       <img
                         src={player.avatar}
                         alt="avatar"
                         style={styles.playerAvatarImg}
                         onError={(e) => {
-                          console.error("Failed to load avatar:", player.avatar);
                           e.currentTarget.style.display = 'none';
                           const parent = e.currentTarget.parentElement;
-                          if (parent) {
-                            parent.innerHTML = '<i class="bi bi-person-circle fs-3"></i>';
-                          }
+                          if (parent) parent.innerHTML = '<i class="bi bi-person-circle fs-4"></i>';
                         }}
                       />
                     ) : (
-                      <i className="bi bi-person-circle fs-3"></i>
+                      <i className="bi bi-person-circle fs-4"></i>
                     )}
                   </div>
                   <div style={styles.playerText}>
@@ -542,7 +524,7 @@ const AdminReports: React.FC = () => {
                   <div style={index < 3 ? {...styles.combinedScore, ...styles.combinedScoreTopThree} : styles.combinedScore}>
                     {player.combined_score || player.total_score}
                   </div>
-                  <div style={styles.scoreDetails}>
+                  <div className="admin-score-details" style={styles.scoreDetails}>
                     Game: {player.total_score} | Quiz: {player.shared_quiz_score || 0}
                   </div>
                 </div>
@@ -550,6 +532,7 @@ const AdminReports: React.FC = () => {
             ))}
           </div>
         </div>
+
       </div>
 
       {/* Edit Quiz Modal */}

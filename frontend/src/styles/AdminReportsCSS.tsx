@@ -38,7 +38,7 @@ export const adminReportsStyles = {
 
   pageTitle: {
     color: 'white',
-    fontSize: '3rem',
+    fontSize: 'clamp(1.8rem, 5vw, 3rem)',
     fontWeight: 'bold',
     textShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
     marginBottom: '1rem',
@@ -46,26 +46,26 @@ export const adminReportsStyles = {
 
   pageSubtitle: {
     color: 'rgba(255, 255, 255, 0.95)',
-    fontSize: '1.2rem',
+    fontSize: 'clamp(0.9rem, 2.5vw, 1.2rem)',
     textShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
   } as CSSProperties,
 
   statCard: {
     background: 'rgba(255, 255, 255, 0.95)',
     borderRadius: '20px',
-    padding: '2rem',
+    padding: '1.5rem',
     display: 'flex',
     alignItems: 'center',
-    gap: '1.5rem',
+    gap: '1rem',
     boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)',
     transition: 'all 0.4s ease',
     height: '100%',
   } as CSSProperties,
 
   statIcon: {
-    fontSize: '3.5rem',
-    width: '80px',
-    height: '80px',
+    fontSize: '2rem',
+    width: '60px',
+    height: '60px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -93,18 +93,18 @@ export const adminReportsStyles = {
     background: 'linear-gradient(135deg, #4facfe 0%, #00c6ff 100%)',
   } as CSSProperties,
 
-  // ✅ New — orange gradient for Total Classrooms
   statIconOrange: {
     background: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
   } as CSSProperties,
 
   statContent: {
     flex: 1,
+    minWidth: 0,
   } as CSSProperties,
 
   statNumber: {
     color: '#2c3e50',
-    fontSize: '2.5rem',
+    fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
     fontWeight: 'bold',
     margin: 0,
     lineHeight: 1,
@@ -112,47 +112,53 @@ export const adminReportsStyles = {
 
   statLabel: {
     color: '#7f8c8d',
-    fontSize: '1rem',
-    margin: '0.5rem 0 0 0',
+    fontSize: 'clamp(0.8rem, 2vw, 1rem)',
+    margin: '0.4rem 0 0 0',
     fontWeight: 600,
+    whiteSpace: 'nowrap' as const,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   } as CSSProperties,
 
   dataSection: {
     background: 'rgba(255, 255, 255, 0.95)',
     borderRadius: '25px',
-    padding: '2.5rem',
+    padding: '1.5rem',
     boxShadow: '0 15px 40px rgba(0, 0, 0, 0.2)',
     backdropFilter: 'blur(10px)',
+    overflowX: 'auto',
   } as CSSProperties,
 
   leaderboardSection: {
     background: 'rgba(255, 255, 255, 0.95)',
     borderRadius: '25px',
-    padding: '2.5rem',
+    padding: '1.5rem',
     boxShadow: '0 15px 40px rgba(0, 0, 0, 0.2)',
     backdropFilter: 'blur(10px)',
   } as CSSProperties,
 
   sectionTitle: {
     color: '#2c3e50',
-    fontSize: '2rem',
+    fontSize: 'clamp(1.2rem, 3vw, 2rem)',
     fontWeight: 'bold',
   } as CSSProperties,
 
-  // ✅ Shared table styles (used by both quizzes and classrooms tables)
+  // Shared table styles
   quizTable: {
     width: '100%',
     borderCollapse: 'collapse' as const,
-    fontSize: '0.95rem',
+    fontSize: 'clamp(0.78rem, 2vw, 0.95rem)',
+    minWidth: '500px',
   } as CSSProperties,
 
   quizTh: {
-    padding: '0.85rem 1rem',
+    padding: '0.75rem 0.85rem',
     background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
     color: 'white',
     fontWeight: 600,
     textAlign: 'left' as const,
     whiteSpace: 'nowrap' as const,
+    fontSize: 'clamp(0.75rem, 2vw, 0.9rem)',
   } as CSSProperties,
 
   quizTr: {
@@ -161,9 +167,10 @@ export const adminReportsStyles = {
   } as CSSProperties,
 
   quizTd: {
-    padding: '0.85rem 1rem',
+    padding: '0.75rem 0.85rem',
     color: '#2c3e50',
     verticalAlign: 'middle' as const,
+    fontSize: 'clamp(0.78rem, 2vw, 0.95rem)',
   } as CSSProperties,
 
   quizBadge: {
@@ -171,9 +178,10 @@ export const adminReportsStyles = {
     background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
     color: 'white',
     borderRadius: '20px',
-    padding: '0.2rem 0.75rem',
+    padding: '0.2rem 0.6rem',
     fontWeight: 600,
-    fontSize: '0.85rem',
+    fontSize: 'clamp(0.72rem, 1.8vw, 0.85rem)',
+    whiteSpace: 'nowrap' as const,
   } as CSSProperties,
 
   quizEditBtn: {
@@ -181,10 +189,11 @@ export const adminReportsStyles = {
     color: 'white',
     border: 'none',
     borderRadius: '8px',
-    padding: '0.4rem 0.75rem',
+    padding: '0.35rem 0.65rem',
     cursor: 'pointer',
-    fontSize: '1rem',
+    fontSize: '0.9rem',
     transition: 'all 0.2s ease',
+    flexShrink: 0,
   } as CSSProperties,
 
   quizDeleteBtn: {
@@ -192,10 +201,11 @@ export const adminReportsStyles = {
     color: 'white',
     border: 'none',
     borderRadius: '8px',
-    padding: '0.4rem 0.75rem',
+    padding: '0.35rem 0.65rem',
     cursor: 'pointer',
-    fontSize: '1rem',
+    fontSize: '0.9rem',
     transition: 'all 0.2s ease',
+    flexShrink: 0,
   } as CSSProperties,
 
   deleteSuccessAlert: {
@@ -215,17 +225,17 @@ export const adminReportsStyles = {
   leaderboardContainer: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '1rem',
+    gap: '0.75rem',
   } as CSSProperties,
 
   leaderboardRow: {
     background: 'linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%)',
     border: '2px solid rgba(79, 172, 254, 0.3)',
     borderRadius: '15px',
-    padding: '1.25rem 1.5rem',
+    padding: '0.9rem 1rem',
     display: 'flex',
     alignItems: 'center',
-    gap: '1.5rem',
+    gap: '0.75rem',
     transition: 'all 0.3s ease',
   } as CSSProperties,
 
@@ -235,17 +245,19 @@ export const adminReportsStyles = {
   } as CSSProperties,
 
   rankBadge: {
-    minWidth: '50px',
-    height: '50px',
+    minWidth: '44px',
+    width: '44px',
+    height: '44px',
     background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '1.3rem',
+    fontSize: '1.1rem',
     fontWeight: 'bold',
     color: 'white',
     boxShadow: '0 4px 10px rgba(79, 172, 254, 0.3)',
+    flexShrink: 0,
   } as CSSProperties,
 
   rankBadgeTopThree: {
@@ -257,12 +269,13 @@ export const adminReportsStyles = {
     flex: 1,
     display: 'flex',
     alignItems: 'center',
-    gap: '1rem',
+    gap: '0.65rem',
+    minWidth: 0,
   } as CSSProperties,
 
   playerAvatarWrapper: {
-    width: '50px',
-    height: '50px',
+    width: '40px',
+    height: '40px',
     borderRadius: '50%',
     background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
     display: 'flex',
@@ -270,6 +283,7 @@ export const adminReportsStyles = {
     justifyContent: 'center',
     color: 'white',
     overflow: 'hidden',
+    flexShrink: 0,
   } as CSSProperties,
 
   playerAvatarImg: {
@@ -280,30 +294,35 @@ export const adminReportsStyles = {
 
   playerText: {
     flex: 1,
+    minWidth: 0,
   } as CSSProperties,
 
   playerUsername: {
-    fontSize: '1.1rem',
+    fontSize: 'clamp(0.85rem, 2.5vw, 1.05rem)',
     fontWeight: 'bold',
     color: '#2c3e50',
-    marginBottom: '0.25rem',
+    marginBottom: '0.15rem',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap' as const,
   } as CSSProperties,
 
   playerRankText: {
-    fontSize: '0.9rem',
+    fontSize: 'clamp(0.72rem, 2vw, 0.85rem)',
     color: '#7f8c8d',
   } as CSSProperties,
 
   playerScores: {
-    textAlign: 'right',
+    textAlign: 'right' as const,
+    flexShrink: 0,
   } as CSSProperties,
 
   combinedScore: {
-    fontSize: '1.8rem',
+    fontSize: 'clamp(1.2rem, 3.5vw, 1.8rem)',
     fontWeight: 'bold',
     color: '#4facfe',
     lineHeight: 1,
-    marginBottom: '0.25rem',
+    marginBottom: '0.2rem',
   } as CSSProperties,
 
   combinedScoreTopThree: {
@@ -311,14 +330,15 @@ export const adminReportsStyles = {
   } as CSSProperties,
 
   scoreDetails: {
-    fontSize: '0.85rem',
+    fontSize: 'clamp(0.65rem, 1.8vw, 0.85rem)',
     color: '#7f8c8d',
+    whiteSpace: 'nowrap' as const,
   } as CSSProperties,
 
   errorCard: {
     background: 'rgba(255, 255, 255, 0.95)',
     borderRadius: '25px',
-    padding: '3rem',
+    padding: '2rem',
     textAlign: 'center',
     boxShadow: '0 15px 40px rgba(0, 0, 0, 0.2)',
     maxWidth: '500px',
@@ -326,7 +346,7 @@ export const adminReportsStyles = {
   } as CSSProperties,
 
   errorIcon: {
-    fontSize: '4rem',
+    fontSize: '3.5rem',
     marginBottom: '1rem',
   } as CSSProperties,
 
@@ -338,8 +358,8 @@ export const adminReportsStyles = {
 
   errorCardText: {
     color: '#666',
-    fontSize: '1.1rem',
-    marginBottom: '2rem',
+    fontSize: '1rem',
+    marginBottom: '1.5rem',
   } as CSSProperties,
 
   btnRetry: {
@@ -382,7 +402,7 @@ export const adminReportsStyleString = `
   .circle-3 { width: 250px; height: 250px; top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: 1.5s; }
 
   .stat-card:hover {
-    transform: translateY(-10px);
+    transform: translateY(-8px);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
   }
 
@@ -403,7 +423,7 @@ export const adminReportsStyleString = `
   }
 
   .leaderboard-row:hover {
-    transform: translateX(5px);
+    transform: translateX(4px);
     box-shadow: 0 5px 20px rgba(79, 172, 254, 0.3);
     border-color: rgba(79, 172, 254, 0.5);
   }
@@ -417,19 +437,97 @@ export const adminReportsStyleString = `
     box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
   }
 
+  /* ── Tablet (≤992px) ── */
+  @media (max-width: 992px) {
+    .report-icon { font-size: 2.2rem; }
+  }
+
+  /* ── Mobile (≤768px) ── */
   @media (max-width: 768px) {
-    .report-icon { font-size: 2rem; }
-    .stat-card { padding: 1.5rem; }
-    .stat-icon { font-size: 2.5rem; width: 60px; height: 60px; }
-    .stat-number { font-size: 2rem; }
-    .data-section { padding: 1.5rem; }
-    .leaderboard-section { padding: 1.5rem; }
-    .section-title { font-size: 1.5rem; }
-    .leaderboard-row { padding: 1rem; gap: 1rem; }
-    .rank-badge { min-width: 40px; height: 40px; font-size: 1rem; }
-    .player-avatar-wrapper { width: 40px; height: 40px; }
-    .player-username { font-size: 1rem; }
-    .combined-score { font-size: 1.4rem; }
-    .score-details { font-size: 0.75rem; }
+    .report-icon { font-size: 1.6rem; }
+
+    /* Stats: 2 per row on mobile */
+    .admin-reports-row .col-md-4,
+    .admin-reports-row .col-md-6 {
+      flex: 0 0 50%;
+      max-width: 50%;
+    }
+
+    /* Section padding tightened */
+    .admin-data-section {
+      padding: 1rem !important;
+      border-radius: 16px !important;
+    }
+
+    /* Leaderboard row: tighter */
+    .leaderboard-row {
+      padding: 0.75rem 0.85rem;
+      gap: 0.6rem;
+    }
+
+    /* Score details: hide on very small */
+    .admin-score-details {
+      display: none;
+    }
+
+    /* Table scroll hint */
+    .admin-table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 8px;
+    }
+
+    .admin-table-wrapper::after {
+      content: '← scroll →';
+      display: block;
+      text-align: center;
+      font-size: 0.7rem;
+      color: #aaa;
+      padding: 4px 0 2px;
+    }
+
+    /* Page header tighter */
+    .admin-reports-header {
+      margin-top: 10px !important;
+    }
+  }
+
+  /* ── Small Mobile (≤480px) ── */
+  @media (max-width: 480px) {
+    /* Stats: 1 per row on very small screens */
+    .admin-reports-row .col-md-4,
+    .admin-reports-row .col-md-6 {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+
+    .admin-page-title {
+      font-size: 1.5rem !important;
+    }
+
+    .admin-page-subtitle {
+      font-size: 0.85rem !important;
+    }
+
+    .leaderboard-row {
+      padding: 0.65rem 0.75rem;
+    }
+
+    .admin-section-title {
+      font-size: 1.1rem !important;
+    }
+  }
+
+  /* ── Large screens (≥1400px) ── */
+  @media (min-width: 1400px) {
+    .admin-stat-icon {
+      width: 80px !important;
+      height: 80px !important;
+      font-size: 3.5rem !important;
+    }
+
+    .admin-stat-number {
+      font-size: 2.8rem !important;
+    }
   }
 `;
