@@ -86,31 +86,22 @@ const Navbar: React.FC = () => {
 
         {/* MENU */}
         <ul className="nav-menu">
-          <li className="nav-item">
-            <Link
-              className={`nav-link ${
-                activeLink === "/dashboard" ? "active" : ""
-              }`}
-              to="/dashboard"
-              onClick={() => setActiveLink("/dashboard")}
-            >
-              <Home size={18} className="nav-link-icon" />
-              <span className="nav-link-text">DASHBOARD</span>
-            </Link>
-          </li>
-
-          <li className="nav-item">
-            <button
-              className="nav-link"
-              onClick={() => setShowBrowser(true)}
-            >
-              <Search size={18} className="nav-link-icon" />
-              <span className="nav-link-text">QUIZZES</span>
-            </button>
-          </li>
 
           {(isAdmin || isTeacher) && (
             <>
+              <li className="nav-item">
+                <Link
+                  className={`nav-link ${
+                    activeLink === "/dashboard" ? "active" : ""
+                  }`}
+                  to="/dashboard"
+                  onClick={() => setActiveLink("/dashboard")}
+                >
+                  <Home size={18} className="nav-link-icon" />
+                  <span className="nav-link-text">DASHBOARD</span>
+                </Link>
+              </li>
+
               <li className="nav-item">
                 <Link
                   className={`nav-link ${
@@ -125,16 +116,13 @@ const Navbar: React.FC = () => {
               </li>
 
               <li className="nav-item">
-                <Link
-                  className={`nav-link ${
-                    activeLink === "/Classroom" ? "active" : ""
-                  }`}
-                  to="/Classroom"
-                  onClick={() => setActiveLink("/Classroom")}
+                <button
+                  className="nav-link"
+                  onClick={() => setShowBrowser(true)}
                 >
-                  <Users size={18} className="nav-link-icon" />
-                  <span className="nav-link-text">CLASSROOMS</span>
-                </Link>
+                  <Search size={18} className="nav-link-icon" />
+                  <span className="nav-link-text">QUIZZES</span>
+                </button>
               </li>
 
               <li className="nav-item">
@@ -147,6 +135,19 @@ const Navbar: React.FC = () => {
                 >
                   <PlusCircle size={18} className="nav-link-icon" />
                   <span className="nav-link-text">CREATE CLASS</span>
+                </Link>
+              </li>
+
+              <li className="nav-item">
+                <Link
+                  className={`nav-link ${
+                    activeLink === "/Classroom" ? "active" : ""
+                  }`}
+                  to="/Classroom"
+                  onClick={() => setActiveLink("/Classroom")}
+                >
+                  <Users size={18} className="nav-link-icon" />
+                  <span className="nav-link-text">CLASSROOMS</span>
                 </Link>
               </li>
             </>
