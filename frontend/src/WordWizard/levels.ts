@@ -355,7 +355,7 @@ export function getRequiredWords(levelConfig: LevelConfig): WordEntry[] {
  * generateGrammarTiles("IS")    → ["A", "S", "R", "I", "E", "O"] (shuffled)
  * generateGrammarTiles("GOES")  → ["G", "X", "O", "E", "S", "T", "A"] (shuffled)
  */
-export function generateGrammarTiles(answer: string, decoyCount = 3): string[] {
+export function generateGrammarTiles(answer: string, decoyCount = 1): string[] {
   // Common decoy letters pool — avoid letters already in the answer
   const decoyPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(
     (l) => !answer.includes(l)

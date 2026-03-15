@@ -320,7 +320,7 @@ export default class WordWizardScene extends Phaser.Scene {
   private createLevelInfoText() {
     const isMobile = this.scale.width < 768;
  
-    const x = 35; // ← moved right (was 20)
+    const x = 25; // ← moved right (was 20)
     const y = isMobile ? 56 : 58;
  
     const accentColor = this.getCategoryAccentColor();
@@ -481,7 +481,7 @@ export default class WordWizardScene extends Phaser.Scene {
 
     let letters: string[];
     if (isNormal) {
-      letters = generateGrammarTiles(currentWord.word, 3);
+      letters = generateGrammarTiles(currentWord.word, Math.random() < 0.2 ? 2 : 1);
     } else {
       letters = Phaser.Utils.Array.Shuffle(currentWord.word.split(""));
     }

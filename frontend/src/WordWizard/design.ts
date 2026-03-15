@@ -449,51 +449,64 @@ export function createStaticLetterDisplay(
   y: number
 ): Phaser.GameObjects.Container {
   const isMobile = scene.scale.width < 768;
-  const s = getScale(scene);
-
-  const size = isMobile ? 120 * s : 100;
-  const radius = isMobile ? 22 * s : 20;
-  const spacing = isMobile ? 70 : 130;
-  const lineWidth = isMobile ? 4 * s : 3;
-
+ 
+  // ✅ FIX: Scale tile size down on mobile based on letter count,
+  // just like createDragAndDropMode does for NORMAL tiles
+  const screenPadding = isMobile ? 32 : 80;
+  const availableWidth = scene.scale.width - screenPadding * 2;
+  const tileGap = isMobile ? 8 : 20;
+ 
+  const maxTileSize = isMobile ? 90 : 100;
+  const minTileSize = isMobile ? 36 : 60;
+  const rawTileSize = Math.floor(
+    (availableWidth - tileGap * (letters.length + 1)) / letters.length
+  );
+  const tileSize = Math.min(maxTileSize, Math.max(minTileSize, rawTileSize));
+  const spacing = tileSize + tileGap;
+ 
+  const radius = isMobile ? tileSize * 0.2 : 20;
+  const lineWidth = isMobile ? Math.max(2, tileSize * 0.04) : 3;
+  const shadowOffset = isMobile ? Math.max(2, tileSize * 0.04) : 3;
+  const fontSize = isMobile ? Math.round(tileSize * 0.65) : 60;
+ 
   const container = scene.add.container(0, 0);
   container.setDepth(10);
-
+ 
   const startX = x - ((letters.length - 1) * spacing) / 2;
-
+ 
   letters.forEach((letter, i) => {
     const tileX = startX + i * spacing;
     const tileY = y;
-
+ 
     // Shadow
     const shadow = scene.add.graphics();
     shadow.fillStyle(COLORS.tileShadow, 0.4);
-    const shadowOffset = isMobile ? 4 * s : 3;
     shadow.fillRoundedRect(
-      tileX - size / 2 + shadowOffset,
-      tileY - size / 2 + shadowOffset,
-      size,
-      size,
+      tileX - tileSize / 2 + shadowOffset,
+      tileY - tileSize / 2 + shadowOffset,
+      tileSize,
+      tileSize,
       radius
     );
     container.add(shadow);
-
+ 
     // Background
     const bg = scene.add.graphics();
     bg.fillStyle(Phaser.Display.Color.HexStringToColor(COLORS.tileFill).color, 1);
     bg.lineStyle(lineWidth, Phaser.Display.Color.HexStringToColor(COLORS.tileStroke).color, 1);
-    bg.fillRoundedRect(tileX - size / 2, tileY - size / 2, size, size, radius);
-    bg.strokeRoundedRect(tileX - size / 2, tileY - size / 2, size, size, radius);
+    bg.fillRoundedRect(tileX - tileSize / 2, tileY - tileSize / 2, tileSize, tileSize, radius);
+    bg.strokeRoundedRect(tileX - tileSize / 2, tileY - tileSize / 2, tileSize, tileSize, radius);
     container.add(bg);
-
+ 
     // Letter text
-    const fontSize = isMobile ? Math.round(70 * s * 1.6) : 60;
-    const text = scene.add.text(tileX, tileY, letter, {
-      font: `bold ${fontSize}px Arial`,
-      color: COLORS.tileText,
-    }).setOrigin(0.5);
+    const text = scene.add
+      .text(tileX, tileY, letter, {
+        font: `bold ${fontSize}px Arial`,
+        color: COLORS.tileText,
+      })
+      .setOrigin(0.5);
     container.add(text);
   });
-
+ 
   return container;
 }
