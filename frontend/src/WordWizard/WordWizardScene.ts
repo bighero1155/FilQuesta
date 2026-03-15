@@ -346,7 +346,7 @@ export default class WordWizardScene extends Phaser.Scene {
  
     // ── Level line ──
     this.add
-      .text(x, y + (isMobile ? 38 : 44), `▸ LEVEL  ${this.currentLevelInCategory}`, {
+      .text(x, y + (isMobile ? 38 : 44), `LEVEL ${this.currentLevelInCategory}`, {
         fontSize: isMobile ? "22px" : "28px",
         fontFamily: '"Courier New", Courier, monospace',
         fontStyle: "bold",
