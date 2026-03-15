@@ -67,6 +67,20 @@ interface Quiz {
   };
 }
 
+interface Classroom {
+  classroom_id: number;
+  title: string;
+  code: string;
+  description?: string;
+  teacher_id: number;
+  teacher?: {
+    username?: string;
+    first_name?: string;
+    last_name?: string;
+  };
+  students?: any[];
+}
+
 const AdminReports: React.FC = () => {
   const [pageVisits, setPageVisits] = useState<PageVisit[]>([]);
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
@@ -76,23 +90,39 @@ const AdminReports: React.FC = () => {
   const [totalTeachers, setTotalTeachers] = useState(0);
   const [totalQuizzes, setTotalQuizzes] = useState(0);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [classrooms, setClassrooms] = useState<Classroom[]>([]);
+  const [totalClassrooms, setTotalClassrooms] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [editQuiz, setEditQuiz] = useState<QuizServiceType | null>(null);
+
+  const showSuccess = (msg: string) => {
+    setActionSuccess(msg);
+    setTimeout(() => setActionSuccess(null), 3000);
+  };
 
   const fetchAllReports = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const [pageVisitsRes, quizResultsRes, sharedQuizResultsRes, leaderboardRes, usersRes, quizzesRes] = await Promise.all([
+      const [
+        pageVisitsRes,
+        quizResultsRes,
+        sharedQuizResultsRes,
+        leaderboardRes,
+        usersRes,
+        quizzesRes,
+        classroomsRes,
+      ] = await Promise.all([
         axios.get("/page-visits"),
         axios.get("/quiz-results"),
         axios.get("/shared-quiz-results"),
         axios.get("/leaderboard"),
         axios.get("/users"),
         axios.get("/quizzes"),
+        axios.get("/classrooms"),
       ]);
 
       // ✅ Handle both response formats
@@ -100,7 +130,7 @@ const AdminReports: React.FC = () => {
       setQuizResults(Array.isArray(quizResultsRes.data) ? quizResultsRes.data : quizResultsRes.data.data || []);
       setSharedQuizResults(Array.isArray(sharedQuizResultsRes.data) ? sharedQuizResultsRes.data : sharedQuizResultsRes.data.data || []);
 
-      // Normalize avatar URLs using centralized getImageUrl
+      // Normalize avatar URLs
       const leaderboardData = Array.isArray(leaderboardRes.data) ? leaderboardRes.data : leaderboardRes.data.data || [];
       const normalizedLeaderboard = leaderboardData.map((player: LeaderboardUser) => ({
         ...player,
@@ -108,7 +138,7 @@ const AdminReports: React.FC = () => {
       }));
       setLeaderboard(normalizedLeaderboard);
 
-      // Derive student and teacher counts from existing /users endpoint
+      // User counts
       const usersData: User[] = Array.isArray(usersRes.data) ? usersRes.data : usersRes.data.data || [];
       setTotalStudents(usersData.filter((u) => u.role === "student").length);
       setTotalTeachers(usersData.filter((u) => u.role === "teacher").length);
@@ -117,6 +147,11 @@ const AdminReports: React.FC = () => {
       const quizzesData: Quiz[] = Array.isArray(quizzesRes.data) ? quizzesRes.data : quizzesRes.data.data || [];
       setQuizzes(quizzesData);
       setTotalQuizzes(quizzesData.length);
+
+      // Classrooms
+      const classroomsData: Classroom[] = Array.isArray(classroomsRes.data) ? classroomsRes.data : classroomsRes.data.data || [];
+      setClassrooms(classroomsData);
+      setTotalClassrooms(classroomsData.length);
 
     } catch (err: any) {
       console.error("Failed to fetch reports:", err);
@@ -137,29 +172,37 @@ const AdminReports: React.FC = () => {
       const updated = quizzes.filter((q) => q.quiz_id !== quizId);
       setQuizzes(updated);
       setTotalQuizzes(updated.length);
-      setDeleteSuccess("Quiz deleted successfully!");
-      setTimeout(() => setDeleteSuccess(null), 3000);
+      showSuccess("Quiz deleted successfully!");
     } catch (err: any) {
       alert(err.response?.data?.message || "Failed to delete quiz.");
     }
   };
 
+  const handleDeleteClassroom = async (classroomId: number, title: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${title}"?\n\nThis will remove all students and messages.`)) return;
+    try {
+      await axios.delete(`/classrooms/${classroomId}`);
+      const updated = classrooms.filter((c) => c.classroom_id !== classroomId);
+      setClassrooms(updated);
+      setTotalClassrooms(updated.length);
+      showSuccess("Classroom deleted successfully!");
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to delete classroom.");
+    }
+  };
+
   const handleEditClick = (quiz: Quiz) => {
-    // Cast to QuizServiceType so EditQuizModal accepts it
     setEditQuiz(quiz as unknown as QuizServiceType);
   };
 
   const handleQuizUpdated = (updatedQuiz: QuizServiceType) => {
     setQuizzes((prev) =>
       prev.map((q) =>
-        q.quiz_id === updatedQuiz.quiz_id
-          ? (updatedQuiz as unknown as Quiz)
-          : q
+        q.quiz_id === updatedQuiz.quiz_id ? (updatedQuiz as unknown as Quiz) : q
       )
     );
     setEditQuiz(null);
-    setDeleteSuccess("Quiz updated successfully!");
-    setTimeout(() => setDeleteSuccess(null), 3000);
+    showSuccess("Quiz updated successfully!");
   };
 
   const calculateStats = () => {
@@ -175,9 +218,9 @@ const AdminReports: React.FC = () => {
 
   const stats = calculateStats();
 
-  const getTeacherName = (quiz: Quiz) => {
-    if (!quiz.teacher) return "—";
-    const { first_name, last_name, username } = quiz.teacher;
+  const getTeacherName = (item: Quiz | Classroom) => {
+    if (!item.teacher) return "—";
+    const { first_name, last_name, username } = item.teacher;
     if (first_name || last_name) return `${first_name ?? ""} ${last_name ?? ""}`.trim();
     return username ?? "—";
   };
@@ -244,6 +287,14 @@ const AdminReports: React.FC = () => {
           </p>
         </div>
 
+        {/* Global success alert */}
+        {actionSuccess && (
+          <div style={styles.deleteSuccessAlert} className="mb-4">
+            <i className="bi bi-check-circle-fill"></i>
+            <span>{actionSuccess}</span>
+          </div>
+        )}
+
         {/* Stats Cards - Row 1 */}
         <div className="row mb-4">
           <div className="col-md-4 mb-4">
@@ -277,9 +328,9 @@ const AdminReports: React.FC = () => {
           </div>
         </div>
 
-        {/* Stats Cards - Row 2 (User Counts) */}
+        {/* Stats Cards - Row 2 */}
         <div className="row mb-5">
-          <div className="col-md-6 mb-4">
+          <div className="col-md-4 mb-4">
             <div className="stat-card" style={styles.statCard}>
               <div style={{...styles.statIcon, ...styles.statIconPink}}>🎓</div>
               <div style={styles.statContent}>
@@ -289,12 +340,22 @@ const AdminReports: React.FC = () => {
             </div>
           </div>
 
-          <div className="col-md-6 mb-4">
+          <div className="col-md-4 mb-4">
             <div className="stat-card" style={styles.statCard}>
               <div style={{...styles.statIcon, ...styles.statIconCyan}}>👩‍🏫</div>
               <div style={styles.statContent}>
                 <h3 style={styles.statNumber}>{totalTeachers}</h3>
                 <p style={styles.statLabel}>Total Teachers</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-4 mb-4">
+            <div className="stat-card" style={styles.statCard}>
+              <div style={{...styles.statIcon, ...styles.statIconOrange}}>🏫</div>
+              <div style={styles.statContent}>
+                <h3 style={styles.statNumber}>{totalClassrooms}</h3>
+                <p style={styles.statLabel}>Total Classrooms</p>
               </div>
             </div>
           </div>
@@ -305,13 +366,6 @@ const AdminReports: React.FC = () => {
           <h2 className="mb-4" style={{...styles.sectionTitle, fontSize: '1.5rem'}}>
             📋 All Quizzes
           </h2>
-
-          {deleteSuccess && (
-            <div className="quiz-delete-success" style={styles.deleteSuccessAlert}>
-              <i className="bi bi-check-circle-fill"></i>
-              <span>{deleteSuccess}</span>
-            </div>
-          )}
 
           {quizzes.length === 0 ? (
             <div className="text-center py-4" style={{ color: '#7f8c8d' }}>
@@ -335,13 +389,9 @@ const AdminReports: React.FC = () => {
                   {quizzes.map((quiz, index) => (
                     <tr key={quiz.quiz_id} className="quiz-table-row" style={styles.quizTr}>
                       <td style={styles.quizTd}>{index + 1}</td>
-                      <td style={{...styles.quizTd, fontWeight: 600, color: '#2c3e50'}}>
-                        {quiz.title}
-                      </td>
+                      <td style={{...styles.quizTd, fontWeight: 600, color: '#2c3e50'}}>{quiz.title}</td>
                       <td style={styles.quizTd}>
-                        <span style={{ color: '#7f8c8d' }}>
-                          {quiz.description || "No description"}
-                        </span>
+                        <span style={{ color: '#7f8c8d' }}>{quiz.description || "No description"}</span>
                       </td>
                       <td style={styles.quizTd}>{getTeacherName(quiz)}</td>
                       <td style={{...styles.quizTd, textAlign: 'center'}}>
@@ -351,7 +401,6 @@ const AdminReports: React.FC = () => {
                       </td>
                       <td style={{...styles.quizTd, textAlign: 'center'}}>
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                          {/* Edit button */}
                           <button
                             className="quiz-edit-btn"
                             onClick={() => handleEditClick(quiz)}
@@ -360,7 +409,6 @@ const AdminReports: React.FC = () => {
                           >
                             <i className="bi bi-pencil"></i>
                           </button>
-                          {/* Delete button */}
                           <button
                             className="quiz-delete-btn"
                             onClick={() => handleDeleteQuiz(quiz.quiz_id)}
@@ -370,6 +418,68 @@ const AdminReports: React.FC = () => {
                             <i className="bi bi-trash"></i>
                           </button>
                         </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Classrooms Table */}
+        <div className="mb-5" style={styles.dataSection}>
+          <h2 className="mb-4" style={{...styles.sectionTitle, fontSize: '1.5rem'}}>
+            🏫 All Classrooms
+          </h2>
+
+          {classrooms.length === 0 ? (
+            <div className="text-center py-4" style={{ color: '#7f8c8d' }}>
+              <i className="bi bi-building-x" style={{ fontSize: '2.5rem' }}></i>
+              <p className="mt-2">No classrooms found.</p>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={styles.quizTable}>
+                <thead>
+                  <tr>
+                    <th style={styles.quizTh}>#</th>
+                    <th style={styles.quizTh}>Title</th>
+                    <th style={styles.quizTh}>Description</th>
+                    <th style={styles.quizTh}>Teacher</th>
+                    <th style={{...styles.quizTh, textAlign: 'center'}}>Code</th>
+                    <th style={{...styles.quizTh, textAlign: 'center'}}>Students</th>
+                    <th style={{...styles.quizTh, textAlign: 'center'}}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {classrooms.map((classroom, index) => (
+                    <tr key={classroom.classroom_id} className="quiz-table-row" style={styles.quizTr}>
+                      <td style={styles.quizTd}>{index + 1}</td>
+                      <td style={{...styles.quizTd, fontWeight: 600, color: '#2c3e50'}}>{classroom.title}</td>
+                      <td style={styles.quizTd}>
+                        <span style={{ color: '#7f8c8d' }}>{classroom.description || "No description"}</span>
+                      </td>
+                      <td style={styles.quizTd}>{getTeacherName(classroom)}</td>
+                      <td style={{...styles.quizTd, textAlign: 'center'}}>
+                        <span style={{...styles.quizBadge, background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'}}>
+                          {classroom.code}
+                        </span>
+                      </td>
+                      <td style={{...styles.quizTd, textAlign: 'center'}}>
+                        <span style={styles.quizBadge}>
+                          {Array.isArray(classroom.students) ? classroom.students.length : 0}
+                        </span>
+                      </td>
+                      <td style={{...styles.quizTd, textAlign: 'center'}}>
+                        <button
+                          className="quiz-delete-btn"
+                          onClick={() => handleDeleteClassroom(classroom.classroom_id, classroom.title)}
+                          style={styles.quizDeleteBtn}
+                          title="Delete Classroom"
+                        >
+                          <i className="bi bi-trash"></i>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -442,7 +552,7 @@ const AdminReports: React.FC = () => {
         </div>
       </div>
 
-      {/* Edit Quiz Modal — same as teacher's */}
+      {/* Edit Quiz Modal */}
       {editQuiz && (
         <EditQuizModal
           isOpen={!!editQuiz}

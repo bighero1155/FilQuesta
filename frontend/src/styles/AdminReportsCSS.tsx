@@ -93,6 +93,11 @@ export const adminReportsStyles = {
     background: 'linear-gradient(135deg, #4facfe 0%, #00c6ff 100%)',
   } as CSSProperties,
 
+  // ✅ New — orange gradient for Total Classrooms
+  statIconOrange: {
+    background: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
+  } as CSSProperties,
+
   statContent: {
     flex: 1,
   } as CSSProperties,
@@ -134,7 +139,7 @@ export const adminReportsStyles = {
     fontWeight: 'bold',
   } as CSSProperties,
 
-  // ✅ Quiz table styles
+  // ✅ Shared table styles (used by both quizzes and classrooms tables)
   quizTable: {
     width: '100%',
     borderCollapse: 'collapse' as const,
@@ -171,7 +176,6 @@ export const adminReportsStyles = {
     fontSize: '0.85rem',
   } as CSSProperties,
 
-  // ✅ Edit button — yellow/warning tone
   quizEditBtn: {
     background: '#f39c12',
     color: 'white',
@@ -183,7 +187,6 @@ export const adminReportsStyles = {
     transition: 'all 0.2s ease',
   } as CSSProperties,
 
-  // ✅ Delete button — red
   quizDeleteBtn: {
     background: '#e74c3c',
     color: 'white',
@@ -352,7 +355,6 @@ export const adminReportsStyles = {
   } as CSSProperties,
 };
 
-// CSS string for animations and pseudo-classes that can't be done inline
 export const adminReportsStyleString = `
   @keyframes float {
     0%, 100% { transform: translateY(0) rotate(0deg); }
