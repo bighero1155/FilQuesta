@@ -85,7 +85,6 @@ export const adminReportsStyles = {
     background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
   } as CSSProperties,
 
-  // ✅ New icon colors for students and teachers
   statIconPink: {
     background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
   } as CSSProperties,
@@ -172,6 +171,19 @@ export const adminReportsStyles = {
     fontSize: '0.85rem',
   } as CSSProperties,
 
+  // ✅ Edit button — yellow/warning tone
+  quizEditBtn: {
+    background: '#f39c12',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '0.4rem 0.75rem',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    transition: 'all 0.2s ease',
+  } as CSSProperties,
+
+  // ✅ Delete button — red
   quizDeleteBtn: {
     background: '#e74c3c',
     color: 'white',
@@ -343,35 +355,18 @@ export const adminReportsStyles = {
 // CSS string for animations and pseudo-classes that can't be done inline
 export const adminReportsStyleString = `
   @keyframes float {
-    0%, 100% {
-      transform: translateY(0) rotate(0deg);
-    }
-    25% {
-      transform: translateY(-30px) rotate(5deg);
-    }
-    50% {
-      transform: translateY(-50px) rotate(-5deg);
-    }
-    75% {
-      transform: translateY(-30px) rotate(3deg);
-    }
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-30px) rotate(5deg); }
+    50% { transform: translateY(-50px) rotate(-5deg); }
+    75% { transform: translateY(-30px) rotate(3deg); }
   }
 
   @keyframes pulse {
-    0%, 100% {
-      transform: scale(1);
-      opacity: 0.08;
-    }
-    50% {
-      transform: scale(1.1);
-      opacity: 0.15;
-    }
+    0%, 100% { transform: scale(1); opacity: 0.08; }
+    50% { transform: scale(1.1); opacity: 0.15; }
   }
 
-  .report-icon {
-    animation: float 20s infinite ease-in-out;
-  }
-
+  .report-icon { animation: float 20s infinite ease-in-out; }
   .icon-1 { top: 10%; left: 15%; animation-delay: 0s; }
   .icon-2 { top: 60%; left: 10%; animation-delay: 3s; }
   .icon-3 { top: 20%; right: 20%; animation-delay: 1.5s; }
@@ -391,6 +386,12 @@ export const adminReportsStyleString = `
 
   .quiz-table-row:hover {
     background: rgba(79, 172, 254, 0.06);
+  }
+
+  .quiz-edit-btn:hover {
+    background: #d68910 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
   }
 
   .quiz-delete-btn:hover {

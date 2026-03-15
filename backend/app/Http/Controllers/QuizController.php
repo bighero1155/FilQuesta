@@ -137,7 +137,8 @@ class QuizController extends Controller
 
     public function update(Request $request, Quiz $quiz)
     {
-        if ($quiz->teacher_id !== $request->user()->user_id) {
+        // ✅ Admin can update any quiz; teachers can only update their own
+        if ($request->user()->role !== 'admin' && $quiz->teacher_id !== $request->user()->user_id) {
             return response()->json([
                 'message' => 'Unauthorized. You can only update your own quizzes.'
             ], 403);

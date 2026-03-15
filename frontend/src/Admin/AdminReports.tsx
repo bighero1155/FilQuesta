@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "../auth/axiosInstance";
 import QuizResultsTable from "../components/Users/QuizResultsTable";
+import EditQuizModal from "../modals/EditQuizModal";
 import { adminReportsStyles as styles, adminReportsStyleString } from "../styles/AdminReportsCSS";
 import { getImageUrl } from "../services/cosmeticService";
+import { Quiz as QuizServiceType } from "../services/quizService";
 
 interface LeaderboardUser {
   user_id: number;
@@ -77,6 +79,7 @@ const AdminReports: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
+  const [editQuiz, setEditQuiz] = useState<QuizServiceType | null>(null);
 
   const fetchAllReports = useCallback(async () => {
     setLoading(true);
@@ -139,6 +142,24 @@ const AdminReports: React.FC = () => {
     } catch (err: any) {
       alert(err.response?.data?.message || "Failed to delete quiz.");
     }
+  };
+
+  const handleEditClick = (quiz: Quiz) => {
+    // Cast to QuizServiceType so EditQuizModal accepts it
+    setEditQuiz(quiz as unknown as QuizServiceType);
+  };
+
+  const handleQuizUpdated = (updatedQuiz: QuizServiceType) => {
+    setQuizzes((prev) =>
+      prev.map((q) =>
+        q.quiz_id === updatedQuiz.quiz_id
+          ? (updatedQuiz as unknown as Quiz)
+          : q
+      )
+    );
+    setEditQuiz(null);
+    setDeleteSuccess("Quiz updated successfully!");
+    setTimeout(() => setDeleteSuccess(null), 3000);
   };
 
   const calculateStats = () => {
@@ -307,7 +328,7 @@ const AdminReports: React.FC = () => {
                     <th style={styles.quizTh}>Description</th>
                     <th style={styles.quizTh}>Teacher</th>
                     <th style={{...styles.quizTh, textAlign: 'center'}}>Questions</th>
-                    <th style={{...styles.quizTh, textAlign: 'center'}}>Action</th>
+                    <th style={{...styles.quizTh, textAlign: 'center'}}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -329,14 +350,26 @@ const AdminReports: React.FC = () => {
                         </span>
                       </td>
                       <td style={{...styles.quizTd, textAlign: 'center'}}>
-                        <button
-                          className="quiz-delete-btn"
-                          onClick={() => handleDeleteQuiz(quiz.quiz_id)}
-                          style={styles.quizDeleteBtn}
-                          title="Delete Quiz"
-                        >
-                          <i className="bi bi-trash"></i>
-                        </button>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                          {/* Edit button */}
+                          <button
+                            className="quiz-edit-btn"
+                            onClick={() => handleEditClick(quiz)}
+                            style={styles.quizEditBtn}
+                            title="Edit Quiz"
+                          >
+                            <i className="bi bi-pencil"></i>
+                          </button>
+                          {/* Delete button */}
+                          <button
+                            className="quiz-delete-btn"
+                            onClick={() => handleDeleteQuiz(quiz.quiz_id)}
+                            style={styles.quizDeleteBtn}
+                            title="Delete Quiz"
+                          >
+                            <i className="bi bi-trash"></i>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -408,6 +441,16 @@ const AdminReports: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Quiz Modal — same as teacher's */}
+      {editQuiz && (
+        <EditQuizModal
+          isOpen={!!editQuiz}
+          onClose={() => setEditQuiz(null)}
+          quiz={editQuiz}
+          onUpdated={handleQuizUpdated}
+        />
+      )}
 
       <style>{adminReportsStyleString}</style>
     </div>
