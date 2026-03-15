@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Cosmetic,
   getCosmetics,
@@ -12,28 +12,30 @@ const CosmeticsPage: React.FC = () => {
   const [form, setForm] = useState<Cosmetic>({
     cosmetic_id: undefined,
     type: "avatar",
-    name: "", 
+    name: "",
     description: "",
     price: 0,
-    image: undefined,   
+    image: undefined,
   });
-  
-  // 🔥 NEW: Track existing image URL for preview during edit
+
   const [existingImageUrl, setExistingImageUrl] = useState<string | undefined>(undefined);
 
-  const fetchCosmetics = async () => {
-    try { 
+  // ✅ FIX: Track a cache-bust timestamp that only updates after a successful save
+  const [cacheBust, setCacheBust] = useState<number>(Date.now());
+
+  const fetchCosmetics = useCallback(async () => {
+    try {
       const data = await getCosmetics();
       setCosmetics(data);
     } catch (err) {
       console.error("Failed to fetch cosmetics:", err);
       alert("Failed to load cosmetics. Are you logged in?");
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchCosmetics();
-  }, []);
+  }, [fetchCosmetics]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,17 +45,20 @@ const CosmeticsPage: React.FC = () => {
       } else {
         await createCosmetic(form);
       }
-      // Reset form
-      setForm({ 
-        cosmetic_id: undefined, 
-        type: "avatar", 
-        name: "", 
-        description: "", 
-        price: 0, 
-        image: undefined 
+
+      // ✅ FIX: Bump cache bust BEFORE re-fetching so new images load fresh
+      setCacheBust(Date.now());
+
+      setForm({
+        cosmetic_id: undefined,
+        type: "avatar",
+        name: "",
+        description: "",
+        price: 0,
+        image: undefined,
       });
       setExistingImageUrl(undefined);
-      fetchCosmetics();
+      await fetchCosmetics();
     } catch (err) {
       console.error("Failed to save cosmetic:", err);
       alert("Failed to save cosmetic.");
@@ -71,7 +76,6 @@ const CosmeticsPage: React.FC = () => {
     }
   };
 
-  // 🔥 NEW: Handle edit button click
   const handleEdit = (cosmetic: Cosmetic) => {
     setForm({
       cosmetic_id: cosmetic.cosmetic_id,
@@ -79,30 +83,29 @@ const CosmeticsPage: React.FC = () => {
       name: cosmetic.name,
       description: cosmetic.description,
       price: cosmetic.price,
-      image: undefined, // ✅ Don't include the URL in form.image
+      image: undefined,
     });
-    
-    // Store the existing image URL for preview
-    if (typeof cosmetic.image === 'string') {
-      setExistingImageUrl(cosmetic.image);
+
+    // ✅ FIX: Store existing image URL with current cache bust so preview shows immediately
+    if (typeof cosmetic.image === "string") {
+      setExistingImageUrl(`${cosmetic.image}?t=${cacheBust}`);
     }
   };
 
-  // 🔥 NEW: Handle file input change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setForm({ ...form, image: file });
-      setExistingImageUrl(undefined); // Clear existing preview when new file selected
+      setExistingImageUrl(undefined);
     }
   };
 
-  // 🔥 NEW: Get preview image URL
+  // ✅ FIX: Stable preview URL — blob for new file, stored URL (with cache bust) for existing
   const getPreviewUrl = (): string | undefined => {
     if (form.image instanceof File) {
       return URL.createObjectURL(form.image);
     }
-    return existingImageUrl;
+    return existingImageUrl; // already has ?t=... baked in from handleEdit
   };
 
   return (
@@ -121,9 +124,7 @@ const CosmeticsPage: React.FC = () => {
       </div>
 
       <div className="container position-relative" style={{ zIndex: 2 }}>
-        <h1 className="page-title text-center mb-3">
-          ✨ Cosmetics Management
-        </h1>
+        <h1 className="page-title text-center mb-3">✨ Cosmetics Management</h1>
         <p className="page-subtitle text-center mb-5">
           Create and manage avatars, badges, and nickname frames
         </p>
@@ -202,7 +203,7 @@ const CosmeticsPage: React.FC = () => {
                 />
               </div>
 
-              {/* 🔥 NEW: Image Preview */}
+              {/* Image Preview */}
               {getPreviewUrl() && (
                 <div className="col-12 mb-3">
                   <div className="image-preview-wrapper">
@@ -219,11 +220,12 @@ const CosmeticsPage: React.FC = () => {
                           className="btn-remove-preview"
                           onClick={() => {
                             setForm({ ...form, image: undefined });
-                            // Restore existing image if editing
                             if (form.cosmetic_id) {
-                              const original = cosmetics.find(c => c.cosmetic_id === form.cosmetic_id);
-                              if (original && typeof original.image === 'string') {
-                                setExistingImageUrl(original.image);
+                              const original = cosmetics.find(
+                                (c) => c.cosmetic_id === form.cosmetic_id
+                              );
+                              if (original && typeof original.image === "string") {
+                                setExistingImageUrl(`${original.image}?t=${cacheBust}`);
                               }
                             }
                           }}
@@ -265,9 +267,7 @@ const CosmeticsPage: React.FC = () => {
         </div>
 
         {/* Cosmetics Grid */}
-        <h3 className="section-title text-center mb-4">
-          🎭 All Cosmetics
-        </h3>
+        <h3 className="section-title text-center mb-4">🎭 All Cosmetics</h3>
         <div className="row">
           {cosmetics.map((c) => (
             <div key={c.cosmetic_id} className="col-lg-4 col-md-6 mb-4">
@@ -278,38 +278,43 @@ const CosmeticsPage: React.FC = () => {
                     {" " + c.type}
                   </span>
                 </div>
-                {c.image && typeof c.image === 'string' && (
+
+                {/* ✅ FIX: Use cacheBust in card images so they refresh after edit */}
+                {c.image && typeof c.image === "string" && (
                   <div className="cosmetic-image-wrapper">
                     <img
-                      src={c.image}
+                      src={`${c.image}?t=${cacheBust}`}
                       alt={c.name}
                       className="cosmetic-image"
                       onError={(e) => {
-                        console.error('Cosmetic image failed to load:', c.image);
-                        e.currentTarget.style.display = 'none';
+                        console.error("Cosmetic image failed to load:", c.image);
+                        e.currentTarget.style.display = "none";
                         const parent = e.currentTarget.parentElement;
-                        if (parent && !parent.querySelector('.no-image-placeholder')) {
-                          const placeholder = document.createElement('div');
-                          placeholder.className = 'no-image-placeholder';
-                          placeholder.innerHTML = '🖼️<br/>No Image';
+                        if (
+                          parent &&
+                          !parent.querySelector(".no-image-placeholder")
+                        ) {
+                          const placeholder = document.createElement("div");
+                          placeholder.className = "no-image-placeholder";
+                          placeholder.innerHTML = "🖼️<br/>No Image";
                           parent.appendChild(placeholder);
                         }
                       }}
                     />
                   </div>
                 )}
+
                 <div className="cosmetic-card-body">
                   <h5 className="cosmetic-name">{c.name}</h5>
-                  <p className="cosmetic-description">{c.description || "No description"}</p>
+                  <p className="cosmetic-description">
+                    {c.description || "No description"}
+                  </p>
                   <div className="cosmetic-price">
                     <span className="price-label">Price:</span>
                     <span className="price-value">{c.price} 🪙</span>
                   </div>
                   <div className="cosmetic-actions">
-                    <button 
-                      className="btn-edit" 
-                      onClick={() => handleEdit(c)} // 🔥 FIXED: Use handleEdit instead
-                    >
+                    <button className="btn-edit" onClick={() => handleEdit(c)}>
                       ✏️ Edit
                     </button>
                     <button
@@ -335,7 +340,6 @@ const CosmeticsPage: React.FC = () => {
           overflow-x: hidden;
         }
 
-        /* Animated Background */
         .cosmetics-bg-elements {
           position: fixed;
           top: 0;
@@ -354,41 +358,12 @@ const CosmeticsPage: React.FC = () => {
           animation: float 20s infinite ease-in-out;
         }
 
-        .icon-1 {
-          top: 10%;
-          left: 15%;
-          animation-delay: 0s;
-        }
-
-        .icon-2 {
-          top: 60%;
-          left: 10%;
-          animation-delay: 3s;
-        }
-
-        .icon-3 {
-          top: 20%;
-          right: 20%;
-          animation-delay: 1.5s;
-        }
-
-        .icon-4 {
-          bottom: 15%;
-          right: 15%;
-          animation-delay: 4s;
-        }
-
-        .icon-5 {
-          top: 70%;
-          right: 25%;
-          animation-delay: 2s;
-        }
-
-        .icon-6 {
-          bottom: 30%;
-          left: 25%;
-          animation-delay: 5s;
-        }
+        .icon-1 { top: 10%; left: 15%; animation-delay: 0s; }
+        .icon-2 { top: 60%; left: 10%; animation-delay: 3s; }
+        .icon-3 { top: 20%; right: 20%; animation-delay: 1.5s; }
+        .icon-4 { bottom: 15%; right: 15%; animation-delay: 4s; }
+        .icon-5 { top: 70%; right: 25%; animation-delay: 2s; }
+        .icon-6 { bottom: 30%; left: 25%; animation-delay: 5s; }
 
         .circle {
           position: absolute;
@@ -397,57 +372,22 @@ const CosmeticsPage: React.FC = () => {
           animation: pulse 15s infinite ease-in-out;
         }
 
-        .circle-1 {
-          width: 300px;
-          height: 300px;
-          top: -100px;
-          right: -100px;
-        }
-
-        .circle-2 {
-          width: 400px;
-          height: 400px;
-          bottom: -150px;
-          left: -150px;
-          animation-delay: 3s;
-        }
-
-        .circle-3 {
-          width: 250px;
-          height: 250px;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          animation-delay: 1.5s;
-        }
+        .circle-1 { width: 300px; height: 300px; top: -100px; right: -100px; }
+        .circle-2 { width: 400px; height: 400px; bottom: -150px; left: -150px; animation-delay: 3s; }
+        .circle-3 { width: 250px; height: 250px; top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: 1.5s; }
 
         @keyframes float {
-          0%, 100% {
-            transform: translateY(0) rotate(0deg);
-          }
-          25% {
-            transform: translateY(-30px) rotate(5deg);
-          }
-          50% {
-            transform: translateY(-50px) rotate(-5deg);
-          }
-          75% {
-            transform: translateY(-30px) rotate(3deg);
-          }
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          25% { transform: translateY(-30px) rotate(5deg); }
+          50% { transform: translateY(-50px) rotate(-5deg); }
+          75% { transform: translateY(-30px) rotate(3deg); }
         }
 
         @keyframes pulse {
-          0%, 100% {
-            transform: scale(1);
-            opacity: 0.08;
-          }
-          50% {
-            transform: scale(1.1);
-            opacity: 0.15;
-          }
+          0%, 100% { transform: scale(1); opacity: 0.08; }
+          50% { transform: scale(1.1); opacity: 0.15; }
         }
 
-        /* Page Title */
         .page-title {
           color: white;
           font-size: 3rem;
@@ -462,7 +402,6 @@ const CosmeticsPage: React.FC = () => {
           text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
 
-        /* Form Card */
         .form-card {
           background: rgba(255, 255, 255, 0.95);
           border-radius: 25px;
@@ -508,7 +447,6 @@ const CosmeticsPage: React.FC = () => {
           outline: none;
         }
 
-        /* 🔥 NEW: Image Preview Styles */
         .image-preview-wrapper {
           padding: 1rem;
           background: rgba(240, 147, 251, 0.05);
@@ -569,7 +507,6 @@ const CosmeticsPage: React.FC = () => {
           box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
         }
 
-        /* 🔥 NEW: Cancel Button */
         .btn-cancel {
           background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
           color: white;
@@ -588,7 +525,6 @@ const CosmeticsPage: React.FC = () => {
           box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
         }
 
-        /* Section Title */
         .section-title {
           color: white;
           font-size: 2rem;
@@ -596,7 +532,6 @@ const CosmeticsPage: React.FC = () => {
           text-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
         }
 
-        /* Cosmetic Cards */
         .cosmetic-card {
           background: rgba(255, 255, 255, 0.95);
           border-radius: 20px;
@@ -684,16 +619,8 @@ const CosmeticsPage: React.FC = () => {
           border-radius: 10px;
         }
 
-        .price-label {
-          color: #f5576c;
-          font-weight: 600;
-        }
-
-        .price-value {
-          color: #f5576c;
-          font-weight: bold;
-          font-size: 1.2rem;
-        }
+        .price-label { color: #f5576c; font-weight: 600; }
+        .price-value { color: #f5576c; font-weight: bold; font-size: 1.2rem; }
 
         .cosmetic-actions {
           display: flex;
@@ -732,35 +659,14 @@ const CosmeticsPage: React.FC = () => {
           box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
-          .cosmetic-icon {
-            font-size: 2rem;
-          }
-
-          .page-title {
-            font-size: 2rem;
-          }
-
-          .page-subtitle {
-            font-size: 1rem;
-          }
-
-          .form-card {
-            padding: 1.5rem;
-          }
-
-          .form-card-title {
-            font-size: 1.4rem;
-          }
-
-          .section-title {
-            font-size: 1.5rem;
-          }
-
-          .image-preview {
-            max-width: 100%;
-          }
+          .cosmetic-icon { font-size: 2rem; }
+          .page-title { font-size: 2rem; }
+          .page-subtitle { font-size: 1rem; }
+          .form-card { padding: 1.5rem; }
+          .form-card-title { font-size: 1.4rem; }
+          .section-title { font-size: 1.5rem; }
+          .image-preview { max-width: 100%; }
         }
       `}</style>
     </div>
