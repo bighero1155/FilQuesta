@@ -164,11 +164,11 @@ export default class WordWizardScene extends Phaser.Scene {
 
   private getCategoryDisplayName(): string {
     const categoryEmojis: Record<string, string> = {
-      BASIC:    "🟢 BASIC",
-      NORMAL:   "🔵 NORMAL",
-      HARD:     "🔴 HARD",
-      ADVANCED: "🟠 ADVANCED",
-      EXPERT:   "💀 EXPERT",
+      BASIC:    "BASIC",
+      NORMAL:   "NORMAL",
+      HARD:     "HARD",
+      ADVANCED: "ADVANCED",
+      EXPERT:   "EXPERT",
     };
     return categoryEmojis[this.currentCategoryId] || this.currentCategoryId;
   }
@@ -320,7 +320,7 @@ export default class WordWizardScene extends Phaser.Scene {
   private createLevelInfoText() {
     const isMobile = this.scale.width < 768;
  
-    const x = 80; // ← moved right (was 20)
+    const x = 35; // ← moved right (was 20)
     const y = isMobile ? 56 : 58;
  
     const accentColor = this.getCategoryAccentColor();
