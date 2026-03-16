@@ -4,12 +4,36 @@ import Phaser from "phaser";
 export default class Instruction {
   private scene: Phaser.Scene;
   private container?: Phaser.GameObjects.Container;
+  private tweens: Phaser.Tweens.Tween[] = [];
   private isMobile: boolean = false;
+
+  // ─── Design tokens ────────────────────────────────────────────────────────
+  private static readonly C = {
+    bg:       0x0a0d14,
+    panel:    0x111620,
+    border:   0x1e2d40,
+    accent:   0x00e5a0,       // teal-green
+    accentDim:0x00b57e,
+    gold:     0xf5c842,
+    red:      0xff5c7a,
+    white:    0xffffff,
+    textDim:  0x7a8fa6,
+  };
+
+  private static readonly STEPS = [
+    { icon: "🧩", label: "Drag organs",    desc: "to their correct body position",   col: 0x00e5a0 },
+    { icon: "⭐", label: "Earn points",    desc: "for every accurate placement",      col: 0xf5c842 },
+    { icon: "⏱️", label: "Beat the clock", desc: "before the timer hits zero",        col: 0xff5c7a },
+    { icon: "🚫", label: "Stay careful",   desc: "wrong drops cost you dearly",       col: 0xff8c42 },
+    { icon: "🏆", label: "Master all",     desc: "organs to claim total victory",     col: 0xa78bfa },
+  ];
+  // ──────────────────────────────────────────────────────────────────────────
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
-    this.isMobile = this.scene.scale.width < 768;
   }
+
+  // ── Public API ─────────────────────────────────────────────────────────────
 
   show(onClose: () => void) {
     const { width, height } = this.scene.cameras.main;
@@ -17,447 +41,295 @@ export default class Instruction {
 
     if (this.container) {
       this.container.setVisible(true);
+      this.container.setDepth(9999);
       return;
     }
 
-    const baseTextStyle = {
-      fontFamily: "Fredoka, Arial, sans-serif",
-      color: "#ffffff",
-    };
+    const C = Instruction.C;
+    const mobile = this.isMobile;
 
-    // Create simple particle texture if not exists
-    if (!this.scene.textures.exists('particle')) {
-      const graphics = this.scene.make.graphics({ x: 0, y: 0 });
-      graphics.fillStyle(0xffffff);
-      graphics.fillCircle(4, 4, 4);
-      graphics.generateTexture('particle', 8, 8);
-      graphics.destroy();
-    }
+    // Panel geometry
+    const pw = mobile ? width * 0.92 : Math.min(width * 0.6, 680);
+    const ph = mobile ? height * 0.88 : Math.min(height * 0.85, 620);
+    const cx = width  / 2;
+    const cy = height / 2;
 
-    // Animated particles background
-    const particlesBg = this.scene.add.particles(0, 0, 'particle', {
-      x: { min: 0, max: width },
-      y: { min: 0, max: height },
-      lifespan: 4000,
-      speed: { min: 10, max: 30 },
-      scale: { start: 0.4, end: 0 },
-      alpha: { start: 0.6, end: 0 },
-      blendMode: 'ADD',
-      frequency: 200,
-      tint: [0x4CAF50, 0x81C784, 0x66BB6A]
-    });
+    const elements: Phaser.GameObjects.GameObject[] = [];
 
-    // Glassmorphic background overlay
-    const bg = this.scene.add
-      .rectangle(0, 0, width, height, 0x000000, 0.85)
+    // ── 1. Backdrop ─────────────────────────────────────────────────────────
+    const backdrop = this.scene.add
+      .rectangle(0, 0, width, height, 0x000000, 0.78)
       .setOrigin(0)
-      .setInteractive();
+      .setAlpha(0)
+      .setInteractive();               // block clicks below
 
-    bg.setAlpha(0);
-    this.scene.tweens.add({
-      targets: bg,
-      alpha: 0.85,
-      duration: 400,
-      ease: "Power2",
-    });
+    this.track(this.scene.tweens.add({ targets: backdrop, alpha: 0.78, duration: 300, ease: "Sine.Out" }));
+    elements.push(backdrop);
 
-    // Panel dimensions
-    const panelWidth = this.isMobile ? width * 0.92 : Math.min(width * 0.65, 750);
-    const panelHeight = this.isMobile ? height * 0.85 : Math.min(height * 0.8, 650);
+    // ── 2. Panel card ───────────────────────────────────────────────────────
+    const card = this.scene.add
+      .rectangle(cx, cy, pw, ph, C.panel)
+      .setOrigin(0.5)
+      .setStrokeStyle(1.5, C.border);
+    elements.push(card);
 
-    // Glowing shadow layers
-    const shadowLayers: Phaser.GameObjects.Rectangle[] = [];
-    for (let i = 3; i >= 1; i--) {
-      const shadow = this.scene.add
-        .rectangle(
-          width / 2 + i * 3,
-          height / 2 + i * 3,
-          panelWidth,
-          panelHeight,
-          0x4CAF50,
-          0.08 * i
-        )
-        .setOrigin(0.5);
-      shadowLayers.push(shadow);
-    }
+    // Subtle top highlight stripe
+    const highlight = this.scene.add
+      .rectangle(cx, cy - ph / 2 + 1, pw - 4, 3, C.accent, 0.8)
+      .setOrigin(0.5, 0);
+    elements.push(highlight);
 
-    // Main panel with gradient effect (simulate with shapes)
-    const panelBg = this.scene.add
-      .rectangle(width / 2, height / 2, panelWidth, panelHeight, 0x0f1419)
+    // ── 3. Header ───────────────────────────────────────────────────────────
+    const headerY = cy - ph / 2 + (mobile ? 54 : 62);
+
+    const iconSize  = mobile ? 44 : 52;
+    const iconCircle = this.scene.add
+      .circle(cx, headerY, iconSize / 2 + 6, C.accent, 0.12)
+      .setOrigin(0.5);
+    const iconEmoji  = this.scene.add
+      .text(cx, headerY, "🫀", { fontSize: `${iconSize}px` })
       .setOrigin(0.5);
 
-    // Gradient overlay
-    const gradientOverlay = this.scene.add
-      .rectangle(width / 2, height / 2, panelWidth, panelHeight, 0x1a2332, 0.7)
-      .setOrigin(0.5);
+    const titleFontSize = mobile ? "28px" : "36px";
+    const titleY = headerY + (mobile ? 44 : 52);
 
-    // Neon border with glow
-    const borderGlow = this.scene.add
-      .rectangle(width / 2, height / 2, panelWidth + 4, panelHeight + 4, 0x4CAF50, 0)
-      .setStrokeStyle(6, 0x4CAF50, 0.4)
-      .setOrigin(0.5);
-
-    const border = this.scene.add
-      .rectangle(width / 2, height / 2, panelWidth, panelHeight, 0x000000, 0)
-      .setStrokeStyle(2, 0x66BB6A, 1)
-      .setOrigin(0.5);
-
-    // Animated pulse effect on border
-    this.scene.tweens.add({
-      targets: borderGlow,
-      alpha: 0.6,
-      duration: 1500,
-      yoyo: true,
-      repeat: -1,
-      ease: "Sine.easeInOut",
-    });
-
-    // Animated corner decorations
-    const cornerSize = this.isMobile ? 20 : 25;
-    const cornerOffset = 15;
-    const corners = [
-      { x: width / 2 - panelWidth / 2 + cornerOffset, y: height / 2 - panelHeight / 2 + cornerOffset, angle: 0 },
-      { x: width / 2 + panelWidth / 2 - cornerOffset, y: height / 2 - panelHeight / 2 + cornerOffset, angle: 90 },
-      { x: width / 2 - panelWidth / 2 + cornerOffset, y: height / 2 + panelHeight / 2 - cornerOffset, angle: 270 },
-      { x: width / 2 + panelWidth / 2 - cornerOffset, y: height / 2 + panelHeight / 2 - cornerOffset, angle: 180 },
-    ];
-
-    const cornerGraphics: Phaser.GameObjects.Graphics[] = [];
-    corners.forEach((corner, index) => {
-      const graphics = this.scene.add.graphics();
-      graphics.lineStyle(3, 0x4CAF50, 1);
-      
-      // L-shaped corner
-      graphics.beginPath();
-      graphics.moveTo(corner.x - cornerSize / 2, corner.y);
-      graphics.lineTo(corner.x, corner.y);
-      graphics.lineTo(corner.x, corner.y - cornerSize / 2);
-      graphics.strokePath();
-      
-      graphics.setRotation((corner.angle * Math.PI) / 180);
-      cornerGraphics.push(graphics);
-
-      // Pulse animation with delay
-      this.scene.tweens.add({
-        targets: graphics,
-        alpha: 0.4,
-        duration: 1000,
-        yoyo: true,
-        repeat: -1,
-        delay: index * 200,
-        ease: "Sine.easeInOut",
-      });
-    });
-
-    // Header section with icon
-    const headerY = height / 2 - panelHeight / 2 + (this.isMobile ? 60 : 70);
-    
-    // Icon background glow
-    const iconGlow = this.scene.add
-      .circle(width / 2, headerY - (this.isMobile ? 30 : 35), this.isMobile ? 35 : 42, 0x4CAF50, 0.3)
-      .setOrigin(0.5);
-
-    this.scene.tweens.add({
-      targets: iconGlow,
-      scale: 1.2,
-      alpha: 0.5,
-      duration: 1200,
-      yoyo: true,
-      repeat: -1,
-      ease: "Sine.easeInOut",
-    });
-
-    // Icon
-    const icon = this.scene.add
-      .text(width / 2, headerY - (this.isMobile ? 30 : 35), "🎮", {
-        fontSize: this.isMobile ? "50px" : "64px",
+    const titleText = this.scene.add
+      .text(cx, titleY, "HOW  TO  PLAY", {
+        fontFamily: "'Orbitron', 'Fredoka', monospace",
+        fontSize: titleFontSize,
+        fontStyle: "bold",
+        color: "#ffffff",
+        letterSpacing: 4,
       })
       .setOrigin(0.5);
 
-    // Title with neon glow effect
-    const titleText = "HOW TO PLAY";
-    const titleGlow = this.scene.add
-      .text(width / 2, headerY + (this.isMobile ? 15 : 20), titleText, {
-        ...baseTextStyle,
-        fontSize: this.isMobile ? "36px" : "48px",
-        fontStyle: "bold",
-        color: "#4CAF50",
+    const subtitleText = this.scene.add
+      .text(cx, titleY + (mobile ? 28 : 34), "Organ Placement Challenge", {
+        fontFamily: "'Fredoka', 'Nunito', sans-serif",
+        fontSize: mobile ? "14px" : "16px",
+        color: `#${C.accent.toString(16).padStart(6, "0")}`,
       })
       .setOrigin(0.5)
-      .setAlpha(0.4);
+      .setAlpha(0.85);
 
-    const title = this.scene.add
-      .text(width / 2, headerY + (this.isMobile ? 15 : 20), titleText, {
-        ...baseTextStyle,
-        fontSize: this.isMobile ? "36px" : "48px",
-        fontStyle: "bold",
-        stroke: "#2d5016",
-        strokeThickness: 4,
-      })
-      .setOrigin(0.5);
+    elements.push(iconCircle, iconEmoji, titleText, subtitleText);
 
-    this.scene.tweens.add({
-      targets: titleGlow,
-      scale: 1.05,
-      alpha: 0.6,
-      duration: 1500,
-      yoyo: true,
-      repeat: -1,
-      ease: "Sine.easeInOut",
-    });
+    // Divider line
+    const divY = titleY + (mobile ? 48 : 56);
+    const divider = this.scene.add.graphics();
+    divider.lineStyle(1, C.border, 1);
+    divider.beginPath();
+    divider.moveTo(cx - pw * 0.42, divY);
+    divider.lineTo(cx + pw * 0.42, divY);
+    divider.strokePath();
+    elements.push(divider);
 
-    // Instructions with modern card design
-    const instructionsY = headerY + (this.isMobile ? 80 : 100);
-    const lines = [
-      { icon: "🧩", text: "Drag each organ to its correct position", color: 0x4CAF50 },
-      { icon: "⭐", text: "Earn points for accurate placements", color: 0xFFD700 },
-      { icon: "⏱️", text: "Complete before the timer runs out", color: 0xFF6B6B },
-      { icon: "⛔", text: "Avoid incorrect placements", color: 0xFF5252 },
-      { icon: "🏆", text: "Master all organs to achieve victory!", color: 0xFFC107 },
-    ];
+    // ── 4. Step rows ────────────────────────────────────────────────────────
+    const rowH    = mobile ? 56 : 62;
+    const rowW    = pw * 0.88;
+    const firstRowY = divY + (mobile ? 40 : 46);
 
-    const instructionElements: Phaser.GameObjects.GameObject[] = [];
-    const lineHeight = this.isMobile ? 60 : 68;
-    const startY = instructionsY;
+    Instruction.STEPS.forEach((step, i) => {
+      const ry = firstRowY + i * rowH;
 
-    lines.forEach((line, index) => {
-      const yPos = startY + index * lineHeight;
-      
-      // Card background with accent color
-      const cardBg = this.scene.add
-        .rectangle(
-          width / 2,
-          yPos,
-          panelWidth * 0.85,
-          this.isMobile ? 50 : 56,
-          0x131920,
-          0.8
-        )
+      // Row tint background (very subtle)
+      const rowBg = this.scene.add
+        .rectangle(cx, ry, rowW, rowH - 6, step.col, 0.04)
         .setOrigin(0.5)
-        .setStrokeStyle(2, line.color, 0.6);
+        .setAlpha(0);
+      elements.push(rowBg);
 
-      // Left accent bar
-      const accentBar = this.scene.add
-        .rectangle(
-          width / 2 - panelWidth * 0.425 + 3,
-          yPos,
-          6,
-          this.isMobile ? 50 : 56,
-          line.color,
-          1
-        )
-        .setOrigin(0.5);
+      // Left pill / icon badge
+      const badgeR = mobile ? 18 : 20;
+      const badgeX = cx - rowW / 2 + badgeR + 6;
+      const badge = this.scene.add
+        .circle(badgeX, ry, badgeR, step.col, 0.18)
+        .setOrigin(0.5)
+        .setAlpha(0);
+      const badgeIcon = this.scene.add
+        .text(badgeX, ry, step.icon, { fontSize: mobile ? "20px" : "24px" })
+        .setOrigin(0.5)
+        .setAlpha(0);
 
-      // Icon with background
-      const iconBg = this.scene.add
-        .circle(
-          width / 2 - panelWidth * 0.37,
-          yPos,
-          this.isMobile ? 18 : 20,
-          line.color,
-          0.2
-        )
-        .setOrigin(0.5);
-
-      const iconText = this.scene.add
-        .text(width / 2 - panelWidth * 0.37, yPos, line.icon, {
-          fontSize: this.isMobile ? "26px" : "30px",
+      // Bold label
+      const labelX = badgeX + badgeR + (mobile ? 12 : 14);
+      const label = this.scene.add
+        .text(labelX, ry - (mobile ? 5 : 6), step.label, {
+          fontFamily: "'Orbitron', monospace",
+          fontSize: mobile ? "13px" : "15px",
+          fontStyle: "bold",
+          color: `#${step.col.toString(16).padStart(6, "0")}`,
         })
-        .setOrigin(0.5);
+        .setOrigin(0, 0.5)
+        .setAlpha(0);
 
-      // Instruction text
-      const text = this.scene.add
-        .text(width / 2 - panelWidth * 0.28, yPos, line.text, {
-          ...baseTextStyle,
-          fontSize: this.isMobile ? "17px" : "21px",
-          color: "#e8f5e9",
+      // Description text
+      const desc = this.scene.add
+        .text(labelX, ry + (mobile ? 9 : 10), step.desc, {
+          fontFamily: "'Fredoka', 'Nunito', sans-serif",
+          fontSize: mobile ? "13px" : "14px",
+          color: `#${C.textDim.toString(16).padStart(6, "0")}`,
         })
-        .setOrigin(0, 0.5);
+        .setOrigin(0, 0.5)
+        .setAlpha(0);
 
-      instructionElements.push(cardBg, accentBar, iconBg, iconText, text);
+      // Right accent dot
+      const dotX = cx + rowW / 2 - 12;
+      const dot = this.scene.add
+        .circle(dotX, ry, 3, step.col, 0.6)
+        .setOrigin(0.5)
+        .setAlpha(0);
 
-      // Stagger animation
-      [cardBg, accentBar, iconBg, iconText, text].forEach(el => {
-        el.setAlpha(0);
-        el.setPosition(el.x - 30, el.y);
-      });
+      elements.push(rowBg, badge, badgeIcon, label, desc, dot);
 
-      this.scene.tweens.add({
-        targets: [cardBg, accentBar, iconBg, iconText, text],
-        alpha: 1,
-        x: `+=${30}`,
-        duration: 500,
-        delay: 400 + index * 120,
-        ease: "Back.easeOut",
-      });
+      // Staggered slide-in
+      const delay = 350 + i * 90;
+      const targets = [rowBg, badge, badgeIcon, label, desc, dot];
+      targets.forEach(t => { (t as any).x -= 20; });
 
-      // Hover effect for cards
-      cardBg.setInteractive();
-      cardBg.on("pointerover", () => {
-        this.scene.tweens.add({
-          targets: [cardBg, accentBar],
-          scaleX: 1.02,
-          scaleY: 1.05,
-          duration: 200,
-          ease: "Power2",
-        });
-        cardBg.setFillStyle(0x1a2332, 1);
-      });
-
-      cardBg.on("pointerout", () => {
-        this.scene.tweens.add({
-          targets: [cardBg, accentBar],
-          scaleX: 1,
-          scaleY: 1,
-          duration: 200,
-          ease: "Power2",
-        });
-        cardBg.setFillStyle(0x131920, 0.8);
-      });
+      this.track(this.scene.tweens.add({
+        targets,
+        alpha: { from: 0, to: 1 },
+        x:     `+=20`,
+        duration: 380,
+        delay,
+        ease: "Cubic.Out",
+      }));
     });
 
-    // Start button with premium design
-    const buttonY = height / 2 + panelHeight / 2 - (this.isMobile ? 60 : 70);
-    const buttonWidth = this.isMobile ? 200 : 240;
-    const buttonHeight = this.isMobile ? 56 : 64;
+    // ── 5. START button ─────────────────────────────────────────────────────
+    const btnY  = cy + ph / 2 - (mobile ? 52 : 62);
+    const btnW  = mobile ? 210 : 240;
+    const btnH  = mobile ? 48 : 56;
 
-    // Button outer glow
-    const btnOuterGlow = this.scene.add
-      .rectangle(width / 2, buttonY, buttonWidth + 20, buttonHeight + 20, 0x4CAF50, 0.2)
-      .setOrigin(0.5);
+    // Button background (solid, rounded feel via graphics)
+    const btnBg = this.scene.add.graphics();
+    this.drawRoundRect(btnBg, cx - btnW / 2, btnY - btnH / 2, btnW, btnH, 10, C.accent, 1);
+    elements.push(btnBg);
 
-    // Button glow
-    const btnGlow = this.scene.add
-      .rectangle(width / 2, buttonY, buttonWidth + 8, buttonHeight + 8, 0x4CAF50, 0.4)
-      .setOrigin(0.5);
+    // Sheen overlay
+    const sheen = this.scene.add.graphics();
+    this.drawRoundRect(sheen, cx - btnW / 2, btnY - btnH / 2, btnW, btnH / 2, 10, 0xffffff, 0.08);
+    elements.push(sheen);
 
-    // Invisible interactive area for button
-    const startBtnBg = this.scene.add
-      .rectangle(width / 2, buttonY, buttonWidth, buttonHeight, 0x000000, 0)
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
-
-    // Button text
-    const startBtnText = this.scene.add
-      .text(width / 2, buttonY, "🚀 START PLAYING", {
-        fontSize: this.isMobile ? "22px" : "28px",
+    // Button label
+    const btnLabel = this.scene.add
+      .text(cx, btnY, "START PLAYING", {
+        fontFamily: "'Orbitron', monospace",
+        fontSize: mobile ? "16px" : "18px",
         fontStyle: "bold",
-        fontFamily: "Fredoka, Arial Black, sans-serif",
-        color: "#4CAF50",
-        stroke: "#1b5e20",
-        strokeThickness: 4,
+        color: "#0a0d14",
+        letterSpacing: 2,
       })
       .setOrigin(0.5);
+    elements.push(btnLabel);
+
+    // Invisible hit area
+    const btnHit = this.scene.add
+      .rectangle(cx, btnY, btnW, btnH)
+      .setOrigin(0.5)
+      .setAlpha(0.001)
+      .setInteractive({ useHandCursor: true });
+    elements.push(btnHit);
 
     // Button interactions
-    startBtnBg.on("pointerup", () => {
-      this.scene.tweens.add({
-        targets: [startBtnText],
-        scaleX: 0.92,
-        scaleY: 0.92,
-        duration: 100,
-        yoyo: true,
-        onComplete: () => {
-          this.hide();
-          onClose();
-        },
-      });
+    btnHit.on("pointerover", () => {
+      this.scene.tweens.add({ targets: btnBg, alpha: 0.85, duration: 150 });
+      this.scene.tweens.add({ targets: btnLabel, scaleX: 1.04, scaleY: 1.04, duration: 150, ease: "Back.Out" });
     });
-
-    startBtnBg.on("pointerover", () => {
-      this.scene.tweens.add({
-        targets: [startBtnText],
-        scaleX: 1.08,
-        scaleY: 1.08,
-        duration: 250,
-        ease: "Back.easeOut",
-      });
-      startBtnText.setColor("#66BB6A");
+    btnHit.on("pointerout", () => {
+      this.scene.tweens.add({ targets: btnBg, alpha: 1, duration: 150 });
+      this.scene.tweens.add({ targets: btnLabel, scaleX: 1, scaleY: 1, duration: 150 });
     });
-
-    startBtnBg.on("pointerout", () => {
+    btnHit.on("pointerdown", () => {
+      this.scene.tweens.add({ targets: [btnBg, btnLabel], scaleX: 0.96, scaleY: 0.96, duration: 80, ease: "Quad.In" });
+    });
+    btnHit.on("pointerup", () => {
       this.scene.tweens.add({
-        targets: [startBtnText],
+        targets: [btnBg, btnLabel],
         scaleX: 1,
         scaleY: 1,
-        duration: 250,
-        ease: "Back.easeOut",
+        duration: 80,
+        ease: "Quad.Out",
+        onComplete: () => { this.hide(); onClose(); },
       });
-      startBtnText.setColor("#4CAF50");
     });
 
-    // Pulsing button glow
-    this.scene.tweens.add({
-      targets: [btnOuterGlow, btnGlow],
-      scale: 1.15,
-      alpha: 0.6,
-      duration: 1300,
+    // Pulsing glow ring under button
+    const glowRing = this.scene.add.graphics();
+    glowRing.lineStyle(6, C.accent, 0.18);
+    glowRing.strokeRoundedRect(cx - btnW / 2 - 6, btnY - btnH / 2 - 6, btnW + 12, btnH + 12, 14);
+    elements.push(glowRing);
+
+    this.track(this.scene.tweens.add({
+      targets: glowRing,
+      alpha: { from: 0.5, to: 0 },
+      scaleX: 1.08,
+      scaleY: 1.2,
+      duration: 1400,
       yoyo: true,
       repeat: -1,
-      ease: "Sine.easeInOut",
+      ease: "Sine.InOut",
+    }));
+
+    // ── 6. Panel entrance ───────────────────────────────────────────────────
+    const panelItems = [card, highlight, iconCircle, iconEmoji, titleText, subtitleText, divider, btnBg, sheen, btnLabel, btnHit, glowRing];
+    panelItems.forEach(el => {
+      if ('setAlpha' in el) (el as any).setAlpha(0);
+      if ('setScale' in el) (el as any).setScale(0.92);
     });
 
-    // Collect all elements
-    const panelElements = [
-      bg,
-      particlesBg,
-      ...shadowLayers,
-      panelBg,
-      gradientOverlay,
-      borderGlow,
-      border,
-      ...cornerGraphics,
-      iconGlow,
-      icon,
-      titleGlow,
-      title,
-      ...instructionElements,
-      btnOuterGlow,
-      btnGlow,
-      startBtnBg,
-      startBtnText,
-    ];
-
-    // Initial animation
-    panelElements.forEach((el) => {
-      if (el !== bg && 'setScale' in el && typeof el.setScale === 'function') {
-        el.setScale(0.85);
-      }
-      if (el !== bg && 'setAlpha' in el && typeof el.setAlpha === 'function') {
-        el.setAlpha(0);
-      }
-    });
-
-    this.scene.tweens.add({
-      targets: panelElements.filter(el => el !== bg),
-      scale: 1,
+    this.track(this.scene.tweens.add({
+      targets: panelItems,
       alpha: 1,
-      duration: 500,
-      ease: "Back.easeOut",
-      delay: 150,
-    });
+      scale: 1,
+      duration: 420,
+      delay: 80,
+      ease: "Back.Out(1.4)",
+    }));
 
-    this.container = this.scene.add.container(0, 0, panelElements);
+    // ── 7. Container ────────────────────────────────────────────────────────
+    this.container = this.scene.add.container(0, 0, elements);
     this.container.setDepth(9999);
   }
 
   hide() {
-    if (this.container) {
-      this.scene.tweens.add({
-        targets: this.container.list,
-        alpha: 0,
-        scale: 0.9,
-        duration: 350,
-        ease: "Back.easeIn",
-        onComplete: () => {
-          this.container?.setVisible(false);
-        },
-      });
-    }
+    if (!this.container) return;
+    this.scene.tweens.add({
+      targets: this.container.list,
+      alpha: 0,
+      scale: 0.94,
+      duration: 280,
+      ease: "Cubic.In",
+      onComplete: () => this.container?.setVisible(false),
+    });
   }
 
   destroy() {
+    this.tweens.forEach(t => t.remove());
+    this.tweens = [];
     this.container?.destroy(true);
     this.container = undefined;
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  /** Keep tween refs so we can clean up on destroy. */
+  private track(tween: Phaser.Tweens.Tween) {
+    this.tweens.push(tween);
+    return tween;
+  }
+
+  /**
+   * Draw a filled rounded rectangle via Phaser Graphics.
+   * Phaser 3's `fillRoundedRect` handles the radius natively.
+   */
+  private drawRoundRect(
+    g: Phaser.GameObjects.Graphics,
+    x: number, y: number, w: number, h: number,
+    r: number, color: number, alpha: number
+  ) {
+    g.fillStyle(color, alpha);
+    g.fillRoundedRect(x, y, w, h, r);
   }
 }
