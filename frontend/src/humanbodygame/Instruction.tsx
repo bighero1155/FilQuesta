@@ -9,25 +9,24 @@ export default class Instruction {
 
   // ─── Design tokens ────────────────────────────────────────────────────────
   private static readonly C = {
-    bg:       0x0a0d14,
-    panel:    0x111620,
-    border:   0x1e2d40,
-    accent:   0x00e5a0,       // teal-green
-    accentDim:0x00b57e,
-    gold:     0xf5c842,
-    red:      0xff5c7a,
-    white:    0xffffff,
-    textDim:  0x7a8fa6,
+    bg:      0x0a0d14,
+    panel:   0x111620,
+    border:  0x1e2d40,
+    accent:  0x00e5a0,   // teal-green
+    gold:    0xf5c842,
+    red:     0xff5c7a,
+    white:   0xffffff,
+    textDim: 0x8faabe,
   };
 
+  // ── Reflect the ACTUAL game: 5 categories, drag-and-drop across worlds ────
   private static readonly STEPS = [
-    { icon: "🧩", label: "Drag organs",    desc: "to their correct body position",   col: 0x00e5a0 },
-    { icon: "⭐", label: "Earn points",    desc: "for every accurate placement",      col: 0xf5c842 },
-    { icon: "⏱️", label: "Beat the clock", desc: "before the timer hits zero",        col: 0xff5c7a },
-    { icon: "🚫", label: "Stay careful",   desc: "wrong drops cost you dearly",       col: 0xff8c42 },
-    { icon: "🏆", label: "Master all",     desc: "organs to claim total victory",     col: 0xa78bfa },
+    { icon: "🖐️", label: "Drag & Drop",    desc: "Place each item into its correct spot", col: 0x00e5a0 },
+    { icon: "⭐",  label: "Earn Points",    desc: "Score for every accurate placement",    col: 0xf5c842 },
+    { icon: "⏱️", label: "Beat the Clock", desc: "Finish before the timer hits zero",     col: 0xff5c7a },
+    { icon: "🌍",  label: "5 Worlds",       desc: "Food · Body · Space · Habitat · Life", col: 0xff8c42 },
+    { icon: "🏆",  label: "Master All",     desc: "75 levels across 5 categories!",       col: 0xa78bfa },
   ];
-  // ──────────────────────────────────────────────────────────────────────────
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -61,9 +60,11 @@ export default class Instruction {
       .rectangle(0, 0, width, height, 0x000000, 0.78)
       .setOrigin(0)
       .setAlpha(0)
-      .setInteractive();               // block clicks below
+      .setInteractive();   // block clicks below
 
-    this.track(this.scene.tweens.add({ targets: backdrop, alpha: 0.78, duration: 300, ease: "Sine.Out" }));
+    this.track(this.scene.tweens.add({
+      targets: backdrop, alpha: 0.78, duration: 300, ease: "Sine.Out",
+    }));
     elements.push(backdrop);
 
     // ── 2. Panel card ───────────────────────────────────────────────────────
@@ -73,49 +74,56 @@ export default class Instruction {
       .setStrokeStyle(1.5, C.border);
     elements.push(card);
 
-    // Subtle top highlight stripe
-    const highlight = this.scene.add
-      .rectangle(cx, cy - ph / 2 + 1, pw - 4, 3, C.accent, 0.8)
+    // Accent stripe at the very top of the panel
+    const stripe = this.scene.add
+      .rectangle(cx, cy - ph / 2 + 1, pw - 4, 3, C.accent, 0.85)
       .setOrigin(0.5, 0);
-    elements.push(highlight);
+    elements.push(stripe);
 
     // ── 3. Header ───────────────────────────────────────────────────────────
-    const headerY = cy - ph / 2 + (mobile ? 54 : 62);
+    const headerY  = cy - ph / 2 + (mobile ? 54 : 62);
+    const iconSize = mobile ? 44 : 52;
 
-    const iconSize  = mobile ? 44 : 52;
+    // Icon glow circle
     const iconCircle = this.scene.add
       .circle(cx, headerY, iconSize / 2 + 6, C.accent, 0.12)
       .setOrigin(0.5);
-    const iconEmoji  = this.scene.add
-      .text(cx, headerY, "🫀", { fontSize: `${iconSize}px` })
+
+    // Game icon — represents the multi-world theme
+    const iconEmoji = this.scene.add
+      .text(cx, headerY, "🎮", { fontSize: `${iconSize}px` })
       .setOrigin(0.5);
 
-    const titleFontSize = mobile ? "28px" : "36px";
     const titleY = headerY + (mobile ? 44 : 52);
 
+    // Title — stroke ensures readability on any background
     const titleText = this.scene.add
       .text(cx, titleY, "HOW  TO  PLAY", {
-        fontFamily: "'Orbitron', 'Fredoka', monospace",
-        fontSize: titleFontSize,
-        fontStyle: "bold",
-        color: "#ffffff",
-        letterSpacing: 4,
+        fontFamily:      "'Orbitron', 'Fredoka', monospace",
+        fontSize:        mobile ? "26px" : "34px",
+        fontStyle:       "bold",
+        color:           "#ffffff",
+        stroke:          "#003322",
+        strokeThickness: mobile ? 4 : 6,
       })
       .setOrigin(0.5);
 
+    // Subtitle — describes the actual game
     const subtitleText = this.scene.add
-      .text(cx, titleY + (mobile ? 28 : 34), "Organ Placement Challenge", {
-        fontFamily: "'Fredoka', 'Nunito', sans-serif",
-        fontSize: mobile ? "14px" : "16px",
-        color: `#${C.accent.toString(16).padStart(6, "0")}`,
+      .text(cx, titleY + (mobile ? 28 : 34), "Drag • Place • Explore 5 Worlds", {
+        fontFamily:      "'Fredoka', 'Nunito', sans-serif",
+        fontSize:        mobile ? "13px" : "15px",
+        color:           "#00e5a0",
+        stroke:          "#00231a",
+        strokeThickness: mobile ? 3 : 4,
       })
       .setOrigin(0.5)
-      .setAlpha(0.85);
+      .setAlpha(0.9);
 
     elements.push(iconCircle, iconEmoji, titleText, subtitleText);
 
-    // Divider line
-    const divY = titleY + (mobile ? 48 : 56);
+    // Divider
+    const divY    = titleY + (mobile ? 48 : 56);
     const divider = this.scene.add.graphics();
     divider.lineStyle(1, C.border, 1);
     divider.beginPath();
@@ -125,25 +133,26 @@ export default class Instruction {
     elements.push(divider);
 
     // ── 4. Step rows ────────────────────────────────────────────────────────
-    const rowH    = mobile ? 56 : 62;
-    const rowW    = pw * 0.88;
+    const rowH      = mobile ? 56 : 62;
+    const rowW      = pw * 0.88;
     const firstRowY = divY + (mobile ? 40 : 46);
 
     Instruction.STEPS.forEach((step, i) => {
-      const ry = firstRowY + i * rowH;
+      const ry     = firstRowY + i * rowH;
+      const colHex = `#${step.col.toString(16).padStart(6, "0")}`;
 
-      // Row tint background (very subtle)
+      // Subtle row tint
       const rowBg = this.scene.add
-        .rectangle(cx, ry, rowW, rowH - 6, step.col, 0.04)
+        .rectangle(cx, ry, rowW, rowH - 6, step.col, 0.05)
         .setOrigin(0.5)
         .setAlpha(0);
       elements.push(rowBg);
 
-      // Left pill / icon badge
-      const badgeR = mobile ? 18 : 20;
-      const badgeX = cx - rowW / 2 + badgeR + 6;
-      const badge = this.scene.add
-        .circle(badgeX, ry, badgeR, step.col, 0.18)
+      // Icon badge
+      const badgeR    = mobile ? 18 : 20;
+      const badgeX    = cx - rowW / 2 + badgeR + 6;
+      const badge     = this.scene.add
+        .circle(badgeX, ry, badgeR, step.col, 0.2)
         .setOrigin(0.5)
         .setAlpha(0);
       const badgeIcon = this.scene.add
@@ -151,39 +160,43 @@ export default class Instruction {
         .setOrigin(0.5)
         .setAlpha(0);
 
-      // Bold label
+      // Label — bold + stroke for crisp legibility on dark panel
       const labelX = badgeX + badgeR + (mobile ? 12 : 14);
-      const label = this.scene.add
+      const label  = this.scene.add
         .text(labelX, ry - (mobile ? 5 : 6), step.label, {
-          fontFamily: "'Orbitron', monospace",
-          fontSize: mobile ? "13px" : "15px",
-          fontStyle: "bold",
-          color: `#${step.col.toString(16).padStart(6, "0")}`,
+          fontFamily:      "'Orbitron', monospace",
+          fontSize:        mobile ? "12px" : "14px",
+          fontStyle:       "bold",
+          color:           colHex,
+          stroke:          "#000000",
+          strokeThickness: mobile ? 3 : 4,
         })
         .setOrigin(0, 0.5)
         .setAlpha(0);
 
-      // Description text
+      // Description — softer, thin stroke so it stays readable
       const desc = this.scene.add
         .text(labelX, ry + (mobile ? 9 : 10), step.desc, {
-          fontFamily: "'Fredoka', 'Nunito', sans-serif",
-          fontSize: mobile ? "13px" : "14px",
-          color: `#${C.textDim.toString(16).padStart(6, "0")}`,
+          fontFamily:      "'Fredoka', 'Nunito', sans-serif",
+          fontSize:        mobile ? "12px" : "13px",
+          color:           "#c0d8e8",
+          stroke:          "#000000",
+          strokeThickness: mobile ? 2 : 3,
         })
         .setOrigin(0, 0.5)
         .setAlpha(0);
 
       // Right accent dot
       const dotX = cx + rowW / 2 - 12;
-      const dot = this.scene.add
-        .circle(dotX, ry, 3, step.col, 0.6)
+      const dot  = this.scene.add
+        .circle(dotX, ry, 3, step.col, 0.65)
         .setOrigin(0.5)
         .setAlpha(0);
 
       elements.push(rowBg, badge, badgeIcon, label, desc, dot);
 
       // Staggered slide-in
-      const delay = 350 + i * 90;
+      const delay   = 350 + i * 90;
       const targets = [rowBg, badge, badgeIcon, label, desc, dot];
       targets.forEach(t => { (t as any).x -= 20; });
 
@@ -198,33 +211,34 @@ export default class Instruction {
     });
 
     // ── 5. START button ─────────────────────────────────────────────────────
-    const btnY  = cy + ph / 2 - (mobile ? 52 : 62);
-    const btnW  = mobile ? 210 : 240;
-    const btnH  = mobile ? 48 : 56;
+    const btnY = cy + ph / 2 - (mobile ? 52 : 62);
+    const btnW = mobile ? 210 : 244;
+    const btnH = mobile ? 48 : 56;
 
-    // Button background (solid, rounded feel via graphics)
+    // Filled button background
     const btnBg = this.scene.add.graphics();
     this.drawRoundRect(btnBg, cx - btnW / 2, btnY - btnH / 2, btnW, btnH, 10, C.accent, 1);
     elements.push(btnBg);
 
-    // Sheen overlay
+    // Top sheen
     const sheen = this.scene.add.graphics();
     this.drawRoundRect(sheen, cx - btnW / 2, btnY - btnH / 2, btnW, btnH / 2, 10, 0xffffff, 0.08);
     elements.push(sheen);
 
-    // Button label
+    // Button label — dark text + subtle outline so it pops on the teal bg
     const btnLabel = this.scene.add
-      .text(cx, btnY, "START PLAYING", {
-        fontFamily: "'Orbitron', monospace",
-        fontSize: mobile ? "16px" : "18px",
-        fontStyle: "bold",
-        color: "#0a0d14",
-        letterSpacing: 2,
+      .text(cx, btnY, "LET'S PLAY!", {
+        fontFamily:      "'Orbitron', monospace",
+        fontSize:        mobile ? "16px" : "18px",
+        fontStyle:       "bold",
+        color:           "#04120e",
+        stroke:          "#006644",
+        strokeThickness: mobile ? 2 : 3,
       })
       .setOrigin(0.5);
     elements.push(btnLabel);
 
-    // Invisible hit area
+    // Invisible hit zone
     const btnHit = this.scene.add
       .rectangle(cx, btnY, btnW, btnH)
       .setOrigin(0.5)
@@ -232,59 +246,56 @@ export default class Instruction {
       .setInteractive({ useHandCursor: true });
     elements.push(btnHit);
 
-    // Button interactions
     btnHit.on("pointerover", () => {
-      this.scene.tweens.add({ targets: btnBg, alpha: 0.85, duration: 150 });
-      this.scene.tweens.add({ targets: btnLabel, scaleX: 1.04, scaleY: 1.04, duration: 150, ease: "Back.Out" });
+      this.scene.tweens.add({ targets: btnBg,    alpha: 0.85, duration: 150 });
+      this.scene.tweens.add({ targets: btnLabel, scaleX: 1.05, scaleY: 1.05, duration: 150, ease: "Back.Out" });
     });
     btnHit.on("pointerout", () => {
-      this.scene.tweens.add({ targets: btnBg, alpha: 1, duration: 150 });
-      this.scene.tweens.add({ targets: btnLabel, scaleX: 1, scaleY: 1, duration: 150 });
+      this.scene.tweens.add({ targets: btnBg,    alpha: 1,  duration: 150 });
+      this.scene.tweens.add({ targets: btnLabel, scaleX: 1, scaleY: 1,   duration: 150 });
     });
     btnHit.on("pointerdown", () => {
-      this.scene.tweens.add({ targets: [btnBg, btnLabel], scaleX: 0.96, scaleY: 0.96, duration: 80, ease: "Quad.In" });
+      this.scene.tweens.add({
+        targets: [btnBg, btnLabel], scaleX: 0.96, scaleY: 0.96, duration: 80, ease: "Quad.In",
+      });
     });
     btnHit.on("pointerup", () => {
       this.scene.tweens.add({
         targets: [btnBg, btnLabel],
-        scaleX: 1,
-        scaleY: 1,
-        duration: 80,
-        ease: "Quad.Out",
+        scaleX: 1, scaleY: 1,
+        duration: 80, ease: "Quad.Out",
         onComplete: () => { this.hide(); onClose(); },
       });
     });
 
-    // Pulsing glow ring under button
+    // Pulsing outer glow ring
     const glowRing = this.scene.add.graphics();
-    glowRing.lineStyle(6, C.accent, 0.18);
+    glowRing.lineStyle(6, C.accent, 0.2);
     glowRing.strokeRoundedRect(cx - btnW / 2 - 6, btnY - btnH / 2 - 6, btnW + 12, btnH + 12, 14);
     elements.push(glowRing);
 
     this.track(this.scene.tweens.add({
       targets: glowRing,
-      alpha: { from: 0.5, to: 0 },
-      scaleX: 1.08,
-      scaleY: 1.2,
-      duration: 1400,
-      yoyo: true,
-      repeat: -1,
-      ease: "Sine.InOut",
+      alpha: { from: 0.6, to: 0 },
+      scaleX: 1.08, scaleY: 1.2,
+      duration: 1400, yoyo: true, repeat: -1, ease: "Sine.InOut",
     }));
 
-    // ── 6. Panel entrance ───────────────────────────────────────────────────
-    const panelItems = [card, highlight, iconCircle, iconEmoji, titleText, subtitleText, divider, btnBg, sheen, btnLabel, btnHit, glowRing];
+    // ── 6. Panel entrance animation ─────────────────────────────────────────
+    const panelItems = [
+      card, stripe, iconCircle, iconEmoji,
+      titleText, subtitleText, divider,
+      btnBg, sheen, btnLabel, btnHit, glowRing,
+    ];
     panelItems.forEach(el => {
-      if ('setAlpha' in el) (el as any).setAlpha(0);
-      if ('setScale' in el) (el as any).setScale(0.92);
+      if ("setAlpha" in el) (el as any).setAlpha(0);
+      if ("setScale" in el) (el as any).setScale(0.92);
     });
 
     this.track(this.scene.tweens.add({
       targets: panelItems,
-      alpha: 1,
-      scale: 1,
-      duration: 420,
-      delay: 80,
+      alpha: 1, scale: 1,
+      duration: 420, delay: 80,
       ease: "Back.Out(1.4)",
     }));
 
@@ -297,10 +308,8 @@ export default class Instruction {
     if (!this.container) return;
     this.scene.tweens.add({
       targets: this.container.list,
-      alpha: 0,
-      scale: 0.94,
-      duration: 280,
-      ease: "Cubic.In",
+      alpha: 0, scale: 0.94,
+      duration: 280, ease: "Cubic.In",
       onComplete: () => this.container?.setVisible(false),
     });
   }
@@ -314,16 +323,11 @@ export default class Instruction {
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
-  /** Keep tween refs so we can clean up on destroy. */
   private track(tween: Phaser.Tweens.Tween) {
     this.tweens.push(tween);
     return tween;
   }
 
-  /**
-   * Draw a filled rounded rectangle via Phaser Graphics.
-   * Phaser 3's `fillRoundedRect` handles the radius natively.
-   */
   private drawRoundRect(
     g: Phaser.GameObjects.Graphics,
     x: number, y: number, w: number, h: number,
