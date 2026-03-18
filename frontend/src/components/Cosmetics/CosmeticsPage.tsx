@@ -21,20 +21,19 @@ const CosmeticsPage: React.FC = () => {
   const [existingImageUrl, setExistingImageUrl] = useState<string | undefined>(undefined);
   const [cacheBust, setCacheBust] = useState<number>(Date.now());
 
-  // ✅ FIX: useRef so fetchCosmetics always reads the LATEST bust value
-  // without needing to be recreated (avoids stale closure)
   const cacheBustRef = useRef<number>(cacheBust);
 
-  const fetchCosmetics = useCallback(async () => {
+  // ✅ FIX: Accept optional bust param so handleSubmit can pass the fresh
+  // timestamp directly — no async gap, no stale closure risk
+  const fetchCosmetics = useCallback(async (bust?: number) => {
     try {
       const data = await getCosmetics();
-      // ✅ FIX: Bake the latest ?t= directly into each image URL on the data
-      // so card <img> srcs are already correct when setCosmetics fires
+      const activeBust = bust ?? cacheBustRef.current;
       const busted = data.map((c) => ({
         ...c,
         image:
           typeof c.image === "string"
-            ? `${c.image.split("?")[0]}?t=${cacheBustRef.current}`
+            ? `${c.image.split("?")[0]}?t=${activeBust}`
             : c.image,
       }));
       setCosmetics(busted);
@@ -57,7 +56,8 @@ const CosmeticsPage: React.FC = () => {
         await createCosmetic(form);
       }
 
-      // ✅ FIX: Update ref FIRST so fetchCosmetics uses the new timestamp
+      // ✅ FIX: Generate new bust, update ref, then pass it directly into
+      // fetchCosmetics so the browser sees a new URL and skips the cache
       const newBust = Date.now();
       cacheBustRef.current = newBust;
       setCacheBust(newBust);
@@ -72,8 +72,7 @@ const CosmeticsPage: React.FC = () => {
       });
       setExistingImageUrl(undefined);
 
-      // fetchCosmetics now reads cacheBustRef.current = newBust already
-      await fetchCosmetics();
+      await fetchCosmetics(newBust);
     } catch (err) {
       console.error("Failed to save cosmetic:", err);
       alert("Failed to save cosmetic.");
