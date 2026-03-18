@@ -61,7 +61,7 @@ export default class IntroductionScene extends Phaser.Scene {
 
     /* ================= TITLE ================= */
     this.title = this.add
-      .text(width / 2, height * 0.2, "🍎 Math Fruit Challenge 🍌", {
+      .text(width / 2, height * 0.10, "🍎 Math Fruit Challenge 🍌", {
         fontFamily: "Fredoka, Arial Black, sans-serif",
         fontSize: this.isMobile ? "28px" : "70px",
         color: "#ffffff",
