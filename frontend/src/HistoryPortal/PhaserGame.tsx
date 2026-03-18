@@ -5,8 +5,6 @@ import HistoryPortalIntro from "../HistoryPortal/Instruction";
 import { useLocation } from "react-router-dom";
 import APBackgroundMusic from "../HistoryPortal/APBackgroundMusic";
 
-const HISTORY_CATEGORIES = ["BASIC", "NORMAL", "HARD", "ADVANCED", "EXPERT"];
-
 export default function PhaserGame() {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -49,19 +47,10 @@ export default function PhaserGame() {
       gameRef.current = null;
     }
 
-    // Read `level` and `category` from query params
+    // Read `level` from query param
     const params = new URLSearchParams(location.search);
     const levelParam = params.get("level");
-    const categoryParam = params.get("category");
     const levelIndex = levelParam ? Number(levelParam) : undefined;
-
-    // Determine if this is level 1 within its category
-    const globalLevel = levelIndex !== undefined ? levelIndex + 1 : 1;
-    const categoryIndex = categoryParam
-      ? HISTORY_CATEGORIES.indexOf(categoryParam)
-      : Math.floor((globalLevel - 1) / 15);
-    const levelInCategory = globalLevel - categoryIndex * 15;
-    const showIntro = levelInCategory === 1;
 
     // Ensure valid dimensions before creating game
     const gameWidth = Math.max(dimensions.width, 320);
@@ -95,12 +84,8 @@ export default function PhaserGame() {
       const game = new Phaser.Game(config);
       gameRef.current = game;
 
-      // Show intro only on the first level of each category
-      if (showIntro) {
-        game.scene.start("HistoryPortalIntro", { levelKey: levelIndex });
-      } else {
-        game.scene.start("HistoryPortalScene");
-      }
+      // Start intro scene with passed level
+      game.scene.start("HistoryPortalIntro", { levelKey: levelIndex });
     } catch (error) {
       console.error("Failed to initialize Phaser game:", error);
     }
