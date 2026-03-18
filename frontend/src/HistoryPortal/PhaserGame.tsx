@@ -95,12 +95,16 @@ export default function PhaserGame() {
       const game = new Phaser.Game(config);
       gameRef.current = game;
 
-      // Show intro only on the first level of each category
-      if (showIntro) {
-        game.scene.start("HistoryPortalIntro", { levelKey: levelIndex });
-      } else {
-        game.scene.start("HistoryPortalScene");
-      }
+      // Wait for Phaser to fully boot before routing scenes
+      game.events.once("ready", () => {
+        if (showIntro) {
+          game.scene.start("HistoryPortalIntro", { levelKey: levelIndex });
+        } else {
+          // Stop the intro so it doesn't auto-run, go straight to game
+          game.scene.stop("HistoryPortalIntro");
+          game.scene.start("HistoryPortalScene");
+        }
+      });
     } catch (error) {
       console.error("Failed to initialize Phaser game:", error);
     }
