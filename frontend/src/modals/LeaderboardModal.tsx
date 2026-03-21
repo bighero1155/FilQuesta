@@ -563,7 +563,7 @@ const LeaderboardModal = ({ show, onClose }: Props) => {
                       {player.combined_score || player.total_score}
                     </span>
                     <span className="lb-breakdown">
-                      Game: {player.total_score} | Quiz: {player.shared_quiz_score ?? 0}
+                      Score: {player.total_score} | Quiz: {player.shared_quiz_score ?? 0}
                     </span>
                   </div>
                 </div>
