@@ -70,7 +70,7 @@ const UserManagementCSS: React.FC = () => {
       }
 
       /* ============================================
-         TABLE STYLES - No Transform/Scale Effects
+         TABLE STYLES
          ============================================ */
       .user-table {
         width: 100%;
@@ -89,13 +89,8 @@ const UserManagementCSS: React.FC = () => {
         white-space: nowrap;
       }
 
-      .user-table thead th:first-child {
-        border-top-left-radius: 10px;
-      }
-
-      .user-table thead th:last-child {
-        border-top-right-radius: 10px;
-      }
+      .user-table thead th:first-child { border-top-left-radius: 10px; }
+      .user-table thead th:last-child  { border-top-right-radius: 10px; }
 
       .user-table tbody tr {
         background: white;
@@ -114,23 +109,12 @@ const UserManagementCSS: React.FC = () => {
       /* ============================================
          TABLE CELL STYLES
          ============================================ */
-      .name-cell {
-        min-width: 150px;
-      }
-
-      .name-cell > div {
-        line-height: 1.4;
-        font-weight: 500;
-      }
-
-      .middle-name {
-        font-weight: 400;
-        opacity: 0.7;
-        font-size: 0.9em;
-      }
+      .name-cell { min-width: 150px; }
+      .name-cell > div { line-height: 1.4; font-weight: 500; }
+      .middle-name { font-weight: 400; opacity: 0.7; font-size: 0.9em; }
 
       /* ============================================
-         ROLE BADGES - Cyan (Teacher) & Light Green (Student)
+         ROLE BADGES
          ============================================ */
       .badge-role {
         padding: 0.5rem 1rem;
@@ -144,14 +128,12 @@ const UserManagementCSS: React.FC = () => {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
 
-      /* Student Badge - Light Green */
       .badge-student {
         background: linear-gradient(135deg, #66d9a8, #52c995);
         color: white;
         border: 2px solid #4ab887;
       }
 
-      /* Teacher Badge - Cyan */
       .badge-teacher {
         background: linear-gradient(135deg, #00d4ff, #00b4d8);
         color: white;
@@ -159,7 +141,7 @@ const UserManagementCSS: React.FC = () => {
       }
 
       /* ============================================
-         ACTION BUTTONS - No Transform Effects
+         ACTION BUTTONS
          ============================================ */
       .action-buttons {
         display: flex;
@@ -192,8 +174,16 @@ const UserManagementCSS: React.FC = () => {
         opacity: 0.9;
       }
 
-      .btn-edit:active {
-        box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+      /* ── Reset password button ── */
+      .btn-reset {
+        background: linear-gradient(135deg, #f5576c, #e74c3c);
+        color: white;
+        box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+      }
+
+      .btn-reset:hover {
+        box-shadow: 0 4px 12px rgba(245, 87, 108, 0.45);
+        opacity: 0.9;
       }
 
       .btn-delete {
@@ -207,8 +197,10 @@ const UserManagementCSS: React.FC = () => {
         opacity: 0.9;
       }
 
-      .btn-delete:active {
-        box-shadow: 0 2px 6px rgba(245, 87, 108, 0.3);
+      .btn-delete:active,
+      .btn-edit:active,
+      .btn-reset:active {
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
       }
 
       /* ============================================
@@ -254,14 +246,8 @@ const UserManagementCSS: React.FC = () => {
       }
 
       @keyframes modalSlideIn {
-        from {
-          opacity: 0;
-          transform: translateY(-20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(-20px); }
+        to   { opacity: 1; transform: translateY(0); }
       }
 
       .modal-header-custom {
@@ -296,18 +282,10 @@ const UserManagementCSS: React.FC = () => {
         flex-shrink: 0;
       }
 
-      .btn-close-custom:hover:not(:disabled) {
-        background: rgba(255, 255, 255, 0.3);
-      }
+      .btn-close-custom:hover:not(:disabled) { background: rgba(255, 255, 255, 0.3); }
+      .btn-close-custom:disabled { opacity: 0.5; cursor: not-allowed; }
 
-      .btn-close-custom:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .modal-body-custom {
-        padding: 2rem;
-      }
+      .modal-body-custom { padding: 2rem; }
 
       /* ============================================
          FORM STYLES
@@ -354,9 +332,7 @@ const UserManagementCSS: React.FC = () => {
         cursor: not-allowed;
       }
 
-      .form-input.is-invalid {
-        border-color: #f5576c;
-      }
+      .form-input.is-invalid { border-color: #f5576c; }
 
       .error-text {
         color: #f5576c;
@@ -364,10 +340,7 @@ const UserManagementCSS: React.FC = () => {
         margin-top: 0.25rem;
       }
 
-      .helper-text {
-        color: #6c757d;
-        font-size: 0.85rem;
-      }
+      .helper-text { color: #6c757d; font-size: 0.85rem; }
 
       .modal-footer-custom {
         padding: 1.5rem;
@@ -390,19 +363,14 @@ const UserManagementCSS: React.FC = () => {
         transition: opacity 0.2s ease, box-shadow 0.2s ease;
       }
 
-      .btn-modal:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
+      .btn-modal:disabled { opacity: 0.6; cursor: not-allowed; }
 
       .btn-cancel {
         background: #e0e7ff;
         color: #667eea;
       }
 
-      .btn-cancel:hover:not(:disabled) {
-        background: #d0d7ef;
-      }
+      .btn-cancel:hover:not(:disabled) { background: #d0d7ef; }
 
       .btn-save {
         background: linear-gradient(135deg, #667eea, #764ba2);
@@ -414,226 +382,83 @@ const UserManagementCSS: React.FC = () => {
         opacity: 0.95;
       }
 
-      .btn-save:active:not(:disabled) {
-        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
-      }
-
       /* ============================================
          SCROLLBAR STYLES
          ============================================ */
-      .table-wrapper::-webkit-scrollbar {
-        height: 8px;
-      }
+      .table-wrapper::-webkit-scrollbar { height: 8px; }
+      .table-wrapper::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+      .table-wrapper::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 10px; }
 
-      .table-wrapper::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-      }
-
-      .table-wrapper::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 10px;
-      }
-
-      .modal-container::-webkit-scrollbar {
-        width: 8px;
-      }
-
-      .modal-container::-webkit-scrollbar-track {
-        background: #f1f1f1;
-      }
-
-      .modal-container::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 10px;
-      }
+      .modal-container::-webkit-scrollbar { width: 8px; }
+      .modal-container::-webkit-scrollbar-track { background: #f1f1f1; }
+      .modal-container::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 10px; }
 
       /* ============================================
          TABLET RESPONSIVE (768px - 1024px)
          ============================================ */
       @media (max-width: 1024px) {
-        .user-management-title {
-          font-size: 1.5rem;
-        }
-
-        .table-container {
-          padding: 1rem;
-        }
+        .user-management-title { font-size: 1.5rem; }
+        .table-container { padding: 1rem; }
       }
 
       /* ============================================
          MOBILE RESPONSIVE (max 768px)
          ============================================ */
       @media (max-width: 768px) {
-        .user-management-wrapper {
-          padding: 0 0.5rem;
-        }
+        .user-management-wrapper { padding: 0 0.5rem; }
 
-        .user-management-header {
-          flex-direction: column;
-          align-items: stretch;
-          gap: 0.75rem;
-        }
+        .user-management-header { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+        .user-management-title  { font-size: 1.35rem; text-align: center; }
+        .btn-add-user           { width: 100%; justify-content: center; padding: 0.875rem 1.25rem; }
 
-        .user-management-title {
-          font-size: 1.35rem;
-          text-align: center;
-        }
+        .table-container { padding: 0.75rem; border-radius: 12px; }
 
-        .btn-add-user {
-          width: 100%;
-          justify-content: center;
-          padding: 0.875rem 1.25rem;
-        }
-
-        .table-container {
-          padding: 0.75rem;
-          border-radius: 12px;
-        }
-
-        .user-table {
-          min-width: 900px;
-          font-size: 0.85rem;
-        }
-
+        .user-table { min-width: 900px; font-size: 0.85rem; }
         .user-table thead th,
-        .user-table tbody td {
-          padding: 0.75rem 0.5rem;
-          font-size: 0.85rem;
-        }
+        .user-table tbody td { padding: 0.75rem 0.5rem; font-size: 0.85rem; }
 
-        .badge-role {
-          padding: 0.4rem 0.75rem;
-          font-size: 0.8rem;
-        }
+        .badge-role  { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
+        .btn-action  { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
+        .btn-action span { display: none; }
 
-        .btn-action {
-          padding: 0.4rem 0.75rem;
-          font-size: 0.8rem;
-        }
-
-        .btn-action span {
-          display: none;
-        }
-
-        /* Modal */
-        .modal-overlay {
-          padding: 0.5rem;
-        }
-
-        .modal-container {
-          max-height: 95vh;
-          border-radius: 15px;
-        }
-
-        .modal-header-custom {
-          padding: 1rem;
-          border-radius: 15px 15px 0 0;
-        }
-
-        .modal-title {
-          font-size: 1.1rem;
-        }
-
-        .btn-close-custom {
-          width: 32px;
-          height: 32px;
-        }
-
-        .modal-body-custom {
-          padding: 1.25rem;
-        }
-
-        .form-grid {
-          grid-template-columns: 1fr;
-          gap: 1.25rem;
-        }
-
-        .modal-footer-custom {
-          padding: 1rem;
-          flex-direction: column-reverse;
-          gap: 0.75rem;
-        }
-
-        .btn-modal {
-          width: 100%;
-          justify-content: center;
-          padding: 0.875rem 1.25rem;
-        }
+        .modal-overlay    { padding: 0.5rem; }
+        .modal-container  { max-height: 95vh; border-radius: 15px; }
+        .modal-header-custom { padding: 1rem; border-radius: 15px 15px 0 0; }
+        .modal-title      { font-size: 1.1rem; }
+        .btn-close-custom { width: 32px; height: 32px; }
+        .modal-body-custom { padding: 1.25rem; }
+        .form-grid        { grid-template-columns: 1fr; gap: 1.25rem; }
+        .modal-footer-custom { padding: 1rem; flex-direction: column-reverse; gap: 0.75rem; }
+        .btn-modal        { width: 100%; justify-content: center; padding: 0.875rem 1.25rem; }
       }
 
       /* ============================================
          SMALL MOBILE (max 480px)
          ============================================ */
       @media (max-width: 480px) {
-        .user-management-title {
-          font-size: 1.2rem;
-        }
-
-        .btn-add-user {
-          padding: 0.75rem 1rem;
-          font-size: 0.9rem;
-        }
-
-        .table-container {
-          padding: 0.5rem;
-        }
-
-        .user-table {
-          min-width: 800px;
-          font-size: 0.8rem;
-        }
-
+        .user-management-title { font-size: 1.2rem; }
+        .btn-add-user          { padding: 0.75rem 1rem; font-size: 0.9rem; }
+        .table-container       { padding: 0.5rem; }
+        .user-table            { min-width: 800px; font-size: 0.8rem; }
         .user-table thead th,
-        .user-table tbody td {
-          padding: 0.6rem 0.4rem;
-          font-size: 0.8rem;
-        }
-
-        .badge-role {
-          padding: 0.35rem 0.6rem;
-          font-size: 0.75rem;
-        }
-
-        .btn-action {
-          padding: 0.35rem 0.6rem;
-        }
-
-        .modal-title {
-          font-size: 1rem;
-        }
-
+        .user-table tbody td   { padding: 0.6rem 0.4rem; font-size: 0.8rem; }
+        .badge-role            { padding: 0.35rem 0.6rem; font-size: 0.75rem; }
+        .btn-action            { padding: 0.35rem 0.6rem; }
+        .modal-title           { font-size: 1rem; }
         .form-input,
-        select.form-input {
-          padding: 0.625rem;
-          font-size: 0.95rem;
-        }
-
-        .modal-body-custom {
-          padding: 1rem;
-        }
-
-        .form-grid {
-          gap: 1rem;
-        }
+        select.form-input      { padding: 0.625rem; font-size: 0.95rem; }
+        .modal-body-custom     { padding: 1rem; }
+        .form-grid             { gap: 1rem; }
       }
 
       /* ============================================
          ULTRA-WIDE SCREENS (min 1400px)
          ============================================ */
       @media (min-width: 1400px) {
-        .table-container {
-          padding: 2rem;
-        }
-
+        .table-container { padding: 2rem; }
         .user-table thead th,
-        .user-table tbody td {
-          padding: 1.25rem;
-        }
-
-        .form-grid {
-          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        }
+        .user-table tbody td { padding: 1.25rem; }
+        .form-grid { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
       }
     `}</style>
   );

@@ -8,7 +8,8 @@ import {
 } from "../../services/userService";
 import ErrorHandler from "../ErrorHandler";
 import UserManagementCSS from "../../styles/UserManagementCSS";
-import { Edit, Trash2, UserPlus, X } from 'lucide-react';
+import { Edit, Trash2, UserPlus, X, KeyRound } from 'lucide-react';
+import { useAuth } from "../../context/AuthContext";
 
 interface User {
   user_id: number;
@@ -27,6 +28,9 @@ interface User {
 }
 
 const UserManagement: React.FC = () => {
+  const { user: currentUser } = useAuth();
+  const isAdmin = currentUser?.role === "admin";
+
   const [users, setUsers] = useState<User[]>([]);
   const [, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +41,16 @@ const UserManagement: React.FC = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [formData, setFormData] = useState<Partial<User>>({});
+
+  // ── Reset password state ──────────────────────────────────────────────────
+  const [resetTarget, setResetTarget] = useState<User | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetConfirm, setResetConfirm] = useState("");
+  const [resetErrors, setResetErrors] = useState<Record<string, string>>({});
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetSaving, setResetSaving] = useState(false);
+  // ─────────────────────────────────────────────────────────────────────────
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -136,15 +150,9 @@ const UserManagement: React.FC = () => {
   const validateForm = useCallback((): boolean => {
     const errors: Record<string, string> = {};
     
-    if (!formData.first_name?.trim()) {
-      errors.first_name = "First name is required";
-    }
-    if (!formData.last_name?.trim()) {
-      errors.last_name = "Last name is required";
-    }
-    if (!formData.username?.trim()) {
-      errors.username = "Username is required";
-    }
+    if (!formData.first_name?.trim()) errors.first_name = "First name is required";
+    if (!formData.last_name?.trim())  errors.last_name  = "Last name is required";
+    if (!formData.username?.trim())   errors.username   = "Username is required";
     if (!formData.email?.trim()) {
       errors.email = "Email is required";
     } else {
@@ -161,14 +169,12 @@ const UserManagement: React.FC = () => {
         errors.age = "Please enter a valid age between 1 and 150";
       }
     }
-    if (!formData.role?.trim()) {
-      errors.role = "Role is required";
-    }
+    if (!formData.role?.trim()) errors.role = "Role is required";
     
     if (isAdding && !formData.password?.trim()) {
       errors.password = "Password is required";
-    } else if (isAdding && formData.password && formData.password.length < 6) {
-      errors.password = "Password must be at least 6 characters";
+    } else if (isAdding && formData.password && formData.password.length < 8) {
+      errors.password = "Password must be at least 8 characters";
     }
     
     setFieldErrors(errors);
@@ -177,9 +183,7 @@ const UserManagement: React.FC = () => {
 
   const handleSave = useCallback(async () => {
     const isValid = validateForm();
-    if (!isValid) {
-      return;
-    }
+    if (!isValid) return;
 
     try {
       setSaving(true);
@@ -194,9 +198,7 @@ const UserManagement: React.FC = () => {
         const newUser = await addUser(dataToSend);
         setUsers(prevUsers => [...prevUsers, newUser.user]);
         closeModal();
-        setTimeout(() => {
-          setSuccess("✓ User successfully added!");
-        }, 100);
+        setTimeout(() => setSuccess("✓ User successfully added!"), 100);
       } else if (editingUser) {
         await updateUser(editingUser.user_id, dataToSend);
         setUsers(prevUsers =>
@@ -205,21 +207,16 @@ const UserManagement: React.FC = () => {
           )
         );
         closeModal();
-        setTimeout(() => {
-          setSuccess("✓ User successfully updated!");
-        }, 100);
+        setTimeout(() => setSuccess("✓ User successfully updated!"), 100);
       }
     } catch (err: any) {
       console.error("Error saving user:", err);
-      
       if (err?.response?.data?.errors) {
         const errors = err.response.data.errors;
         const serverFieldErrors: Record<string, string> = {};
-        
         Object.entries(errors).forEach(([field, messages]: [string, any]) => {
           serverFieldErrors[field] = Array.isArray(messages) ? messages[0] : messages;
         });
-        
         setFieldErrors(serverFieldErrors);
         setError("Please correct the errors below.");
       } else if (err?.response?.data?.message) {
@@ -233,6 +230,62 @@ const UserManagement: React.FC = () => {
       setSaving(false);
     }
   }, [formData, isAdding, editingUser, validateForm, closeModal]);
+
+  // ── Reset password handlers ───────────────────────────────────────────────
+  const openResetModal = useCallback((user: User) => {
+    setResetTarget(user);
+    setResetPassword("");
+    setResetConfirm("");
+    setResetErrors({});
+    setShowResetPassword(false);
+    setShowResetConfirm(false);
+  }, []);
+
+  const closeResetModal = useCallback(() => {
+    setResetTarget(null);
+    setResetPassword("");
+    setResetConfirm("");
+    setResetErrors({});
+  }, []);
+
+  const handleResetSave = useCallback(async () => {
+    const errors: Record<string, string> = {};
+
+    if (!resetPassword.trim()) {
+      errors.password = "New password is required";
+    } else if (resetPassword.length < 8) {
+      errors.password = "Password must be at least 8 characters";
+    } else if (resetPassword.length > 72) {
+      errors.password = "Password must not exceed 72 characters";
+    }
+
+    if (!resetConfirm.trim()) {
+      errors.confirm = "Please confirm the password";
+    } else if (resetPassword !== resetConfirm) {
+      errors.confirm = "Passwords do not match";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setResetErrors(errors);
+      return;
+    }
+
+    try {
+      setResetSaving(true);
+      await updateUser(resetTarget!.user_id, {
+        ...resetTarget,
+        age: resetTarget!.age ? String(resetTarget!.age) : "",
+        password: resetPassword,
+      });
+      closeResetModal();
+      setTimeout(() => setSuccess(`✓ Password reset for ${resetTarget!.username}!`), 100);
+    } catch (err: any) {
+      setResetErrors({ password: err?.response?.data?.message || "Failed to reset password." });
+    } finally {
+      setResetSaving(false);
+    }
+  }, [resetPassword, resetConfirm, resetTarget, closeResetModal]);
+  // ─────────────────────────────────────────────────────────────────────────
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => user.role !== "admin");
@@ -256,12 +309,7 @@ const UserManagement: React.FC = () => {
           }}
         >
           <strong>{success}</strong>
-          <button 
-            type="button" 
-            className="btn-close" 
-            onClick={clearMessages}
-            aria-label="Close"
-          ></button>
+          <button type="button" className="btn-close" onClick={clearMessages} aria-label="Close"></button>
         </div>
       )}
 
@@ -279,25 +327,14 @@ const UserManagement: React.FC = () => {
           }}
         >
           <strong>Error:</strong> {error}
-          <button 
-            type="button" 
-            className="btn-close" 
-            onClick={clearMessages}
-            aria-label="Close"
-          ></button>
+          <button type="button" className="btn-close" onClick={clearMessages} aria-label="Close"></button>
         </div>
       )}
 
       <style>{`
         @keyframes slideDown {
-          from {
-            transform: translate(-50%, -100%);
-            opacity: 0;
-          }
-          to {
-            transform: translate(-50%, 0);
-            opacity: 1;
-          }
+          from { transform: translate(-50%, -100%); opacity: 0; }
+          to   { transform: translate(-50%, 0);    opacity: 1; }
         }
       `}</style>
       
@@ -353,17 +390,18 @@ const UserManagement: React.FC = () => {
                   </td>
                   <td>
                     <div className="action-buttons">
-                      <button
-                        className="btn-action btn-edit"
-                        onClick={() => handleEdit(user)}
-                      >
+                      <button className="btn-action btn-edit" onClick={() => handleEdit(user)}>
                         <Edit size={16} />
                         <span>Edit</span>
                       </button>
-                      <button
-                        className="btn-action btn-delete"
-                        onClick={() => handleDelete(user.user_id)}
-                      >
+                      {/* ── Only visible to admin ── */}
+                      {isAdmin && (
+                        <button className="btn-action btn-reset" onClick={() => openResetModal(user)}>
+                          <KeyRound size={16} />
+                          <span>Reset PW</span>
+                        </button>
+                      )}
+                      <button className="btn-action btn-delete" onClick={() => handleDelete(user.user_id)}>
                         <Trash2 size={16} />
                         <span>Delete</span>
                       </button>
@@ -379,11 +417,9 @@ const UserManagement: React.FC = () => {
         )}
       </div>
 
-      {/* Modal */}
+      {/* ── Edit / Add Modal (unchanged) ── */}
       {(editingUser || isAdding) && (
-        <div className="modal-overlay" onClick={(e) => {
-          if (e.target === e.currentTarget) closeModal();
-        }}>
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}>
           <div className="modal-container">
             <div className="modal-header-custom">
               <h3 className="modal-title">
@@ -398,185 +434,83 @@ const UserManagement: React.FC = () => {
               {error && (
                 <div className="alert alert-danger alert-dismissible fade show" role="alert">
                   <strong>Error:</strong> {error}
-                  <button 
-                    type="button" 
-                    className="btn-close" 
-                    onClick={() => setError(null)}
-                    aria-label="Close"
-                  ></button>
+                  <button type="button" className="btn-close" onClick={() => setError(null)} aria-label="Close"></button>
                 </div>
               )}
 
               <div className="form-grid">
                 <div className="form-group">
                   <label className="form-label">First Name *</label>
-                  <input
-                    type="text"
-                    className={`form-input ${fieldErrors.first_name ? 'is-invalid' : ''}`}
-                    value={formData.first_name || ""}
-                    onChange={(e) => handleFormChange('first_name', e.target.value)}
-                    placeholder="Enter first name"
-                    disabled={saving}
-                  />
-                  {fieldErrors.first_name && (
-                    <div className="error-text">{fieldErrors.first_name}</div>
-                  )}
+                  <input type="text" className={`form-input ${fieldErrors.first_name ? 'is-invalid' : ''}`} value={formData.first_name || ""} onChange={(e) => handleFormChange('first_name', e.target.value)} placeholder="Enter first name" disabled={saving} />
+                  {fieldErrors.first_name && <div className="error-text">{fieldErrors.first_name}</div>}
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Middle Name</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={formData.middle_name || ""}
-                    onChange={(e) => handleFormChange('middle_name', e.target.value)}
-                    placeholder="Enter middle name"
-                    disabled={saving}
-                  />
+                  <input type="text" className="form-input" value={formData.middle_name || ""} onChange={(e) => handleFormChange('middle_name', e.target.value)} placeholder="Enter middle name" disabled={saving} />
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Last Name *</label>
-                  <input
-                    type="text"
-                    className={`form-input ${fieldErrors.last_name ? 'is-invalid' : ''}`}
-                    value={formData.last_name || ""}
-                    onChange={(e) => handleFormChange('last_name', e.target.value)}
-                    placeholder="Enter last name"
-                    disabled={saving}
-                  />
-                  {fieldErrors.last_name && (
-                    <div className="error-text">{fieldErrors.last_name}</div>
-                  )}
+                  <input type="text" className={`form-input ${fieldErrors.last_name ? 'is-invalid' : ''}`} value={formData.last_name || ""} onChange={(e) => handleFormChange('last_name', e.target.value)} placeholder="Enter last name" disabled={saving} />
+                  {fieldErrors.last_name && <div className="error-text">{fieldErrors.last_name}</div>}
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Age *</label>
-                  <input
-                    type="number"
-                    className={`form-input ${fieldErrors.age ? 'is-invalid' : ''}`}
-                    value={formData.age || ""}
-                    onChange={(e) => handleFormChange('age', e.target.value)}
-                    placeholder="Enter age"
-                    min="1"
-                    max="150"
-                    disabled={saving}
-                  />
-                  {fieldErrors.age && (
-                    <div className="error-text">{fieldErrors.age}</div>
-                  )}
+                  <input type="number" className={`form-input ${fieldErrors.age ? 'is-invalid' : ''}`} value={formData.age || ""} onChange={(e) => handleFormChange('age', e.target.value)} placeholder="Enter age" min="1" max="150" disabled={saving} />
+                  {fieldErrors.age && <div className="error-text">{fieldErrors.age}</div>}
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Address</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={formData.address || ""}
-                    onChange={(e) => handleFormChange('address', e.target.value)}
-                    placeholder="Enter address"
-                    disabled={saving}
-                  />
+                  <input type="text" className="form-input" value={formData.address || ""} onChange={(e) => handleFormChange('address', e.target.value)} placeholder="Enter address" disabled={saving} />
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">School</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={formData.school || ""}
-                    onChange={(e) => handleFormChange('school', e.target.value)}
-                    placeholder="Enter school"
-                    disabled={saving}
-                  />
+                  <input type="text" className="form-input" value={formData.school || ""} onChange={(e) => handleFormChange('school', e.target.value)} placeholder="Enter school" disabled={saving} />
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Contact Number</label>
-                  <input
-                    type="tel"
-                    className="form-input"
-                    value={formData.contact_number || ""}
-                    onChange={(e) => handleFormChange('contact_number', e.target.value)}
-                    placeholder="Enter contact number"
-                    disabled={saving}
-                  />
+                  <input type="tel" className="form-input" value={formData.contact_number || ""} onChange={(e) => handleFormChange('contact_number', e.target.value)} placeholder="Enter contact number" disabled={saving} />
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Username *</label>
-                  <input
-                    type="text"
-                    className={`form-input ${fieldErrors.username ? 'is-invalid' : ''}`}
-                    value={formData.username || ""}
-                    onChange={(e) => handleFormChange('username', e.target.value)}
-                    placeholder="Enter username"
-                    disabled={saving}
-                  />
-                  {fieldErrors.username && (
-                    <div className="error-text">{fieldErrors.username}</div>
-                  )}
+                  <input type="text" className={`form-input ${fieldErrors.username ? 'is-invalid' : ''}`} value={formData.username || ""} onChange={(e) => handleFormChange('username', e.target.value)} placeholder="Enter username" disabled={saving} />
+                  {fieldErrors.username && <div className="error-text">{fieldErrors.username}</div>}
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Section</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={formData.section || ""}
-                    onChange={(e) => handleFormChange('section', e.target.value)}
-                    placeholder="Enter section"
-                    disabled={saving}
-                  />
+                  <input type="text" className="form-input" value={formData.section || ""} onChange={(e) => handleFormChange('section', e.target.value)} placeholder="Enter section" disabled={saving} />
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Email *</label>
-                  <input
-                    type="email"
-                    className={`form-input ${fieldErrors.email ? 'is-invalid' : ''}`}
-                    value={formData.email || ""}
-                    onChange={(e) => handleFormChange('email', e.target.value)}
-                    placeholder="Enter email"
-                    disabled={saving}
-                  />
-                  {fieldErrors.email && (
-                    <div className="error-text">{fieldErrors.email}</div>
-                  )}
+                  <input type="email" className={`form-input ${fieldErrors.email ? 'is-invalid' : ''}`} value={formData.email || ""} onChange={(e) => handleFormChange('email', e.target.value)} placeholder="Enter email" disabled={saving} />
+                  {fieldErrors.email && <div className="error-text">{fieldErrors.email}</div>}
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Role *</label>
-                  <select
-                    className={`form-input ${fieldErrors.role ? 'is-invalid' : ''}`}
-                    value={formData.role || "student"}
-                    onChange={(e) => handleFormChange('role', e.target.value)}
-                    disabled={saving}
-                  >
+                  <select className={`form-input ${fieldErrors.role ? 'is-invalid' : ''}`} value={formData.role || "student"} onChange={(e) => handleFormChange('role', e.target.value)} disabled={saving}>
                     <option value="student">🎓 Student</option>
                     <option value="teacher">👨‍🏫 Teacher</option>
                   </select>
-                  {fieldErrors.role && (
-                    <div className="error-text">{fieldErrors.role}</div>
-                  )}
+                  {fieldErrors.role && <div className="error-text">{fieldErrors.role}</div>}
                 </div>
 
                 {isAdding && (
                   <div className="form-group">
                     <label className="form-label">Password *</label>
-                    <input
-                      type="password"
-                      className={`form-input ${fieldErrors.password ? 'is-invalid' : ''}`}
-                      value={formData.password || ""}
-                      onChange={(e) => handleFormChange('password', e.target.value)}
-                      placeholder="Enter password (min 6 characters)"
-                      disabled={saving}
-                      minLength={6}
-                    />
+                    <input type="password" className={`form-input ${fieldErrors.password ? 'is-invalid' : ''}`} value={formData.password || ""} onChange={(e) => handleFormChange('password', e.target.value)} placeholder="Enter password (min 8 characters)" disabled={saving} minLength={8} />
                     {fieldErrors.password ? (
                       <div className="error-text">{fieldErrors.password}</div>
                     ) : (
-                      <small className="helper-text">Minimum 6 characters</small>
+                      <small className="helper-text">Minimum 8 characters</small>
                     )}
                   </div>
                 )}
@@ -584,25 +518,114 @@ const UserManagement: React.FC = () => {
             </div>
             
             <div className="modal-footer-custom">
-              <button 
-                className="btn-modal btn-cancel" 
-                onClick={closeModal}
-                disabled={saving}
-              >
-                Cancel
-              </button>
-              <button 
-                className="btn-modal btn-save" 
-                onClick={handleSave}
-                disabled={saving}
-              >
+              <button className="btn-modal btn-cancel" onClick={closeModal} disabled={saving}>Cancel</button>
+              <button className="btn-modal btn-save" onClick={handleSave} disabled={saving}>
                 {saving ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                    {isAdding ? "Adding..." : "Saving..."}
-                  </>
+                  <><span className="spinner-border spinner-border-sm me-2" role="status"></span>{isAdding ? "Adding..." : "Saving..."}</>
                 ) : (
                   isAdding ? "Add User" : "Save Changes"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Reset Password Modal (admin only) ── */}
+      {isAdmin && resetTarget && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeResetModal(); }}>
+          <div className="modal-container" style={{ maxWidth: 480 }}>
+            <div className="modal-header-custom" style={{ background: "linear-gradient(135deg, #f5576c, #e74c3c)" }}>
+              <h3 className="modal-title">
+                🔑 Reset Password — {resetTarget.username}
+              </h3>
+              <button className="btn-close-custom" onClick={closeResetModal} disabled={resetSaving}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body-custom">
+              <p style={{ color: "#666", fontSize: "0.9rem", marginBottom: "1.5rem" }}>
+                Enter a new password for <strong>{resetTarget.username}</strong>. They will need to use this to log in.
+              </p>
+
+              <div className="form-grid" style={{ gridTemplateColumns: "1fr" }}>
+                {/* New password */}
+                <div className="form-group">
+                  <label className="form-label">New Password *</label>
+                  <div style={{ position: "relative" }}>
+                    <input
+                      type={showResetPassword ? "text" : "password"}
+                      className={`form-input ${resetErrors.password ? "is-invalid" : ""}`}
+                      value={resetPassword}
+                      onChange={(e) => {
+                        setResetPassword(e.target.value);
+                        if (resetErrors.password) setResetErrors(prev => ({ ...prev, password: "" }));
+                      }}
+                      placeholder="Min. 8 characters"
+                      maxLength={72}
+                      disabled={resetSaving}
+                      style={{ paddingRight: "2.75rem" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowResetPassword(v => !v)}
+                      style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#667eea", fontSize: "1.1rem" }}
+                    >
+                      {showResetPassword ? "🙈" : "👁️"}
+                    </button>
+                  </div>
+                  {resetErrors.password && <div className="error-text">{resetErrors.password}</div>}
+                </div>
+
+                {/* Confirm password */}
+                <div className="form-group">
+                  <label className="form-label">Confirm Password *</label>
+                  <div style={{ position: "relative" }}>
+                    <input
+                      type={showResetConfirm ? "text" : "password"}
+                      className={`form-input ${resetErrors.confirm ? "is-invalid" : ""}`}
+                      value={resetConfirm}
+                      onChange={(e) => {
+                        setResetConfirm(e.target.value);
+                        if (resetErrors.confirm) setResetErrors(prev => ({ ...prev, confirm: "" }));
+                      }}
+                      placeholder="Re-enter new password"
+                      maxLength={72}
+                      disabled={resetSaving}
+                      style={{ paddingRight: "2.75rem" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowResetConfirm(v => !v)}
+                      style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#667eea", fontSize: "1.1rem" }}
+                    >
+                      {showResetConfirm ? "🙈" : "👁️"}
+                    </button>
+                  </div>
+                  {/* Live match */}
+                  {resetConfirm.length > 0 && (
+                    <div style={{ fontSize: "0.82rem", marginTop: "4px", color: resetPassword === resetConfirm ? "#198754" : "#f5576c" }}>
+                      {resetPassword === resetConfirm ? "✓ Passwords match" : "✗ Passwords do not match"}
+                    </div>
+                  )}
+                  {resetErrors.confirm && <div className="error-text">{resetErrors.confirm}</div>}
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer-custom">
+              <button className="btn-modal btn-cancel" onClick={closeResetModal} disabled={resetSaving}>Cancel</button>
+              <button
+                className="btn-modal btn-save"
+                onClick={handleResetSave}
+                disabled={resetSaving}
+                style={{ background: "linear-gradient(135deg, #f5576c, #e74c3c)" }}
+              >
+                {resetSaving ? (
+                  <><span className="spinner-border spinner-border-sm me-2" role="status"></span>Resetting...</>
+                ) : (
+                  "🔑 Reset Password"
                 )}
               </button>
             </div>
