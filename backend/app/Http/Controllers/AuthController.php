@@ -17,12 +17,10 @@ class AuthController extends Controller
             'password'   => 'required|string',
         ]);
 
-        // Decide if identifier is an email or username
         $field = filter_var($request->identifier, FILTER_VALIDATE_EMAIL)
             ? 'email'
             : 'username';
 
-        // Normalize username to lowercase if it's not an email
         $identifier = $field === 'username'
             ? strtolower($request->identifier)
             : $request->identifier;
@@ -35,7 +33,6 @@ class AuthController extends Controller
             ]);
         }
 
-        // Update last login timestamp
         $user->update(['last_login_at' => now()]);
 
         return response()->json([
@@ -52,16 +49,15 @@ class AuthController extends Controller
             'last_name'      => 'nullable|string|max:55',
             'age'            => 'required|string|max:3',
             'address'        => 'nullable|string|max:255',
-            'contact_number' => 'nullable|string|max:55|unique:users,contact_number', 
-            'username'       => 'required|string|max:55|unique:users,username',       
+            'contact_number' => 'nullable|string|max:55|unique:users,contact_number',
+            'username'       => 'required|string|max:55|unique:users,username',
             'section'        => 'nullable|string|max:55',
-            'school'         => 'nullable|string|max:255', 
-            'email'          => 'nullable|email|unique:users,email',                  
-            'password'       => 'required|string',
+            'school'         => 'nullable|string|max:255',
+            'email'          => 'nullable|email|unique:users,email',
+            'password'       => 'required|string|min:8|max:72',
             'role'           => 'nullable|in:student,teacher,admin',
         ]);
 
-        // Normalize username to lowercase
         $username = strtolower($request->username);
 
         $user = User::create([
@@ -73,7 +69,7 @@ class AuthController extends Controller
             'contact_number' => $request->contact_number,
             'username'       => $username,
             'section'        => $request->section,
-            'school'         => $request->school, 
+            'school'         => $request->school,
             'email'          => $request->email,
             'password'       => Hash::make($request->password),
             'role'           => $request->role ?? 'student',

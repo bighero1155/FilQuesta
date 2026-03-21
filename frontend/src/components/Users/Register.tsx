@@ -24,6 +24,38 @@ type FormField =
 
 type FormDataType = Record<FormField, string>;
 
+// ── Password strength helper ──────────────────────────────────────────────────
+type StrengthLevel = "too-short" | "weak" | "fair" | "good" | "strong";
+
+const getPasswordStrength = (password: string): StrengthLevel => {
+  if (password.length === 0) return "too-short";
+  if (password.length < 8) return "too-short";
+
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSymbol = /[^A-Za-z0-9]/.test(password);
+  const isLong = password.length >= 12;
+
+  const score = [hasUpper, hasLower, hasNumber, hasSymbol].filter(Boolean).length;
+
+  if (score === 1) return "weak";
+  if (score === 2) return "fair";
+  if (score === 3 && !isLong) return "good";
+  if (score === 4 && isLong) return "strong";
+  if (score >= 3 && isLong) return "strong";
+  return "good";
+};
+
+const strengthConfig: Record<StrengthLevel, { label: string; color: string; width: string; bars: number }> = {
+  "too-short": { label: "Min. 8 characters required", color: "#adb5bd", width: "15%",  bars: 0 },
+  weak:        { label: "Weak",                        color: "#dc3545", width: "25%",  bars: 1 },
+  fair:        { label: "Fair",                        color: "#fd7e14", width: "50%",  bars: 2 },
+  good:        { label: "Good",                        color: "#ffc107", width: "75%",  bars: 3 },
+  strong:      { label: "Strong 💪",                   color: "#198754", width: "100%", bars: 4 },
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 const Register: React.FC = () => {
   const navigate = useNavigate();
 
@@ -50,6 +82,10 @@ const Register: React.FC = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
 
+  // derived strength — only computed when needed
+  const passwordStrength = getPasswordStrength(formData.password);
+  const strengthInfo = strengthConfig[passwordStrength];
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.name as FormField;
     setFormData({ ...formData, [name]: e.target.value });
@@ -61,6 +97,14 @@ const Register: React.FC = () => {
     e.preventDefault();
 
     const localErrors = validateUserForm(formData);
+
+    // ── Password length guard ──
+    if (formData.password.length < 8) {
+      localErrors.password = [...(localErrors.password ?? []), "Password must be at least 8 characters"];
+    }
+    if (formData.password.length > 72) {
+      localErrors.password = [...(localErrors.password ?? []), "Password must not exceed 72 characters"];
+    }
 
     if (formData.password !== formData.confirm_password) {
       localErrors.confirm_password = ["Passwords do not match"];
@@ -88,14 +132,13 @@ const Register: React.FC = () => {
       if (error.response?.status === 422) {
         const serverErrors = error.response.data.errors;
         setErrors(mergeErrors({}, serverErrors));
-        
-        // Set user-friendly message for common validation errors
+
         const errorFields = Object.keys(serverErrors);
-        if (errorFields.includes('username')) {
+        if (errorFields.includes("username")) {
           setMessage("Username is already taken!");
-        } else if (errorFields.includes('email')) {
+        } else if (errorFields.includes("email")) {
           setMessage("Email is already registered!");
-        } else if (errorFields.includes('contact_number')) {
+        } else if (errorFields.includes("contact_number")) {
           setMessage("Contact number is already in use!");
         } else {
           setMessage("Please check the form for errors.");
@@ -134,7 +177,7 @@ const Register: React.FC = () => {
 
   const validateStep = (step: number): boolean => {
     const fieldsToCheck = step === 1 ? step1Fields : step === 2 ? step2Fields : step3Fields;
-    return fieldsToCheck.every(field => {
+    return fieldsToCheck.every((field) => {
       if (field === "middle_name") return true;
       return formData[field].trim() !== "";
     });
@@ -142,12 +185,12 @@ const Register: React.FC = () => {
 
   const nextStep = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, 4));
+      setCurrentStep((prev) => Math.min(prev + 1, 4));
     }
   };
 
   const prevStep = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
   return (
@@ -340,6 +383,46 @@ const Register: React.FC = () => {
           line-height: 1.5;
         }
 
+        /* ── Password strength styles ── */
+        .password-strength-wrapper {
+          margin-top: 10px;
+        }
+
+        .strength-bars {
+          display: flex;
+          gap: 5px;
+          margin-bottom: 6px;
+        }
+
+        .strength-bar {
+          flex: 1;
+          height: 5px;
+          border-radius: 4px;
+          background: #e9ecef;
+          transition: background 0.3s ease;
+        }
+
+        .strength-label {
+          font-family: 'Press Start 2P', cursive;
+          font-size: 0.5rem;
+          line-height: 1.5;
+          transition: color 0.3s ease;
+        }
+
+        .strength-hint {
+          font-family: Arial, sans-serif;
+          font-size: 0.68rem;
+          color: #6c757d;
+          margin-top: 6px;
+          line-height: 1.5;
+        }
+
+        .strength-hint span {
+          display: inline-block;
+          margin-right: 8px;
+        }
+        /* ────────────────────────────── */
+
         .alert-message {
           padding: 14px;
           border-radius: 8px;
@@ -352,14 +435,8 @@ const Register: React.FC = () => {
         }
 
         @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(-10px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
 
         .alert-success {
@@ -453,96 +530,33 @@ const Register: React.FC = () => {
         }
 
         @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
 
         @media (max-width: 768px) {
-          .register-header {
-            padding: 25px 20px;
-          }
-
-          .register-title {
-            font-size: 1rem;
-          }
-
-          .register-subtitle {
-            font-size: 0.6rem;
-          }
-
-          .register-body {
-            padding: 25px 20px;
-          }
-
-          .form-row {
-            grid-template-columns: 1fr;
-          }
-
-          .back-button {
-            font-size: 0.6rem;
-            padding: 6px 12px;
-          }
-
-          .button-group {
-            flex-direction: column;
-          }
-
-          .btn {
-            width: 100%;
-          }
-
-          .form-label {
-            font-size: 0.55rem;
-          }
-
-          .btn {
-            font-size: 0.6rem;
-          }
+          .register-header { padding: 25px 20px; }
+          .register-title  { font-size: 1rem; }
+          .register-subtitle { font-size: 0.6rem; }
+          .register-body   { padding: 25px 20px; }
+          .form-row        { grid-template-columns: 1fr; }
+          .back-button     { font-size: 0.6rem; padding: 6px 12px; }
+          .button-group    { flex-direction: column; }
+          .btn             { width: 100%; font-size: 0.6rem; }
+          .form-label      { font-size: 0.55rem; }
         }
 
         @media (max-width: 480px) {
-          .register-container {
-            padding: 10px;
-          }
-
-          .register-card {
-            border-radius: 16px;
-          }
-
-          .register-title {
-            font-size: 0.9rem;
-          }
-
-          .register-subtitle {
-            font-size: 0.5rem;
-          }
-
-          .form-label {
-            font-size: 0.5rem;
-          }
-
-          .error-message {
-            font-size: 0.5rem;
-          }
-
-          .alert-message {
-            font-size: 0.55rem;
-          }
-
-          .btn {
-            font-size: 0.55rem;
-            padding: 12px 20px;
-          }
-
-          .login-link {
-            font-size: 0.55rem;
-          }
+          .register-container { padding: 10px; }
+          .register-card      { border-radius: 16px; }
+          .register-title     { font-size: 0.9rem; }
+          .register-subtitle  { font-size: 0.5rem; }
+          .form-label         { font-size: 0.5rem; }
+          .error-message      { font-size: 0.5rem; }
+          .alert-message      { font-size: 0.55rem; }
+          .btn                { font-size: 0.55rem; padding: 12px 20px; }
+          .login-link         { font-size: 0.55rem; }
+          .strength-label     { font-size: 0.45rem; }
         }
 
         input:-webkit-autofill {
@@ -553,22 +567,19 @@ const Register: React.FC = () => {
 
       <div className="register-card">
         <div className="register-header">
-          <Link to="/login" className="back-button">
-            ← BACK
-          </Link>
+          <Link to="/login" className="back-button">← BACK</Link>
           <h1 className="register-title">JOIN FILQUESTA</h1>
           <p className="register-subtitle">Create Your Teacher Account</p>
         </div>
 
         <div className="progress-bar">
-          <div className="progress-fill" style={{ width: `${(currentStep / 4) * 100}%` }}></div>
+          <div className="progress-fill" style={{ width: `${(currentStep / 4) * 100}%` }} />
         </div>
 
         <div className="step-indicator">
-          <div className={`step-dot ${currentStep >= 1 ? 'active' : ''}`}></div>
-          <div className={`step-dot ${currentStep >= 2 ? 'active' : ''}`}></div>
-          <div className={`step-dot ${currentStep >= 3 ? 'active' : ''}`}></div>
-          <div className={`step-dot ${currentStep >= 4 ? 'active' : ''}`}></div>
+          {[1, 2, 3, 4].map((s) => (
+            <div key={s} className={`step-dot ${currentStep >= s ? "active" : ""}`} />
+          ))}
         </div>
 
         <div className="register-body">
@@ -585,6 +596,7 @@ const Register: React.FC = () => {
           )}
 
           <form onSubmit={handleSubmit}>
+            {/* ── Step 1: Identity ── */}
             {currentStep === 1 && (
               <div className="step-content">
                 <div className="form-row">
@@ -597,7 +609,7 @@ const Register: React.FC = () => {
                         placeholder={fieldLabels[field]}
                         value={formData[field]}
                         onChange={handleChange}
-                        className={`form-input ${errors[field] ? 'error' : ''}`}
+                        className={`form-input ${errors[field] ? "error" : ""}`}
                       />
                       {errors[field]?.map((err, i) => (
                         <div key={i} className="error-message">{err}</div>
@@ -608,6 +620,7 @@ const Register: React.FC = () => {
               </div>
             )}
 
+            {/* ── Step 2: Contact ── */}
             {currentStep === 2 && (
               <div className="step-content">
                 <div className="form-row">
@@ -620,7 +633,7 @@ const Register: React.FC = () => {
                         placeholder={fieldLabels[field]}
                         value={formData[field]}
                         onChange={handleChange}
-                        className={`form-input ${errors[field] ? 'error' : ''}`}
+                        className={`form-input ${errors[field] ? "error" : ""}`}
                       />
                       {errors[field]?.map((err, i) => (
                         <div key={i} className="error-message">{err}</div>
@@ -631,6 +644,7 @@ const Register: React.FC = () => {
               </div>
             )}
 
+            {/* ── Step 3: School ── */}
             {currentStep === 3 && (
               <div className="step-content">
                 <div className="form-row">
@@ -643,7 +657,7 @@ const Register: React.FC = () => {
                         placeholder={fieldLabels[field]}
                         value={formData[field]}
                         onChange={handleChange}
-                        className={`form-input ${errors[field] ? 'error' : ''}`}
+                        className={`form-input ${errors[field] ? "error" : ""}`}
                       />
                       {errors[field]?.map((err, i) => (
                         <div key={i} className="error-message">{err}</div>
@@ -654,30 +668,64 @@ const Register: React.FC = () => {
               </div>
             )}
 
+            {/* ── Step 4: Password ── */}
             {currentStep === 4 && (
               <div className="step-content">
                 <div className="form-row">
+                  {/* Password field + strength meter */}
                   <div className="form-group">
                     <label className="form-label">Password</label>
                     <div className="input-wrapper">
                       <input
                         type={showPassword ? "text" : "password"}
                         name="password"
-                        placeholder="Enter Password"
+                        placeholder="Enter Password (min. 8 chars)"
                         value={formData.password}
                         onChange={handleChange}
-                        className={`form-input ${errors.password ? 'error' : ''}`}
+                        maxLength={72}
+                        className={`form-input ${errors.password ? "error" : ""}`}
                       />
                       <i
                         className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"} password-toggle`}
                         onClick={() => setShowPassword(!showPassword)}
                       />
                     </div>
+
+                    {/* Strength meter — only shown when user has typed something */}
+                    {formData.password.length > 0 && (
+                      <div className="password-strength-wrapper">
+                        <div className="strength-bars">
+                          {[1, 2, 3, 4].map((bar) => (
+                            <div
+                              key={bar}
+                              className="strength-bar"
+                              style={{
+                                background: strengthInfo.bars >= bar ? strengthInfo.color : "#e9ecef",
+                              }}
+                            />
+                          ))}
+                        </div>
+                        <div className="strength-label" style={{ color: strengthInfo.color }}>
+                          {strengthInfo.label}
+                        </div>
+                        {/* Hint: what's still missing */}
+                        {passwordStrength !== "strong" && formData.password.length >= 8 && (
+                          <div className="strength-hint">
+                            {!/[A-Z]/.test(formData.password) && <span>+ uppercase</span>}
+                            {!/[0-9]/.test(formData.password) && <span>+ number</span>}
+                            {!/[^A-Za-z0-9]/.test(formData.password) && <span>+ symbol</span>}
+                            {formData.password.length < 12 && <span>+ 12+ chars</span>}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {errors.password?.map((err, i) => (
                       <div key={i} className="error-message">{err}</div>
                     ))}
                   </div>
 
+                  {/* Confirm password */}
                   <div className="form-group">
                     <label className="form-label">Confirm Password</label>
                     <div className="input-wrapper">
@@ -687,13 +735,26 @@ const Register: React.FC = () => {
                         placeholder="Re-enter Password"
                         value={formData.confirm_password}
                         onChange={handleChange}
-                        className={`form-input ${errors.confirm_password ? 'error' : ''}`}
+                        maxLength={72}
+                        className={`form-input ${errors.confirm_password ? "error" : ""}`}
                       />
                       <i
                         className={`bi ${showConfirm ? "bi-eye-slash" : "bi-eye"} password-toggle`}
                         onClick={() => setShowConfirm(!showConfirm)}
                       />
                     </div>
+                    {/* Live match indicator */}
+                    {formData.confirm_password.length > 0 && (
+                      <div
+                        className="strength-label"
+                        style={{
+                          color: formData.password === formData.confirm_password ? "#198754" : "#dc3545",
+                          marginTop: "8px",
+                        }}
+                      >
+                        {formData.password === formData.confirm_password ? "✓ Passwords match" : "✗ Passwords do not match"}
+                      </div>
+                    )}
                     {errors.confirm_password?.map((err, i) => (
                       <div key={i} className="error-message">{err}</div>
                     ))}
@@ -725,9 +786,9 @@ const Register: React.FC = () => {
             <a href="/login">Login here</a>
           </div>
         </div>
-      </div>  
+      </div>
     </div>
   );
 };
 
-export default Register;   
+export default Register;
