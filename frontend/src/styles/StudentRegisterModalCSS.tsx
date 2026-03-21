@@ -173,7 +173,7 @@ const StudentRegisterModalCSS = () => (
     }
 
     .sr-input::placeholder {
-      color: rgba(255, 255, 255, 0.5);
+      color: rgba(255, 255, 255, 0.4);
     }
 
     .sr-input:focus {
@@ -202,6 +202,53 @@ const StudentRegisterModalCSS = () => (
     .sr-toggle-btn:hover {
       background: #ee5a52;
     }
+
+    /* ── Password strength styles ── */
+    .sr-strength-wrapper {
+      margin-top: 10px;
+    }
+
+    .sr-strength-bars {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 6px;
+    }
+
+    .sr-strength-bar {
+      flex: 1;
+      height: 5px;
+      border-radius: 4px;
+      transition: background 0.3s ease;
+    }
+
+    .sr-strength-label {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.5rem;
+      line-height: 1.5;
+      transition: color 0.3s ease;
+    }
+
+    .sr-strength-hint {
+      margin-top: 6px;
+      font-family: Arial, sans-serif;
+      font-size: 0.68rem;
+      color: rgba(255, 255, 255, 0.5);
+      line-height: 1.5;
+    }
+
+    .sr-strength-hint span {
+      display: inline-block;
+      margin-right: 8px;
+    }
+
+    .sr-match-label {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.5rem;
+      margin-top: 8px;
+      line-height: 1.5;
+      transition: color 0.3s ease;
+    }
+    /* ────────────────────────────── */
 
     .sr-error-text {
       font-size: 0.6rem;
