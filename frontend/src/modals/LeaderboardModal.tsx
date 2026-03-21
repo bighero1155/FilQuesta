@@ -69,7 +69,7 @@ const LeaderboardModal = ({ show, onClose }: Props) => {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
 
         * {
           box-sizing: border-box;
@@ -140,7 +140,7 @@ const LeaderboardModal = ({ show, onClose }: Props) => {
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'VT323', monospace;
         }
 
         /* ── Decorative orbs ── */
@@ -197,13 +197,13 @@ const LeaderboardModal = ({ show, onClose }: Props) => {
         }
 
         .lb-title {
-          font-family: 'Rajdhani', sans-serif;
-          font-size: clamp(1.4rem, 4vw, 2rem);
-          font-weight: 700;
+          font-family: 'Press Start 2P', monospace;
+          font-size: clamp(0.75rem, 2.5vw, 1.1rem);
+          font-weight: 400;
           color: #fff;
           margin: 0;
           letter-spacing: 0.04em;
-          text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+          text-shadow: 3px 3px 0px rgba(0,0,0,0.5), 0 2px 12px rgba(0,0,0,0.4);
           display: flex;
           align-items: center;
           gap: 10px;
@@ -307,9 +307,9 @@ const LeaderboardModal = ({ show, onClose }: Props) => {
           display: flex;
           align-items: center;
           justify-content: center;
-          font-family: 'Rajdhani', sans-serif;
-          font-size: 1rem;
-          font-weight: 700;
+          font-family: 'Press Start 2P', monospace;
+          font-size: 0.65rem;
+          font-weight: 400;
           color: white;
           flex-shrink: 0;
         }
@@ -352,18 +352,20 @@ const LeaderboardModal = ({ show, onClose }: Props) => {
           flex: 1;
         }
         .lb-name {
-          font-family: 'Rajdhani', sans-serif;
-          font-size: clamp(0.95rem, 2.5vw, 1.1rem);
-          font-weight: 700;
+          font-family: 'Press Start 2P', monospace;
+          font-size: clamp(0.55rem, 1.5vw, 0.72rem);
+          font-weight: 400;
           color: #fff;
-          margin: 0 0 2px;
+          margin: 0 0 4px;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
           letter-spacing: 0.02em;
+          text-shadow: 2px 2px 0px rgba(0,0,0,0.4);
         }
         .lb-rank-label {
-          font-size: clamp(0.72rem, 1.8vw, 0.82rem);
+          font-family: 'VT323', monospace;
+          font-size: clamp(0.9rem, 2vw, 1.1rem);
           color: #bfdbfe;
           opacity: 0.85;
           white-space: nowrap;
@@ -380,16 +382,17 @@ const LeaderboardModal = ({ show, onClose }: Props) => {
           flex-shrink: 0;
         }
         .lb-combined {
-          font-family: 'Rajdhani', sans-serif;
-          font-size: clamp(1.3rem, 4vw, 1.9rem);
-          font-weight: 700;
+          font-family: 'Press Start 2P', monospace;
+          font-size: clamp(0.85rem, 2.5vw, 1.2rem);
+          font-weight: 400;
           color: #fbbf24;
           line-height: 1;
-          text-shadow: 0 0 12px rgba(251, 191, 36, 0.45);
+          text-shadow: 3px 3px 0px rgba(120, 80, 0, 0.6), 0 0 12px rgba(251, 191, 36, 0.45);
           letter-spacing: 0.01em;
         }
         .lb-breakdown {
-          font-size: clamp(0.68rem, 1.7vw, 0.8rem);
+          font-family: 'VT323', monospace;
+          font-size: clamp(0.85rem, 2vw, 1rem);
           color: #bfdbfe;
           opacity: 0.85;
           white-space: nowrap;
@@ -404,7 +407,8 @@ const LeaderboardModal = ({ show, onClose }: Props) => {
           height: 200px;
           gap: 16px;
           color: rgba(255,255,255,0.7);
-          font-size: 0.95rem;
+          font-family: 'VT323', monospace;
+          font-size: 1.2rem;
         }
         .lb-spinner {
           width: 36px;
@@ -424,7 +428,8 @@ const LeaderboardModal = ({ show, onClose }: Props) => {
           height: 180px;
           gap: 10px;
           color: rgba(255,255,255,0.5);
-          font-size: 0.95rem;
+          font-family: 'VT323', monospace;
+          font-size: 1.2rem;
         }
         .lb-empty-icon { font-size: 2.5rem; }
 
@@ -456,7 +461,7 @@ const LeaderboardModal = ({ show, onClose }: Props) => {
             padding: 12px 12px;
           }
 
-          .lb-rank { width: 40px; height: 40px; font-size: 0.9rem; }
+          .lb-rank { width: 40px; height: 40px; font-size: 0.55rem; }
           .lb-rank.medal { font-size: 1.3rem; }
 
           .lb-avatar-wrap { width: 38px; height: 38px; }
@@ -467,7 +472,7 @@ const LeaderboardModal = ({ show, onClose }: Props) => {
 
         @media (max-width: 360px) {
           .lb-row { grid-template-columns: 36px 1fr auto; gap: 8px; padding: 10px 10px; }
-          .lb-rank { width: 36px; height: 36px; font-size: 0.85rem; }
+          .lb-rank { width: 36px; height: 36px; font-size: 0.5rem; }
           .lb-avatar-wrap { width: 34px; height: 34px; }
         }
       `}</style>

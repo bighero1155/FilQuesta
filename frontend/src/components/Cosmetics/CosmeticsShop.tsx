@@ -141,7 +141,7 @@ const CosmeticsShop: React.FC = () => {
   const styles = {
     container: {
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #0a1929 0%, #1a2f4a 50%, #0f2744 100%)",
+      background: "linear-gradient(135deg, #275062ff, #45788bff, #2c5364 100%)",
       padding: "2rem",
       fontFamily: "'Arial', 'Segoe UI', sans-serif",
       color: "#e0f2ff",

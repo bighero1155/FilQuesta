@@ -4,7 +4,7 @@ const ClassroomPageCSS = () => (
       min-height: 100vh;
       padding-top: 80px;
       padding-bottom: 60px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background: linear-gradient(135deg, #275062ff, #45788bff, #2c5364 100%);
       overflow: hidden;
       position: relative;
     }
