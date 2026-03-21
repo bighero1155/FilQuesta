@@ -105,7 +105,7 @@ const QuestShop: React.FC<QuestShopProps> = ({
       style={{
         position: "fixed",
         inset: 0,
-        background: "linear-gradient(135deg, rgba(26, 35, 126, 0.95), rgba(49, 27, 146, 0.95))",
+        background: "linear-gradient(135deg, #275062ff, #45788bff, #2c5364 100%)",
         backdropFilter: "blur(8px)",
         display: "flex",
         alignItems: "center",
