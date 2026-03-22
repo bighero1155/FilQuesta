@@ -80,8 +80,9 @@ const CreateClassroomPage: React.FC = () => {
     <div
       className="min-vh-100 d-flex flex-column justify-content-center align-items-center py-5"
       style={{
-        background:
-          "linear-gradient(135deg, #275062ff, #45788bff, #2c5364 100%)",
+        background: "linear-gradient(135deg, #275062ff, #45788bff, #2c5364 100%)",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
       <style>
@@ -118,10 +119,93 @@ const CreateClassroomPage: React.FC = () => {
             color: white !important;
             box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
           }
+
+          /* ── Floating background icons ── */
+          .create-bg-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+          }
+
+          .create-symbol {
+            position: absolute;
+            font-size: 3rem;
+            opacity: 0.12;
+            animation: createFloat 20s infinite ease-in-out;
+          }
+
+          .create-symbol-1  { top: 10%; left: 10%;  animation-delay: 0s; }
+          .create-symbol-2  { top: 20%; right: 15%; animation-delay: 2s; }
+          .create-symbol-3  { top: 60%; left: 5%;   animation-delay: 4s; }
+          .create-symbol-4  { bottom: 20%; right: 10%; animation-delay: 1s; }
+          .create-symbol-5  { top: 70%; right: 20%; animation-delay: 3s; }
+          .create-symbol-6  { bottom: 30%; left: 20%; animation-delay: 5s; }
+          .create-symbol-7  { top: 40%; left: 50%; animation-delay: 2.5s; }
+          .create-symbol-8  { top: 50%; right: 5%;  animation-delay: 4.5s; }
+          .create-symbol-9  { top: 8%;  left: 70%;  animation-delay: 1.5s; }
+          .create-symbol-10 { bottom: 10%; left: 40%; animation-delay: 3.5s; }
+
+          .create-bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            animation: createPulse 15s infinite ease-in-out;
+          }
+
+          .create-bg-circle-1 {
+            width: 350px; height: 350px;
+            top: -100px; right: -100px;
+            animation-delay: 0s;
+          }
+          .create-bg-circle-2 {
+            width: 450px; height: 450px;
+            bottom: -150px; left: -150px;
+            animation-delay: 3s;
+          }
+          .create-bg-circle-3 {
+            width: 300px; height: 300px;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: 1.5s;
+          }
+
+          @keyframes createFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-30px) rotate(5deg); }
+            50% { transform: translateY(-50px) rotate(-5deg); }
+            75% { transform: translateY(-30px) rotate(3deg); }
+          }
+
+          @keyframes createPulse {
+            0%, 100% { transform: scale(1); opacity: 0.06; }
+            50% { transform: scale(1.15); opacity: 0.12; }
+          }
         `}
       </style>
 
-      <div className="container">
+      {/* ── Animated Background Elements ── */}
+      <div className="create-bg-elements">
+        <div className="create-symbol create-symbol-1">📚</div>
+        <div className="create-symbol create-symbol-2">✏️</div>
+        <div className="create-symbol create-symbol-3">🎓</div>
+        <div className="create-symbol create-symbol-4">📖</div>
+        <div className="create-symbol create-symbol-5">🏆</div>
+        <div className="create-symbol create-symbol-6">⭐</div>
+        <div className="create-symbol create-symbol-7">📝</div>
+        <div className="create-symbol create-symbol-8">🎯</div>
+        <div className="create-symbol create-symbol-9">🏫</div>
+        <div className="create-symbol create-symbol-10">💡</div>
+        <div className="create-bg-circle create-bg-circle-1"></div>
+        <div className="create-bg-circle create-bg-circle-2"></div>
+        <div className="create-bg-circle create-bg-circle-3"></div>
+      </div>
+
+      <div className="container" style={{ position: "relative", zIndex: 2 }}>
         <div className="row justify-content-center">
           <div className="col-lg-8 col-md-10">
             {/* ✅ Create Classroom Card */}
