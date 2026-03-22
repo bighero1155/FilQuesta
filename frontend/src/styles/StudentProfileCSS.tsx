@@ -155,6 +155,16 @@ const StudentProfileCSS: React.FC = () => {
         .profile-header-card {
           grid-column: span 2;
         }
+        /* Rank card (3rd stat card) spans full width on mobile */
+        .profile-grid > .stat-card:nth-of-type(3) {
+          grid-column: span 2;
+          max-width: 100%;
+          aspect-ratio: unset;
+          padding: 1.2rem 1.5rem;
+          flex-direction: row;
+          gap: 1.2rem;
+          justify-content: center;
+        }
       }
 
       /* =====================================================
@@ -166,7 +176,6 @@ const StudentProfileCSS: React.FC = () => {
         padding: 1rem;
         border-radius: 18px;
 
-        /* ✅ NEW: visible square card background */
         background: rgba(255,255,255,0.18);
         backdrop-filter: blur(10px);
         box-shadow: 0 4px 14px rgba(0,0,0,0.35);
