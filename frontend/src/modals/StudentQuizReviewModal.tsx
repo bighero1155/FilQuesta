@@ -193,7 +193,7 @@ const styles = `
     justify-content: space-between;
     align-items: center;
     padding: 25px 30px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #667eea, #4a40d3);
     color: white;
     border-radius: 20px 20px 0 0;
   }
@@ -388,7 +388,7 @@ const styles = `
 
   .review-btn {
     padding: 10px 20px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #667eea, #4a40d3);
     color: white;
     border: none;
     border-radius: 8px;
