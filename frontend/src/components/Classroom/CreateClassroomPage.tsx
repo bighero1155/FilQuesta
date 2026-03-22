@@ -81,7 +81,7 @@ const CreateClassroomPage: React.FC = () => {
       className="min-vh-100 d-flex flex-column justify-content-center align-items-center py-5"
       style={{
         background:
-          "linear-gradient(135deg, #4facfe 0%, #667eea, #4a40d3 100%)",
+          "linear-gradient(135deg, #275062ff, #45788bff, #2c5364 100%)",
       }}
     >
       <style>
@@ -205,7 +205,7 @@ const CreateClassroomPage: React.FC = () => {
                       disabled={loading}
                       style={{
                         background:
-                          "linear-gradient(90deg, #007bff, #667eea, #4a40d3)",
+                          "linear-gradient(90deg, #275062ff, #45788bff, #2c5364)",
                         border: "none",
                       }}
                     >
