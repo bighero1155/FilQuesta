@@ -1,7 +1,5 @@
 const SharedQuizBrowserModalCSS = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
     .qm-overlay {
       position: fixed;
       inset: 0;
@@ -29,6 +27,7 @@ const SharedQuizBrowserModalCSS = () => (
       border: 3px solid #0d6efd;
       box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
       animation: qmSlideUp 0.2s ease;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
     @keyframes qmSlideUp {
@@ -45,11 +44,13 @@ const SharedQuizBrowserModalCSS = () => (
     }
 
     .qm-title {
-      font-family: 'Press Start 2P', cursive;
-      font-size: 1rem;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
       color: white;
       margin: 0;
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     .qm-close {
@@ -78,10 +79,7 @@ const SharedQuizBrowserModalCSS = () => (
       overflow-y: auto;
     }
 
-    .qm-body::-webkit-scrollbar {
-      width: 6px;
-    }
-
+    .qm-body::-webkit-scrollbar { width: 6px; }
     .qm-body::-webkit-scrollbar-thumb {
       background: #0d6efd;
       border-radius: 3px;
@@ -108,9 +106,10 @@ const SharedQuizBrowserModalCSS = () => (
     }
 
     .qm-loading-text {
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.7rem;
-      line-height: 1.6;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.5;
     }
 
     .qm-error {
@@ -120,8 +119,9 @@ const SharedQuizBrowserModalCSS = () => (
       border-radius: 8px;
       padding: 15px;
       text-align: center;
-      font-size: 0.7rem;
-      font-family: 'Press Start 2P', cursive;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       line-height: 1.5;
     }
 
@@ -138,9 +138,10 @@ const SharedQuizBrowserModalCSS = () => (
     }
 
     .qm-empty-text {
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.7rem;
-      line-height: 1.6;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.5;
     }
 
     .qm-list {
@@ -172,11 +173,12 @@ const SharedQuizBrowserModalCSS = () => (
     }
 
     .qm-quiz-title {
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.75rem;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
       color: #0d6efd;
       margin-bottom: 8px;
-      line-height: 1.5;
+      line-height: 1.4;
       word-break: break-word;
     }
 
@@ -186,8 +188,9 @@ const SharedQuizBrowserModalCSS = () => (
       color: white;
       padding: 6px 12px;
       border-radius: 5px;
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.6rem;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
       letter-spacing: 1px;
     }
 
@@ -204,8 +207,9 @@ const SharedQuizBrowserModalCSS = () => (
       border: none;
       padding: 10px 20px;
       border-radius: 6px;
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.65rem;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
       white-space: nowrap;
@@ -252,44 +256,23 @@ const SharedQuizBrowserModalCSS = () => (
     }
 
     @media (max-width: 768px) {
-      .qm-modal {
-        border-radius: 12px;
-      }
-
-      .qm-title {
-        font-size: 0.8rem;
-      }
-
-      .qm-body {
-        padding: 20px;
-      }
+      .qm-modal { border-radius: 12px; }
+      .qm-title  { font-size: 1rem; }
+      .qm-body   { padding: 20px; }
 
       .qm-card {
         flex-direction: column;
         align-items: stretch;
       }
 
-      .qm-actions {
-        width: 100%;
-      }
-
-      .qm-join {
-        flex: 1;
-      }
-
-      .qm-delete {
-        min-width: 44px;
-      }
+      .qm-actions { width: 100%; }
+      .qm-join    { flex: 1; }
+      .qm-delete  { min-width: 44px; }
     }
 
     @media (max-width: 480px) {
-      .qm-header {
-        padding: 15px 20px;
-      }
-
-      .qm-title {
-        font-size: 0.7rem;
-      }
+      .qm-header { padding: 15px 20px; }
+      .qm-title  { font-size: 0.9rem; }
 
       .qm-close {
         width: 32px;
@@ -297,21 +280,13 @@ const SharedQuizBrowserModalCSS = () => (
         font-size: 18px;
       }
 
-      .qm-body {
-        padding: 15px;
-      }
+      .qm-body { padding: 15px; }
 
-      .qm-quiz-title {
-        font-size: 0.65rem;
-      }
-
-      .qm-code {
-        font-size: 0.55rem;
-        padding: 5px 10px;
-      }
+      .qm-quiz-title { font-size: 0.875rem; }
+      .qm-code       { font-size: 0.75rem; padding: 5px 10px; }
 
       .qm-join {
-        font-size: 0.6rem;
+        font-size: 0.8rem;
         padding: 8px 16px;
       }
 
@@ -322,9 +297,7 @@ const SharedQuizBrowserModalCSS = () => (
       }
 
       .qm-loading-text,
-      .qm-empty-text {
-        font-size: 0.65rem;
-      }
+      .qm-empty-text { font-size: 0.85rem; }
     }
   `}</style>
 );
