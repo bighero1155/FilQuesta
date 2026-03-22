@@ -159,7 +159,7 @@ const Intro: React.FC = () => {
         .panel-inner h2 {
           font-size: 2.2rem;
           font-weight: 800;
-          color: #0f13ffff;
+          color: rgb(255, 255, 255);
           margin-bottom: 1rem;
           text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
