@@ -280,8 +280,6 @@ const ClassroomReports: React.FC<ClassroomReportsProps> = ({
 };
 
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
   .reports-container {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
@@ -289,7 +287,7 @@ const styles = `
     overflow: hidden;
     max-width: 900px;
     margin: 0 auto;
-    font-family: 'Press Start 2P', monospace;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   }
 
   .reports-header {
@@ -297,23 +295,21 @@ const styles = `
     color: white;
     padding: 30px;
     text-align: center;
-    font-family: 'Press Start 2P', monospace;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   }
 
   .reports-header h3 {
     margin: 0;
-    font-size: 1rem;
-    font-weight: bold;
-    font-family: 'Press Start 2P', monospace;
-    line-height: 1.6;
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.4;
   }
 
   .reports-subtitle {
-    margin: 8px 0 0 0;
+    margin: 6px 0 0 0;
     opacity: 0.9;
-    font-size: 0.65rem;
-    font-family: 'Press Start 2P', monospace;
-    line-height: 1.6;
+    font-size: 0.9rem;
+    line-height: 1.4;
   }
 
   .reports-stats {
@@ -331,7 +327,7 @@ const styles = `
     text-align: center;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     transition: transform 0.3s ease;
-    font-family: 'Press Start 2P', monospace;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   }
 
   .stat-card:hover {
@@ -344,19 +340,17 @@ const styles = `
   }
 
   .stat-value {
-    font-size: 1.4rem;
-    font-weight: bold;
+    font-size: 1.8rem;
+    font-weight: 700;
     color: #667eea;
     margin-bottom: 5px;
-    font-family: 'Press Start 2P', monospace;
   }
 
   .stat-label {
-    font-size: 0.55rem;
+    font-size: 0.8rem;
     color: #6c757d;
     font-weight: 600;
-    font-family: 'Press Start 2P', monospace;
-    line-height: 1.6;
+    line-height: 1.4;
   }
 
   .reports-body {
@@ -365,18 +359,9 @@ const styles = `
     overflow-y: auto;
   }
 
-  .reports-body::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  .reports-body::-webkit-scrollbar-track {
-    background: #f8f9fa;
-  }
-
-  .reports-body::-webkit-scrollbar-thumb {
-    background: #667eea;
-    border-radius: 10px;
-  }
+  .reports-body::-webkit-scrollbar { width: 8px; }
+  .reports-body::-webkit-scrollbar-track { background: #f8f9fa; }
+  .reports-body::-webkit-scrollbar-thumb { background: #667eea; border-radius: 10px; }
 
   .report-card {
     display: flex;
@@ -389,7 +374,7 @@ const styles = `
     margin-bottom: 12px;
     transition: all 0.3s ease;
     position: relative;
-    font-family: 'Press Start 2P', monospace;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   }
 
   .report-card:hover {
@@ -400,10 +385,9 @@ const styles = `
 
   .report-rank {
     font-size: 1.5rem;
-    font-weight: bold;
+    font-weight: 700;
     min-width: 50px;
     text-align: center;
-    font-family: 'Press Start 2P', monospace;
   }
 
   .report-avatar {
@@ -415,12 +399,11 @@ const styles = `
     align-items: center;
     justify-content: center;
     color: white;
-    font-weight: bold;
+    font-weight: 700;
+    font-size: 1rem;
     flex-shrink: 0;
     border: 3px solid white;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    font-family: 'Press Start 2P', monospace;
-    font-size: 0.7rem;
   }
 
   .report-avatar img {
@@ -437,69 +420,62 @@ const styles = `
   .report-info {
     flex: 1;
     min-width: 0;
-    font-family: 'Press Start 2P', monospace;
   }
 
   .report-name {
-    font-weight: bold;
-    font-size: 0.65rem;
+    font-weight: 700;
+    font-size: 0.95rem;
     color: #333;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-family: 'Press Start 2P', monospace;
-    line-height: 1.6;
-    margin-bottom: 4px;
+    line-height: 1.4;
+    margin-bottom: 3px;
   }
 
   .report-username {
-    font-size: 0.55rem;
+    font-size: 0.82rem;
     color: #6c757d;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-family: 'Press Start 2P', monospace;
-    line-height: 1.6;
+    line-height: 1.4;
   }
 
   .report-scores {
     display: flex;
     gap: 15px;
-    font-family: 'Press Start 2P', monospace;
   }
 
   .score-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 60px;
-    font-family: 'Press Start 2P', monospace;
+    min-width: 55px;
   }
 
   .score-label {
-    font-size: 0.5rem;
+    font-size: 0.72rem;
     color: #6c757d;
     font-weight: 600;
     text-transform: uppercase;
     margin-bottom: 4px;
-    font-family: 'Press Start 2P', monospace;
-    line-height: 1.6;
+    line-height: 1.4;
+    letter-spacing: 0.04em;
   }
 
   .score-value {
-    font-size: 0.85rem;
-    font-weight: bold;
+    font-size: 1rem;
+    font-weight: 700;
     color: #667eea;
-    font-family: 'Press Start 2P', monospace;
   }
 
   .score-item.total .score-value {
-    font-size: 1rem;
+    font-size: 1.2rem;
     background: linear-gradient(135deg, #667eea, #4a40d3);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    font-family: 'Press Start 2P', monospace;
   }
 
   .view-review-btn {
@@ -531,19 +507,18 @@ const styles = `
     padding: 60px 20px;
     color: #6c757d;
     text-align: center;
-    font-family: 'Press Start 2P', monospace;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   }
 
   .empty-reports h4 {
-    font-size: 0.75rem;
-    line-height: 1.6;
-    font-family: 'Press Start 2P', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.4;
   }
 
   .empty-reports p {
-    font-size: 0.6rem;
-    line-height: 1.8;
-    font-family: 'Press Start 2P', monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
   }
 
   .empty-icon {
@@ -559,9 +534,9 @@ const styles = `
     justify-content: center;
     padding: 60px 20px;
     color: #6c757d;
-    font-family: 'Press Start 2P', monospace;
-    font-size: 0.65rem;
-    line-height: 1.8;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.6;
   }
 
   @media (max-width: 768px) {
@@ -585,13 +560,13 @@ const styles = `
       margin-top: 10px;
     }
 
-    .report-name { font-size: 0.55rem; }
-    .report-username { font-size: 0.45rem; }
-    .score-label { font-size: 0.4rem; }
-    .score-value { font-size: 0.7rem; }
-    .score-item.total .score-value { font-size: 0.85rem; }
-    .stat-value { font-size: 1.1rem; }
-    .stat-label { font-size: 0.45rem; }
+    .report-name     { font-size: 0.85rem; }
+    .report-username { font-size: 0.75rem; }
+    .score-label     { font-size: 0.65rem; }
+    .score-value     { font-size: 0.9rem; }
+    .score-item.total .score-value { font-size: 1rem; }
+    .stat-value      { font-size: 1.4rem; }
+    .stat-label      { font-size: 0.72rem; }
   }
 `;
 
