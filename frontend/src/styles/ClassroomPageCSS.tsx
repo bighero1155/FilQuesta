@@ -1,5 +1,7 @@
 const ClassroomPageCSS = () => (
   <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
     .classroom-page {
       min-height: 100vh;
       padding-top: 80px;
@@ -7,6 +9,7 @@ const ClassroomPageCSS = () => (
       background: linear-gradient(135deg, #275062ff, #45788bff, #2c5364 100%);
       overflow: hidden;
       position: relative;
+      font-family: 'Press Start 2P', monospace;
     }
 
     /* Back Button Styles - Updated to match CosmeticsShop */
@@ -26,8 +29,9 @@ const ClassroomPageCSS = () => (
       border-radius: 12px;
       
       color: #e0f2ff;
-      font-size: 1rem;
+      font-size: 0.7rem;
       font-weight: 600;
+      font-family: 'Press Start 2P', monospace;
       letter-spacing: 0.05em;
       
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -59,6 +63,9 @@ const ClassroomPageCSS = () => (
     .text-glow {
       text-shadow: 0 0 20px rgba(255, 255, 255, 0.4),
                    0 0 40px rgba(255, 255, 255, 0.3);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 1.8rem !important;
+      line-height: 1.5;
     }
 
     /* Background Elements */
@@ -138,6 +145,7 @@ const ClassroomPageCSS = () => (
     .classroom-loading {
       min-height: 100vh;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      font-family: 'Press Start 2P', monospace;
     }
 
     .classroom-spinner {
@@ -152,6 +160,12 @@ const ClassroomPageCSS = () => (
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(10px);
       animation: slideUp 0.6s ease-out;
+      font-family: 'Press Start 2P', monospace;
+    }
+
+    .classroom-join-card h3 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 1rem;
     }
 
     .classroom-join-icon {
@@ -161,9 +175,10 @@ const ClassroomPageCSS = () => (
 
     .classroom-code-input {
       border-radius: 15px;
-      font-size: 1.4rem;
+      font-size: 1rem;
       letter-spacing: 0.2em;
       font-weight: 700;
+      font-family: 'Press Start 2P', monospace;
       border: 2px solid #667eea;
       transition: all 0.3s ease;
     }
@@ -180,6 +195,8 @@ const ClassroomPageCSS = () => (
       color: white;
       border: none;
       padding: 15px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.75rem;
       transition: all 0.3s ease;
     }
 
@@ -194,7 +211,18 @@ const ClassroomPageCSS = () => (
       background: rgba(255, 255, 255, 0.95);
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       animation: slideUp 0.6s ease-out;
+      font-family: 'Press Start 2P', monospace;
     }
+
+    .classroom-list-card h4,
+    .classroom-list-card h5,
+    .classroom-list-card p {
+      font-family: 'Press Start 2P', monospace;
+    }
+
+    .classroom-list-card h4 { font-size: 0.85rem; line-height: 1.6; }
+    .classroom-list-card h5 { font-size: 0.75rem; line-height: 1.6; }
+    .classroom-list-card p  { font-size: 0.65rem; line-height: 1.8; }
 
     .classroom-card {
       background: linear-gradient(135deg, #667eea15, #764ba215);
@@ -214,9 +242,10 @@ const ClassroomPageCSS = () => (
 
     .classroom-card-badge {
       background: #667eea;
-      font-size: 0.9rem;
+      font-size: 0.65rem;
       padding: 6px 12px;
       border-radius: 8px;
+      font-family: 'Press Start 2P', monospace;
     }
 
     .classroom-card-arrow {
@@ -279,34 +308,40 @@ const ClassroomPageCSS = () => (
     .classroom-teacher-info {
       text-align: left;
       color: white;
+      font-family: 'Press Start 2P', monospace;
     }
 
     .classroom-teacher-label {
-      font-size: 0.75rem;
+      font-size: 0.55rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.1em;
       margin-bottom: 0.25rem;
       opacity: 0.8;
+      font-family: 'Press Start 2P', monospace;
     }
 
     .classroom-teacher-name {
-      font-size: 1.25rem;
+      font-size: 0.75rem;
       font-weight: bold;
       margin: 0;
+      line-height: 1.5;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      font-family: 'Press Start 2P', monospace;
     }
 
     /* Header Badges */
     .classroom-header-badge {
       background: rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(10px);
-      font-size: 1rem;
+      font-size: 0.65rem;
       font-weight: 600;
+      font-family: 'Press Start 2P', monospace;
       border-radius: 20px;
       border: 2px solid rgba(255, 255, 255, 0.3);
       padding: 0.5rem 1.5rem;
       transition: all 0.3s ease;
+      line-height: 1.6;
     }
 
     .classroom-header-badge:hover {
@@ -326,10 +361,13 @@ const ClassroomPageCSS = () => (
     .classroom-tab {
       border-radius: 12px;
       font-weight: 600;
-      padding: 10px 25px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      padding: 10px 20px;
       transition: all 0.3s ease;
       border: none;
       background: transparent;
+      line-height: 1.6;
     }
 
     .classroom-tab:hover {
@@ -375,7 +413,8 @@ const ClassroomPageCSS = () => (
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 14px;
+      font-size: 11px;
+      font-family: 'Press Start 2P', monospace;
       color: #8B4513;
       box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
       border: 3px solid white;
@@ -419,7 +458,11 @@ const ClassroomPageCSS = () => (
       border-radius: 20px;
       padding: 3rem;
       animation: fadeIn 0.6s ease-out;
+      font-family: 'Press Start 2P', monospace;
     }
+
+    .classroom-empty-state h4 { font-size: 0.85rem; line-height: 1.6; }
+    .classroom-empty-state p  { font-size: 0.65rem; line-height: 1.8; }
 
     /* Copy Code Button */
     .classroom-copy-btn {
@@ -429,6 +472,8 @@ const ClassroomPageCSS = () => (
       background: white;
       color: #667eea;
       font-weight: bold;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.65rem;
       border: none;
       transition: all 0.3s ease;
     }
@@ -452,6 +497,7 @@ const ClassroomPageCSS = () => (
       border: none;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       animation: slideUp 0.3s ease-out;
+      font-family: 'Press Start 2P', monospace;
     }
 
     .classroom-modal-header {
@@ -461,8 +507,26 @@ const ClassroomPageCSS = () => (
       padding: 1.5rem;
     }
 
+    .classroom-modal-header h5 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.75rem;
+      line-height: 1.6;
+    }
+
+    .classroom-modal-header small {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.55rem;
+    }
+
     .classroom-modal-body {
       padding: 2rem;
+      font-family: 'Press Start 2P', monospace;
+    }
+
+    .classroom-modal-body h6 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.7rem;
+      line-height: 1.6;
     }
 
     .classroom-modal-footer {
@@ -487,9 +551,10 @@ const ClassroomPageCSS = () => (
 
     .classroom-score-number {
       color: #ffa500;
-      font-size: 3rem;
+      font-size: 2rem;
       font-weight: bold;
       margin: 0;
+      font-family: 'Press Start 2P', monospace;
       text-shadow: 2px 2px 4px rgba(255, 165, 0, 0.3);
     }
 
@@ -498,6 +563,9 @@ const ClassroomPageCSS = () => (
       border-radius: 12px;
       padding: 1rem;
       transition: all 0.3s ease;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      line-height: 1.6;
     }
 
     .classroom-log-item:hover {
@@ -506,17 +574,21 @@ const ClassroomPageCSS = () => (
     }
 
     .classroom-log-badge {
-      font-size: 0.9rem;
+      font-size: 0.6rem;
       padding: 6px 12px;
       border-radius: 8px;
+      font-family: 'Press Start 2P', monospace;
     }
 
     /* Button Styles */
     .classroom-btn {
       border-radius: 10px;
       font-weight: bold;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
       padding: 0.5rem 1.5rem;
       transition: all 0.3s ease;
+      line-height: 1.6;
     }
 
     .classroom-btn:hover {
@@ -573,50 +645,31 @@ const ClassroomPageCSS = () => (
       border: none;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       animation: slideDown 0.3s ease-out;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.65rem;
+      line-height: 1.8;
     }
 
     /* Animations */
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-      }
-      to {
-        opacity: 1;
-      }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes bounce {
-      0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
-      }
-      40% {
-        transform: translateY(-10px);
-      }
-      60% {
-        transform: translateY(-5px);
-      }
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
     }
 
     /* Remove Student Button */ 
@@ -650,21 +703,20 @@ const ClassroomPageCSS = () => (
     @media (max-width: 768px) {
       .classroom-page {
         padding-top: 60px;
-        padding-bottom: 100px; /* Space for bottom back button */
+        padding-bottom: 100px;
       }
 
       .classroom-symbol {
         font-size: 2rem;
       }
 
-      /* Move back button to bottom on mobile */
       .classroom-back-btn {
         top: auto;
         bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
         padding: 0.75rem 2rem;
-        font-size: 1rem;
+        font-size: 0.6rem;
         width: auto;
         min-width: 150px;
       }
@@ -675,6 +727,10 @@ const ClassroomPageCSS = () => (
 
       .classroom-back-btn:active {
         transform: translateX(-50%) translateY(0);
+      }
+
+      .text-glow {
+        font-size: 1.2rem !important;
       }
 
       .classroom-teacher-section {
@@ -693,21 +749,21 @@ const ClassroomPageCSS = () => (
       }
 
       .classroom-teacher-name {
-        font-size: 1rem;
+        font-size: 0.6rem;
       }
 
       .classroom-teacher-label {
-        font-size: 0.65rem;
+        font-size: 0.45rem;
       }
 
       .classroom-header-badge {
-        font-size: 0.85rem;
+        font-size: 0.55rem;
         padding: 8px 15px;
       }
 
       .classroom-tab {
-        padding: 8px 15px;
-        font-size: 0.85rem;
+        padding: 8px 12px;
+        font-size: 0.5rem;
       }
 
       .classroom-tabs {
@@ -720,13 +776,13 @@ const ClassroomPageCSS = () => (
         border-radius: 12px;
         margin: 3px;
         flex: 1;
-        min-width: 100px;
+        min-width: 80px;
       }
 
       .student-score-badge {
         width: 40px;
         height: 40px;
-        font-size: 12px;
+        font-size: 9px;
       }
 
       .student-add-points {
@@ -742,19 +798,18 @@ const ClassroomPageCSS = () => (
       }
 
       .classroom-code-input {
-        font-size: 1.1rem;
+        font-size: 0.75rem;
       }
 
       .classroom-score-number {
-        font-size: 2rem;
+        font-size: 1.5rem;
       }
 
       .classroom-copy-btn {
         padding: 0.75rem 2rem;
-        font-size: 0.9rem;
+        font-size: 0.55rem;
       }
 
-      /* Hide the bottom delete classroom button on mobile */
       .classroom-bottom-delete-btn {
         display: none !important;
       }
@@ -763,18 +818,18 @@ const ClassroomPageCSS = () => (
     @media (max-width: 576px) {
       .classroom-page {
         padding-top: 50px;
-        padding-bottom: 90px; /* Space for bottom back button */
+        padding-bottom: 90px;
       }
 
       .classroom-back-btn {
         bottom: 15px;
         padding: 0.625rem 1.5rem;
-        font-size: 0.9rem;
+        font-size: 0.55rem;
         min-width: 130px;
       }
 
       .text-glow {
-        font-size: 1.5rem;
+        font-size: 1rem !important;
       }
 
       .classroom-join-icon {
@@ -794,8 +849,8 @@ const ClassroomPageCSS = () => (
       }
 
       .classroom-tab {
-        font-size: 0.75rem;
-        padding: 6px 10px;
+        font-size: 0.45rem;
+        padding: 6px 8px;
       }
 
       .classroom-teacher-section {
@@ -816,13 +871,15 @@ const ClassroomPageCSS = () => (
       border-radius: 12px;
       padding: 0.75rem 1.5rem;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
       cursor: pointer;
       transition: all 0.3s ease;
       box-shadow: 0 4px 12px rgba(238, 90, 111, 0.3);
       margin-top: 1rem;
       width: 100%;
-      display: none; /* Hidden by default, shown on mobile */
+      display: none;
+      line-height: 1.6;
     }
 
     .classroom-delete-tab-btn:hover {
@@ -837,7 +894,7 @@ const ClassroomPageCSS = () => (
 
     @media (max-width: 768px) {
       .classroom-delete-tab-btn {
-        display: block; /* Show on mobile */
+        display: block;
       }
     }
   `}</style>

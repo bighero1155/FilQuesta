@@ -280,6 +280,8 @@ const ClassroomReports: React.FC<ClassroomReportsProps> = ({
 };
 
 const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
   .reports-container {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
@@ -287,6 +289,7 @@ const styles = `
     overflow: hidden;
     max-width: 900px;
     margin: 0 auto;
+    font-family: 'Press Start 2P', monospace;
   }
 
   .reports-header {
@@ -294,18 +297,23 @@ const styles = `
     color: white;
     padding: 30px;
     text-align: center;
+    font-family: 'Press Start 2P', monospace;
   }
 
   .reports-header h3 {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: 1rem;
     font-weight: bold;
+    font-family: 'Press Start 2P', monospace;
+    line-height: 1.6;
   }
 
   .reports-subtitle {
     margin: 8px 0 0 0;
     opacity: 0.9;
-    font-size: 0.9rem;
+    font-size: 0.65rem;
+    font-family: 'Press Start 2P', monospace;
+    line-height: 1.6;
   }
 
   .reports-stats {
@@ -323,6 +331,7 @@ const styles = `
     text-align: center;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     transition: transform 0.3s ease;
+    font-family: 'Press Start 2P', monospace;
   }
 
   .stat-card:hover {
@@ -335,16 +344,19 @@ const styles = `
   }
 
   .stat-value {
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     font-weight: bold;
     color: #667eea;
     margin-bottom: 5px;
+    font-family: 'Press Start 2P', monospace;
   }
 
   .stat-label {
-    font-size: 0.85rem;
+    font-size: 0.55rem;
     color: #6c757d;
     font-weight: 600;
+    font-family: 'Press Start 2P', monospace;
+    line-height: 1.6;
   }
 
   .reports-body {
@@ -377,6 +389,7 @@ const styles = `
     margin-bottom: 12px;
     transition: all 0.3s ease;
     position: relative;
+    font-family: 'Press Start 2P', monospace;
   }
 
   .report-card:hover {
@@ -390,6 +403,7 @@ const styles = `
     font-weight: bold;
     min-width: 50px;
     text-align: center;
+    font-family: 'Press Start 2P', monospace;
   }
 
   .report-avatar {
@@ -405,6 +419,8 @@ const styles = `
     flex-shrink: 0;
     border: 3px solid white;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.7rem;
   }
 
   .report-avatar img {
@@ -421,28 +437,35 @@ const styles = `
   .report-info {
     flex: 1;
     min-width: 0;
+    font-family: 'Press Start 2P', monospace;
   }
 
   .report-name {
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 0.65rem;
     color: #333;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-family: 'Press Start 2P', monospace;
+    line-height: 1.6;
+    margin-bottom: 4px;
   }
 
   .report-username {
-    font-size: 0.85rem;
+    font-size: 0.55rem;
     color: #6c757d;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-family: 'Press Start 2P', monospace;
+    line-height: 1.6;
   }
 
   .report-scores {
     display: flex;
     gap: 15px;
+    font-family: 'Press Start 2P', monospace;
   }
 
   .score-item {
@@ -450,28 +473,33 @@ const styles = `
     flex-direction: column;
     align-items: center;
     min-width: 60px;
+    font-family: 'Press Start 2P', monospace;
   }
 
   .score-label {
-    font-size: 0.75rem;
+    font-size: 0.5rem;
     color: #6c757d;
     font-weight: 600;
     text-transform: uppercase;
     margin-bottom: 4px;
+    font-family: 'Press Start 2P', monospace;
+    line-height: 1.6;
   }
 
   .score-value {
-    font-size: 1.2rem;
+    font-size: 0.85rem;
     font-weight: bold;
     color: #667eea;
+    font-family: 'Press Start 2P', monospace;
   }
 
   .score-item.total .score-value {
-    font-size: 1.5rem;
+    font-size: 1rem;
     background: linear-gradient(135deg, #667eea, #764ba2);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    font-family: 'Press Start 2P', monospace;
   }
 
   .view-review-btn {
@@ -503,6 +531,19 @@ const styles = `
     padding: 60px 20px;
     color: #6c757d;
     text-align: center;
+    font-family: 'Press Start 2P', monospace;
+  }
+
+  .empty-reports h4 {
+    font-size: 0.75rem;
+    line-height: 1.6;
+    font-family: 'Press Start 2P', monospace;
+  }
+
+  .empty-reports p {
+    font-size: 0.6rem;
+    line-height: 1.8;
+    font-family: 'Press Start 2P', monospace;
   }
 
   .empty-icon {
@@ -518,6 +559,9 @@ const styles = `
     justify-content: center;
     padding: 60px 20px;
     color: #6c757d;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.65rem;
+    line-height: 1.8;
   }
 
   @media (max-width: 768px) {
@@ -540,6 +584,14 @@ const styles = `
     .view-review-btn {
       margin-top: 10px;
     }
+
+    .report-name { font-size: 0.55rem; }
+    .report-username { font-size: 0.45rem; }
+    .score-label { font-size: 0.4rem; }
+    .score-value { font-size: 0.7rem; }
+    .score-item.total .score-value { font-size: 0.85rem; }
+    .stat-value { font-size: 1.1rem; }
+    .stat-label { font-size: 0.45rem; }
   }
 `;
 
