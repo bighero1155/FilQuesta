@@ -1,7 +1,5 @@
 const ClassroomPageCSS = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
     .classroom-page {
       min-height: 100vh;
       padding-top: 80px;
@@ -9,10 +7,10 @@ const ClassroomPageCSS = () => (
       background: linear-gradient(135deg, #275062ff, #45788bff, #2c5364 100%);
       overflow: hidden;
       position: relative;
-      font-family: 'Press Start 2P', monospace;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
-    /* Back Button Styles - Updated to match CosmeticsShop */
+    /* Back Button Styles */
     .classroom-back-btn {
       position: fixed;
       top: 2rem;
@@ -29,10 +27,10 @@ const ClassroomPageCSS = () => (
       border-radius: 12px;
       
       color: #e0f2ff;
-      font-size: 0.7rem;
+      font-size: 0.95rem;
       font-weight: 600;
-      font-family: 'Press Start 2P', monospace;
-      letter-spacing: 0.05em;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      letter-spacing: 0.02em;
       
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       cursor: pointer;
@@ -63,9 +61,10 @@ const ClassroomPageCSS = () => (
     .text-glow {
       text-shadow: 0 0 20px rgba(255, 255, 255, 0.4),
                    0 0 40px rgba(255, 255, 255, 0.3);
-      font-family: 'Press Start 2P', monospace;
-      font-size: 1.8rem !important;
-      line-height: 1.5;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 2.2rem !important;
+      font-weight: 700;
+      line-height: 1.3;
     }
 
     /* Background Elements */
@@ -104,26 +103,18 @@ const ClassroomPageCSS = () => (
     }
 
     .circle-1 {
-      width: 350px;
-      height: 350px;
-      top: -100px;
-      right: -100px;
+      width: 350px; height: 350px;
+      top: -100px; right: -100px;
       animation-delay: 0s;
     }
-
     .circle-2 {
-      width: 450px;
-      height: 450px;
-      bottom: -150px;
-      left: -150px;
+      width: 450px; height: 450px;
+      bottom: -150px; left: -150px;
       animation-delay: 3s;
     }
-
     .circle-3 {
-      width: 300px;
-      height: 300px;
-      top: 50%;
-      left: 50%;
+      width: 300px; height: 300px;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       animation-delay: 1.5s;
     }
@@ -145,7 +136,7 @@ const ClassroomPageCSS = () => (
     .classroom-loading {
       min-height: 100vh;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-      font-family: 'Press Start 2P', monospace;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
     .classroom-spinner {
@@ -160,12 +151,13 @@ const ClassroomPageCSS = () => (
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(10px);
       animation: slideUp 0.6s ease-out;
-      font-family: 'Press Start 2P', monospace;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
     .classroom-join-card h3 {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 1rem;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
     }
 
     .classroom-join-icon {
@@ -175,10 +167,10 @@ const ClassroomPageCSS = () => (
 
     .classroom-code-input {
       border-radius: 15px;
-      font-size: 1rem;
+      font-size: 1.2rem;
       letter-spacing: 0.2em;
       font-weight: 700;
-      font-family: 'Press Start 2P', monospace;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       border: 2px solid #667eea;
       transition: all 0.3s ease;
     }
@@ -195,8 +187,9 @@ const ClassroomPageCSS = () => (
       color: white;
       border: none;
       padding: 15px;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.75rem;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
       transition: all 0.3s ease;
     }
 
@@ -211,18 +204,18 @@ const ClassroomPageCSS = () => (
       background: rgba(255, 255, 255, 0.95);
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       animation: slideUp 0.6s ease-out;
-      font-family: 'Press Start 2P', monospace;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
     .classroom-list-card h4,
     .classroom-list-card h5,
     .classroom-list-card p {
-      font-family: 'Press Start 2P', monospace;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
-    .classroom-list-card h4 { font-size: 0.85rem; line-height: 1.6; }
-    .classroom-list-card h5 { font-size: 0.75rem; line-height: 1.6; }
-    .classroom-list-card p  { font-size: 0.65rem; line-height: 1.8; }
+    .classroom-list-card h4 { font-size: 1.1rem; font-weight: 700; line-height: 1.4; }
+    .classroom-list-card h5 { font-size: 1rem;   font-weight: 600; line-height: 1.4; }
+    .classroom-list-card p  { font-size: 0.9rem;  line-height: 1.6; }
 
     .classroom-card {
       background: linear-gradient(135deg, #667eea15, #764ba215);
@@ -242,10 +235,11 @@ const ClassroomPageCSS = () => (
 
     .classroom-card-badge {
       background: #667eea;
-      font-size: 0.65rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       padding: 6px 12px;
       border-radius: 8px;
-      font-family: 'Press Start 2P', monospace;
     }
 
     .classroom-card-arrow {
@@ -308,40 +302,38 @@ const ClassroomPageCSS = () => (
     .classroom-teacher-info {
       text-align: left;
       color: white;
-      font-family: 'Press Start 2P', monospace;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
     .classroom-teacher-label {
-      font-size: 0.55rem;
+      font-size: 0.75rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       margin-bottom: 0.25rem;
       opacity: 0.8;
-      font-family: 'Press Start 2P', monospace;
     }
 
     .classroom-teacher-name {
-      font-size: 0.75rem;
-      font-weight: bold;
+      font-size: 1rem;
+      font-weight: 700;
       margin: 0;
-      line-height: 1.5;
+      line-height: 1.4;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-      font-family: 'Press Start 2P', monospace;
     }
 
     /* Header Badges */
     .classroom-header-badge {
       background: rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(10px);
-      font-size: 0.65rem;
+      font-size: 0.85rem;
       font-weight: 600;
-      font-family: 'Press Start 2P', monospace;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       border-radius: 20px;
       border: 2px solid rgba(255, 255, 255, 0.3);
       padding: 0.5rem 1.5rem;
       transition: all 0.3s ease;
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
     .classroom-header-badge:hover {
@@ -361,13 +353,13 @@ const ClassroomPageCSS = () => (
     .classroom-tab {
       border-radius: 12px;
       font-weight: 600;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.6rem;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 0.875rem;
       padding: 10px 20px;
       transition: all 0.3s ease;
       border: none;
       background: transparent;
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
     .classroom-tab:hover {
@@ -412,9 +404,9 @@ const ClassroomPageCSS = () => (
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
-      font-size: 11px;
-      font-family: 'Press Start 2P', monospace;
+      font-weight: 700;
+      font-size: 13px;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       color: #8B4513;
       box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
       border: 3px solid white;
@@ -458,11 +450,11 @@ const ClassroomPageCSS = () => (
       border-radius: 20px;
       padding: 3rem;
       animation: fadeIn 0.6s ease-out;
-      font-family: 'Press Start 2P', monospace;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
-    .classroom-empty-state h4 { font-size: 0.85rem; line-height: 1.6; }
-    .classroom-empty-state p  { font-size: 0.65rem; line-height: 1.8; }
+    .classroom-empty-state h4 { font-size: 1.1rem; font-weight: 700; line-height: 1.4; }
+    .classroom-empty-state p  { font-size: 0.9rem; line-height: 1.6; }
 
     /* Copy Code Button */
     .classroom-copy-btn {
@@ -471,9 +463,9 @@ const ClassroomPageCSS = () => (
       padding: 1rem 3rem;
       background: white;
       color: #667eea;
-      font-weight: bold;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.65rem;
+      font-weight: 700;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 0.95rem;
       border: none;
       transition: all 0.3s ease;
     }
@@ -497,7 +489,7 @@ const ClassroomPageCSS = () => (
       border: none;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       animation: slideUp 0.3s ease-out;
-      font-family: 'Press Start 2P', monospace;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
     .classroom-modal-header {
@@ -508,25 +500,27 @@ const ClassroomPageCSS = () => (
     }
 
     .classroom-modal-header h5 {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.75rem;
-      line-height: 1.6;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      line-height: 1.4;
     }
 
     .classroom-modal-header small {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.55rem;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 0.85rem;
     }
 
     .classroom-modal-body {
       padding: 2rem;
-      font-family: 'Press Start 2P', monospace;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
     .classroom-modal-body h6 {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.7rem;
-      line-height: 1.6;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.4;
     }
 
     .classroom-modal-footer {
@@ -551,10 +545,10 @@ const ClassroomPageCSS = () => (
 
     .classroom-score-number {
       color: #ffa500;
-      font-size: 2rem;
-      font-weight: bold;
+      font-size: 2.5rem;
+      font-weight: 700;
       margin: 0;
-      font-family: 'Press Start 2P', monospace;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       text-shadow: 2px 2px 4px rgba(255, 165, 0, 0.3);
     }
 
@@ -563,9 +557,9 @@ const ClassroomPageCSS = () => (
       border-radius: 12px;
       padding: 1rem;
       transition: all 0.3s ease;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.6rem;
-      line-height: 1.6;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 0.875rem;
+      line-height: 1.5;
     }
 
     .classroom-log-item:hover {
@@ -574,66 +568,45 @@ const ClassroomPageCSS = () => (
     }
 
     .classroom-log-badge {
-      font-size: 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 600;
       padding: 6px 12px;
       border-radius: 8px;
-      font-family: 'Press Start 2P', monospace;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
     /* Button Styles */
     .classroom-btn {
       border-radius: 10px;
-      font-weight: bold;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.6rem;
+      font-weight: 600;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 0.875rem;
       padding: 0.5rem 1.5rem;
       transition: all 0.3s ease;
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
-    .classroom-btn:hover {
-      transform: translateY(-2px);
-    }
+    .classroom-btn:hover { transform: translateY(-2px); }
 
-    .classroom-btn-success {
-      background: #28a745;
-      border: none;
-      color: white;
-    }
-
+    .classroom-btn-success { background: #28a745; border: none; color: white; }
     .classroom-btn-success:hover {
       background: #218838;
       box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
     }
 
-    .classroom-btn-warning {
-      background: #ffc107;
-      border: none;
-      color: #333;
-    }
-
+    .classroom-btn-warning { background: #ffc107; border: none; color: #333; }
     .classroom-btn-warning:hover {
       background: #e0a800;
       box-shadow: 0 6px 20px rgba(255, 193, 7, 0.3);
     }
 
-    .classroom-btn-secondary {
-      background: #6c757d;
-      border: none;
-      color: white;
-    }
-
+    .classroom-btn-secondary { background: #6c757d; border: none; color: white; }
     .classroom-btn-secondary:hover {
       background: #5a6268;
       box-shadow: 0 6px 20px rgba(108, 117, 125, 0.3);
     }
 
-    .classroom-btn-danger {
-      background: #dc3545;
-      border: none;
-      color: white;
-    }
-
+    .classroom-btn-danger { background: #dc3545; border: none; color: white; }
     .classroom-btn-danger:hover {
       background: #c82333;
       box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
@@ -645,9 +618,9 @@ const ClassroomPageCSS = () => (
       border: none;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       animation: slideDown 0.3s ease-out;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.65rem;
-      line-height: 1.8;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 0.9rem;
+      line-height: 1.6;
     }
 
     /* Animations */
@@ -672,7 +645,7 @@ const ClassroomPageCSS = () => (
       60% { transform: translateY(-5px); }
     }
 
-    /* Remove Student Button */ 
+    /* Remove Student Button */
     .student-remove-btn {
       position: absolute;
       top: -10px;
@@ -706,9 +679,7 @@ const ClassroomPageCSS = () => (
         padding-bottom: 100px;
       }
 
-      .classroom-symbol {
-        font-size: 2rem;
-      }
+      .classroom-symbol { font-size: 2rem; }
 
       .classroom-back-btn {
         top: auto;
@@ -716,7 +687,7 @@ const ClassroomPageCSS = () => (
         left: 50%;
         transform: translateX(-50%);
         padding: 0.75rem 2rem;
-        font-size: 0.6rem;
+        font-size: 0.875rem;
         width: auto;
         min-width: 150px;
       }
@@ -729,9 +700,7 @@ const ClassroomPageCSS = () => (
         transform: translateX(-50%) translateY(0);
       }
 
-      .text-glow {
-        font-size: 1.2rem !important;
-      }
+      .text-glow { font-size: 1.5rem !important; }
 
       .classroom-teacher-section {
         max-width: 100%;
@@ -744,26 +713,18 @@ const ClassroomPageCSS = () => (
         border-width: 3px;
       }
 
-      .classroom-teacher-avatar-fallback {
-        font-size: 2rem;
-      }
-
-      .classroom-teacher-name {
-        font-size: 0.6rem;
-      }
-
-      .classroom-teacher-label {
-        font-size: 0.45rem;
-      }
+      .classroom-teacher-avatar-fallback { font-size: 2rem; }
+      .classroom-teacher-name  { font-size: 0.9rem; }
+      .classroom-teacher-label { font-size: 0.7rem; }
 
       .classroom-header-badge {
-        font-size: 0.55rem;
+        font-size: 0.78rem;
         padding: 8px 15px;
       }
 
       .classroom-tab {
         padding: 8px 12px;
-        font-size: 0.5rem;
+        font-size: 0.78rem;
       }
 
       .classroom-tabs {
@@ -779,40 +740,19 @@ const ClassroomPageCSS = () => (
         min-width: 80px;
       }
 
-      .student-score-badge {
-        width: 40px;
-        height: 40px;
-        font-size: 9px;
-      }
+      .student-score-badge { width: 40px; height: 40px; font-size: 11px; }
+      .student-add-points  { width: 35px; height: 35px; font-size: 18px; }
+      .student-remove-btn  { width: 35px; height: 35px; font-size: 18px; }
 
-      .student-add-points {
-        width: 35px;
-        height: 35px;
-        font-size: 18px;
-      }
-
-      .student-remove-btn {
-        width: 35px;
-        height: 35px;
-        font-size: 18px;
-      }
-
-      .classroom-code-input {
-        font-size: 0.75rem;
-      }
-
-      .classroom-score-number {
-        font-size: 1.5rem;
-      }
+      .classroom-code-input  { font-size: 1rem; }
+      .classroom-score-number { font-size: 2rem; }
 
       .classroom-copy-btn {
         padding: 0.75rem 2rem;
-        font-size: 0.55rem;
+        font-size: 0.875rem;
       }
 
-      .classroom-bottom-delete-btn {
-        display: none !important;
-      }
+      .classroom-bottom-delete-btn { display: none !important; }
     }
 
     @media (max-width: 576px) {
@@ -824,21 +764,14 @@ const ClassroomPageCSS = () => (
       .classroom-back-btn {
         bottom: 15px;
         padding: 0.625rem 1.5rem;
-        font-size: 0.55rem;
+        font-size: 0.8rem;
         min-width: 130px;
       }
 
-      .text-glow {
-        font-size: 1rem !important;
-      }
+      .text-glow { font-size: 1.25rem !important; }
 
-      .classroom-join-icon {
-        font-size: 3rem;
-      }
-
-      .classroom-modal-body {
-        padding: 1rem;
-      }
+      .classroom-join-icon { font-size: 3rem; }
+      .classroom-modal-body { padding: 1rem; }
 
       .student-remove-btn {
         width: 30px;
@@ -849,7 +782,7 @@ const ClassroomPageCSS = () => (
       }
 
       .classroom-tab {
-        font-size: 0.45rem;
+        font-size: 0.72rem;
         padding: 6px 8px;
       }
 
@@ -858,11 +791,9 @@ const ClassroomPageCSS = () => (
         text-align: center;
       }
 
-      .classroom-teacher-info {
-        text-align: center;
-      }
+      .classroom-teacher-info { text-align: center; }
     }
-    
+
     /* Delete Classroom Button for Tabs */
     .classroom-delete-tab-btn {
       background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
@@ -871,15 +802,15 @@ const ClassroomPageCSS = () => (
       border-radius: 12px;
       padding: 0.75rem 1.5rem;
       font-weight: 600;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 0.6rem;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 0.875rem;
       cursor: pointer;
       transition: all 0.3s ease;
       box-shadow: 0 4px 12px rgba(238, 90, 111, 0.3);
       margin-top: 1rem;
       width: 100%;
       display: none;
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
     .classroom-delete-tab-btn:hover {
@@ -888,14 +819,10 @@ const ClassroomPageCSS = () => (
       background: linear-gradient(135deg, #ee5a6f, #ff6b6b);
     }
 
-    .classroom-delete-tab-btn:active {
-      transform: translateY(0);
-    }
+    .classroom-delete-tab-btn:active { transform: translateY(0); }
 
     @media (max-width: 768px) {
-      .classroom-delete-tab-btn {
-        display: block;
-      }
+      .classroom-delete-tab-btn { display: block; }
     }
   `}</style>
 );
