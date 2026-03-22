@@ -214,7 +214,7 @@ const Intro: React.FC = () => {
         .btn-back { 
           border: 2px solid rgba(255, 255, 255, 0.4); 
           background: rgba(255, 255, 255, 0.2); 
-          color: #321cf5ff; 
+          color: rgb(255, 255, 255); 
           backdrop-filter: blur(10px);
           font-weight: 600;
         }
