@@ -86,36 +86,35 @@ const StudentProfileCSS: React.FC = () => {
       }
 
       @keyframes float {
-        0%, 100% {
-          transform: translateY(0) rotate(0deg);
-        }
-        25% {
-          transform: translateY(-30px) rotate(5deg);
-        }
-        50% {
-          transform: translateY(-50px) rotate(-5deg);
-        }
-        75% {
-          transform: translateY(-30px) rotate(3deg);
-        }
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        25% { transform: translateY(-30px) rotate(5deg); }
+        50% { transform: translateY(-50px) rotate(-5deg); }
+        75% { transform: translateY(-30px) rotate(3deg); }
       }
 
       @keyframes pulse {
-        0%, 100% {
-          transform: scale(1);
-          opacity: 0.05;
+        0%, 100% { transform: scale(1); opacity: 0.05; }
+        50% { transform: scale(1.1); opacity: 0.1; }
+      }
+
+      /* ===== Tablet + Mobile: sidebar is now a drawer, remove offset ===== */
+      @media (max-width: 1024px) {
+        .student-profile {
+          padding-left: 1.5rem !important;
+          padding-right: 1.5rem !important;
+          padding-top: 90px !important;
         }
-        50% {
-          transform: scale(1.1);
-          opacity: 0.1;
+
+        .profile-icon {
+          font-size: 3.5rem;
         }
       }
 
-      @media (max-width: 768px) {
+      @media (max-width: 767px) {
         .student-profile {
           padding-left: 1rem !important;
-          padding-right: 1rem;
-          padding-top: 90px;
+          padding-right: 1rem !important;
+          padding-top: 80px !important;
         }
 
         .profile-icon {
@@ -133,29 +132,37 @@ const StudentProfileCSS: React.FC = () => {
         z-index: 5;
       }
 
-      @media (min-width: 1100px) {
+      /* Desktop: 3 small stat cards + 1 large profile card */
+      @media (min-width: 1025px) {
         .profile-grid {
           grid-template-columns: 160px 160px 160px 1fr;
         }
       }
 
-      @media (min-width: 768px) and (max-width: 1099px) {
+      /* Tablet: 3 equal columns, profile card spans all */
+      @media (min-width: 768px) and (max-width: 1024px) {
         .profile-grid {
           grid-template-columns: repeat(3, 1fr);
+          gap: 1.2rem;
         }
         .profile-header-card {
           grid-column: span 3;
         }
+        .profile-grid > .stat-card {
+          max-width: 100%;
+        }
       }
 
+      /* Mobile: 2-column grid */
       @media (max-width: 767px) {
         .profile-grid {
           grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
         }
         .profile-header-card {
           grid-column: span 2;
         }
-        /* Rank card (3rd stat card) spans full width on mobile */
+        /* Rank card (3rd stat card) spans full width */
         .profile-grid > .stat-card:nth-of-type(3) {
           grid-column: span 2;
           max-width: 100%;
@@ -175,12 +182,10 @@ const StudentProfileCSS: React.FC = () => {
         max-width: 170px;
         padding: 1rem;
         border-radius: 18px;
-
         background: rgba(255,255,255,0.18);
         backdrop-filter: blur(10px);
         box-shadow: 0 4px 14px rgba(0,0,0,0.35);
         margin: 0 auto;
-
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -302,15 +307,26 @@ const StudentProfileCSS: React.FC = () => {
         justify-content: center;
       }
 
-      @media (max-width: 900px) {
+      @media (max-width: 1024px) {
         .pill-grid {
-          grid-template-columns: repeat(2, minmax(220px, 1fr));
+          grid-template-columns: repeat(2, minmax(200px, 1fr));
+          gap: 1.2rem;
         }
       }
 
-      @media (max-width: 500px) {
+      @media (max-width: 600px) {
         .pill-grid {
-          grid-template-columns: repeat(1, minmax(200px, 1fr));
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
+        }
+        .pill-grid .stat-card {
+          max-width: 100%;
+        }
+      }
+
+      @media (max-width: 400px) {
+        .pill-grid {
+          grid-template-columns: 1fr;
         }
       }
 
