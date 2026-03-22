@@ -87,31 +87,20 @@ const LandingPageCSS: React.FC = () => {
       }
 
       @keyframes float {
-        0%, 100% {
-          transform: translateY(0) rotate(0deg);
-        }
-        25% {
-          transform: translateY(-30px) rotate(5deg);
-        }
-        50% {
-          transform: translateY(-50px) rotate(-5deg);
-        }
-        75% {
-          transform: translateY(-30px) rotate(3deg);
-        }
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        25% { transform: translateY(-30px) rotate(5deg); }
+        50% { transform: translateY(-50px) rotate(-5deg); }
+        75% { transform: translateY(-30px) rotate(3deg); }
       }
 
       @keyframes pulse {
-        0%, 100% {
-          transform: scale(1);
-          opacity: 0.05;
-        }
-        50% {
-          transform: scale(1.1);
-          opacity: 0.1;
-        }
+        0%, 100% { transform: scale(1); opacity: 0.05; }
+        50% { transform: scale(1.1); opacity: 0.1; }
       }
 
+      /* ============================
+         CONTENT AREA — Desktop
+      ============================ */
       .content-area {
         flex: 1;
         padding: 60px 20px;
@@ -192,6 +181,9 @@ const LandingPageCSS: React.FC = () => {
         text-align: center;
       }
 
+      /* ============================
+         TITLE & QUOTE
+      ============================ */
       .main-title-wrapper {
         display: flex;
         align-items: center;
@@ -203,8 +195,7 @@ const LandingPageCSS: React.FC = () => {
       .main-title {
         font-size: 48px;
         text-shadow: 0 0 12px #22c1c3, 0 0 24px #2d86fd;
-        margin-top: 0;
-        margin-bottom: 0;
+        margin: 0;
       }
 
       .quote-carousel {
@@ -213,6 +204,9 @@ const LandingPageCSS: React.FC = () => {
         color: rgba(255, 255, 255, 0.9);
       }
 
+      /* ============================
+         GAME GRID
+      ============================ */
       .game-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -241,96 +235,152 @@ const LandingPageCSS: React.FC = () => {
       }
 
       /* Desktop hover effects */
-      @media (min-width: 769px) {
+      @media (min-width: 1025px) {
         .game-card {
           transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
         .game-card:hover {
           transform: scale(1.06);
           box-shadow: 0 12px 30px rgba(255, 255, 255, 0.45);
         }
       }
 
-      /* Tablet breakpoint */
-      @media (max-width: 900px) {
+      /* ============================
+         TABLET / iPAD (768px–1024px)
+         Sidebar is collapsed/icon-only
+         or overlaid — content needs
+         full width with top padding
+      ============================ */
+      @media (min-width: 768px) and (max-width: 1024px) {
+        .content-area {
+          padding-left: 20px !important;
+          padding-right: 20px !important;
+          padding-top: 100px !important;
+          gap: 24px;
+        }
+
+        /* Move enter code box below the top nav bar, left-aligned */
+        .enter-code-top {
+          position: fixed;
+          top: 16px;
+          right: 16px;
+          width: 210px;
+          padding: 12px;
+          z-index: 950;
+        }
+
+        .main-title {
+          font-size: 36px;
+        }
+
+        .quote-carousel {
+          font-size: 13px;
+          line-height: 1.7;
+          padding: 0 10px;
+          text-align: center;
+        }
+
         .game-grid {
-          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-          gap: 25px;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 24px;
+          max-width: 100%;
         }
       }
 
-      /* Mobile breakpoint */
-      @media (max-width: 768px) {
+      /* iPads in portrait that are a bit narrower */
+      @media (min-width: 768px) and (max-width: 900px) {
+        .enter-code-top {
+          top: 12px;
+          right: 12px;
+          width: 190px;
+        }
+
+        .main-title {
+          font-size: 30px;
+        }
+
+        .game-grid {
+          gap: 18px;
+        }
+      }
+
+      /* ============================
+         MOBILE (max 767px)
+      ============================ */
+      @media (max-width: 767px) {
         .content-area {
-          padding-left: 20px !important;
-          padding-right: 20px;
+          padding-left: 16px !important;
+          padding-right: 16px !important;
           padding-top: 80px !important;
+          padding-bottom: 140px !important; /* space for bottom enter-code box */
           gap: 20px;
         }
 
+        /* Stick enter-code to bottom on mobile */
         .enter-code-top {
+          position: fixed;
           top: auto;
           bottom: 20px;
           left: 50%;
           transform: translateX(-50%);
           right: auto;
           width: calc(100% - 40px);
-          max-width: 320px;
+          max-width: 360px;
           z-index: 950;
+          padding: 12px 14px;
         }
 
         .main-title {
-          font-size: 32px;
-          margin-top: 0;
-          margin-bottom: 0;
-        }
-
-        .main-title-wrapper {
-          order: -2;
-          justify-content: center;
+          font-size: 28px;
         }
 
         .quote-carousel {
-          font-size: 13px;
-          line-height: 1.6;
-          order: -1;
+          font-size: 12px;
+          line-height: 1.7;
+          padding: 0 8px;
+          text-align: center;
         }
 
         .game-grid {
-          order: 1;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 16px;
+          max-width: 100%;
+        }
+
+        .game-label {
+          font-size: 11px;
+          padding: 8px 6px;
         }
       }
 
-      /* Small mobile breakpoint */
-      @media (max-width: 600px) {
+      /* ============================
+         SMALL MOBILE (max 500px)
+      ============================ */
+      @media (max-width: 500px) {
         .content-area {
-          padding-top: 90px !important;
+          padding-top: 70px !important;
+          padding-bottom: 150px !important;
+          gap: 16px;
         }
 
         .main-title {
-          font-size: 26px;
-          margin-bottom: 0;
-        }
-
-        .main-title-wrapper {
-          justify-content: center;
+          font-size: 22px;
         }
 
         .quote-carousel {
-          font-size: 11px;
+          font-size: 10px;
         }
 
         .game-grid {
           grid-template-columns: 1fr;
-          gap: 20px;
+          gap: 16px;
         }
 
         .enter-code-top {
           width: calc(100% - 30px);
-          max-width: 300px;
-          padding: 12px;
+          max-width: 320px;
           bottom: 15px;
+          padding: 12px;
         }
 
         .enter-code-input {
@@ -344,28 +394,26 @@ const LandingPageCSS: React.FC = () => {
         }
       }
 
-      /* Extra small mobile */
-      @media (max-width: 400px) {
+      /* ============================
+         EXTRA SMALL (max 380px)
+      ============================ */
+      @media (max-width: 380px) {
         .content-area {
-          padding-top: 100px !important;
+          padding-top: 65px !important;
+          padding-bottom: 155px !important;
         }
 
         .main-title {
-          font-size: 22px;
-          margin-bottom: 0;
-        }
-
-        .main-title-wrapper {
-          justify-content: center;
+          font-size: 18px;
         }
 
         .quote-carousel {
-          font-size: 10px;
+          font-size: 9px;
         }
 
         .enter-code-top {
           bottom: 12px;
-          max-width: 280px;
+          max-width: 290px;
         }
       }
     `}</style>
