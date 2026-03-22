@@ -164,7 +164,7 @@ const ClassroomMessages: React.FC<ClassroomMessagesProps> = ({
         <div className="messages-body">
           {messages.length === 0 ? (
             <div className="empty-messages">
-              <div className="empty-messages-icon">💬</div>
+              <div className="empty-messages-icon"></div>
               <h4>No messages yet</h4>
               <p>Be the first to start the conversation!</p>
             </div>
@@ -230,7 +230,7 @@ const ClassroomMessages: React.FC<ClassroomMessagesProps> = ({
               className="messages-send-btn"
               disabled={loading || !newMessage.trim()}
             >
-              {loading ? "Sending..." : "Send 📤"}
+              {loading ? "..." : "Send"}
             </button>
           </form>
         </div>
@@ -249,14 +249,16 @@ const styles = `
     flex-direction: column;
     height: 600px;
     max-height: 70vh;
+    width: 100%;
   }
 
   .messages-header {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #667eea, #4a40d3);
     color: white;
     padding: 20px;
     text-align: center;
     border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
   }
 
   .messages-header h3 {
@@ -273,11 +275,13 @@ const styles = `
   .messages-body {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 20px;
     background: #f8f9fa;
     display: flex;
     flex-direction: column;
     gap: 15px;
+    -webkit-overflow-scrolling: touch;
   }
 
   .messages-body::-webkit-scrollbar {
@@ -298,6 +302,7 @@ const styles = `
     display: flex;
     gap: 12px;
     animation: slideIn 0.3s ease-out;
+    width: 100%;
   }
 
   .message-item.own-message {
@@ -305,21 +310,15 @@ const styles = `
   }
 
   @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .message-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #667eea, #4a40d3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -347,6 +346,7 @@ const styles = `
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
   }
 
   .message-header {
@@ -354,16 +354,22 @@ const styles = `
     align-items: center;
     gap: 8px;
     font-size: 0.85rem;
+    flex-wrap: wrap;
   }
 
   .message-sender {
     font-weight: bold;
     color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
   }
 
   .message-time {
     color: #6c757d;
     font-size: 0.75rem;
+    white-space: nowrap;
   }
 
   .message-bubble {
@@ -372,11 +378,13 @@ const styles = `
     background: white;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     word-wrap: break-word;
+    word-break: break-word;
     line-height: 1.5;
+    overflow-wrap: break-word;
   }
 
   .own-message .message-bubble {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #667eea, #4a40d3);
     color: white;
   }
 
@@ -385,14 +393,16 @@ const styles = `
   }
 
   .messages-input-container {
-    padding: 20px;
+    padding: 16px 20px;
     background: white;
     border-top: 2px solid #e9ecef;
+    flex-shrink: 0;
   }
 
   .messages-input-form {
     display: flex;
-    gap: 12px;
+    gap: 10px;
+    align-items: center;
   }
 
   .messages-input {
@@ -402,6 +412,7 @@ const styles = `
     border-radius: 25px;
     font-size: 0.95rem;
     transition: all 0.3s ease;
+    min-width: 0;
   }
 
   .messages-input:focus {
@@ -412,7 +423,7 @@ const styles = `
 
   .messages-send-btn {
     padding: 12px 24px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #667eea, #4a40d3);
     color: white;
     border: none;
     border-radius: 25px;
@@ -422,6 +433,8 @@ const styles = `
     display: flex;
     align-items: center;
     gap: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .messages-send-btn:hover:not(:disabled) {
@@ -442,7 +455,7 @@ const styles = `
     height: 100%;
     color: #6c757d;
     text-align: center;
-    padding: 40px;
+    padding: 40px 20px;
   }
 
   .empty-messages-icon {
@@ -451,31 +464,216 @@ const styles = `
     opacity: 0.5;
   }
 
-  @media (max-width: 768px) {
+  /* ===== TABLET / iPAD (768px – 1024px) ===== */
+  @media (min-width: 768px) and (max-width: 1024px) {
     .messages-container {
-      height: 500px;
+      height: 560px;
+      max-height: 65vh;
+      border-radius: 16px;
+    }
+
+    .messages-header {
+      padding: 16px 20px;
+    }
+
+    .messages-header h3 {
+      font-size: 1.15rem;
+    }
+
+    .messages-header small {
+      font-size: 0.8rem;
+    }
+
+    .messages-body {
+      padding: 16px;
+      gap: 12px;
+    }
+
+    .message-content {
+      max-width: 75%;
+    }
+
+    .message-avatar {
+      width: 38px;
+      height: 38px;
+    }
+
+    .messages-input-container {
+      padding: 14px 16px;
+    }
+
+    .messages-input {
+      font-size: 0.9rem;
+      padding: 11px 16px;
+    }
+
+    .messages-send-btn {
+      padding: 11px 20px;
+      font-size: 0.9rem;
+    }
+  }
+
+  /* ===== MOBILE (max 767px) ===== */
+  @media (max-width: 767px) {
+    .messages-container {
+      height: calc(100dvh - 200px);
+      max-height: none;
+      border-radius: 16px;
+    }
+
+    .messages-header {
+      padding: 14px 16px;
+    }
+
+    .messages-header h3 {
+      font-size: 1rem;
+    }
+
+    .messages-header small {
+      font-size: 0.75rem;
+    }
+
+    .messages-body {
+      padding: 12px;
+      gap: 10px;
     }
 
     .message-content {
       max-width: 80%;
     }
 
-    .messages-header h3 {
-      font-size: 1.1rem;
+    .message-avatar {
+      width: 34px;
+      height: 34px;
+      font-size: 0.85rem;
+      border-width: 2px;
     }
 
     .message-bubble {
       padding: 10px 14px;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
+      border-radius: 14px;
+    }
+
+    .message-sender {
+      font-size: 0.78rem;
+      max-width: 120px;
+    }
+
+    .message-time {
+      font-size: 0.68rem;
+    }
+
+    .messages-input-container {
+      padding: 12px 14px;
     }
 
     .messages-input {
-      font-size: 0.9rem;
-      padding: 10px 16px;
+      font-size: 0.88rem;
+      padding: 10px 14px;
     }
 
     .messages-send-btn {
-      padding: 10px 20px;
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      border-radius: 20px;
+    }
+
+    .empty-messages {
+      padding: 30px 16px;
+    }
+
+    .empty-messages h4 {
+      font-size: 1rem;
+    }
+
+    .empty-messages p {
+      font-size: 0.85rem;
+    }
+  }
+
+  /* ===== SMALL MOBILE (max 480px) ===== */
+  @media (max-width: 480px) {
+    .messages-container {
+      height: calc(100dvh - 180px);
+      border-radius: 12px;
+    }
+
+    .messages-header {
+      padding: 12px 14px;
+    }
+
+    .messages-header h3 {
+      font-size: 0.9rem;
+    }
+
+    .messages-header small {
+      font-size: 0.7rem;
+    }
+
+    .messages-body {
+      padding: 10px;
+      gap: 8px;
+    }
+
+    .message-content {
+      max-width: 85%;
+    }
+
+    .message-avatar {
+      width: 30px;
+      height: 30px;
+      font-size: 0.75rem;
+    }
+
+    .message-bubble {
+      padding: 8px 12px;
+      font-size: 0.84rem;
+      border-radius: 12px;
+    }
+
+    .message-sender {
+      font-size: 0.72rem;
+      max-width: 100px;
+    }
+
+    .message-time {
+      font-size: 0.62rem;
+    }
+
+    .messages-input-container {
+      padding: 10px 12px;
+    }
+
+    .messages-input {
+      font-size: 0.84rem;
+      padding: 9px 12px;
+    }
+
+    .messages-send-btn {
+      padding: 9px 14px;
+      font-size: 0.8rem;
+    }
+  }
+
+  /* ===== EXTRA SMALL (max 360px) ===== */
+  @media (max-width: 360px) {
+    .messages-container {
+      border-radius: 10px;
+    }
+
+    .message-content {
+      max-width: 88%;
+    }
+
+    .messages-send-btn {
+      padding: 8px 12px;
+      font-size: 0.75rem;
+    }
+
+    .messages-input {
+      font-size: 0.8rem;
+      padding: 8px 10px;
     }
   }
 `;
