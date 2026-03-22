@@ -63,6 +63,9 @@ const getRankByCoins = (coins: number): string => {
   return "Beginner";
 };
 
+const formatGameName = (name: string): string =>
+  name.replace(/_/g, " ");
+
 const StudentProfile = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -303,7 +306,7 @@ const StudentProfile = () => {
                 ) : (
                   games.map((g) => (
                     <div key={g.id} className="stat-card">
-                      <div className="stat-label">{g.game_name}</div>
+                      <div className="stat-label">{formatGameName(g.game_name)}</div>
                       <div className="stat-value">
                         {g.unlocked_levels} Levels
                       </div>

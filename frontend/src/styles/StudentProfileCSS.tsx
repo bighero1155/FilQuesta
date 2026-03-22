@@ -62,25 +62,17 @@ const StudentProfileCSS: React.FC = () => {
       }
 
       .profile-bg-circle-1 {
-        width: 300px;
-        height: 300px;
-        top: -100px;
-        right: -100px;
+        width: 300px; height: 300px;
+        top: -100px; right: -100px;
       }
-
       .profile-bg-circle-2 {
-        width: 400px;
-        height: 400px;
-        bottom: -150px;
-        left: -150px;
+        width: 400px; height: 400px;
+        bottom: -150px; left: -150px;
         animation-delay: 3s;
       }
-
       .profile-bg-circle-3 {
-        width: 250px;
-        height: 250px;
-        top: 50%;
-        left: 50%;
+        width: 250px; height: 250px;
+        top: 50%; left: 50%;
         transform: translate(-50%, -50%);
         animation-delay: 1.5s;
       }
@@ -104,10 +96,7 @@ const StudentProfileCSS: React.FC = () => {
           padding-right: 1.5rem !important;
           padding-top: 90px !important;
         }
-
-        .profile-icon {
-          font-size: 3.5rem;
-        }
+        .profile-icon { font-size: 3.5rem; }
       }
 
       @media (max-width: 767px) {
@@ -116,13 +105,10 @@ const StudentProfileCSS: React.FC = () => {
           padding-right: 1rem !important;
           padding-top: 80px !important;
         }
-
-        .profile-icon {
-          font-size: 3rem;
-        }
+        .profile-icon { font-size: 3rem; }
       }
 
-      /* ===== Grid ===== */
+      /* ===== Top Stats Grid ===== */
       .profile-grid {
         display: grid;
         gap: 1.5rem;
@@ -132,37 +118,27 @@ const StudentProfileCSS: React.FC = () => {
         z-index: 5;
       }
 
-      /* Desktop: 3 small stat cards + 1 large profile card */
       @media (min-width: 1025px) {
         .profile-grid {
           grid-template-columns: 160px 160px 160px 1fr;
         }
       }
 
-      /* Tablet: 3 equal columns, profile card spans all */
       @media (min-width: 768px) and (max-width: 1024px) {
         .profile-grid {
           grid-template-columns: repeat(3, 1fr);
           gap: 1.2rem;
         }
-        .profile-header-card {
-          grid-column: span 3;
-        }
-        .profile-grid > .stat-card {
-          max-width: 100%;
-        }
+        .profile-header-card { grid-column: span 3; }
+        .profile-grid > .stat-card { max-width: 100%; }
       }
 
-      /* Mobile: 2-column grid */
       @media (max-width: 767px) {
         .profile-grid {
           grid-template-columns: repeat(2, 1fr);
           gap: 1rem;
         }
-        .profile-header-card {
-          grid-column: span 2;
-        }
-        /* Rank card (3rd stat card) spans full width */
+        .profile-header-card { grid-column: span 2; }
         .profile-grid > .stat-card:nth-of-type(3) {
           grid-column: span 2;
           max-width: 100%;
@@ -195,16 +171,12 @@ const StudentProfileCSS: React.FC = () => {
         z-index: 5;
       }
 
-      .profile-grid > .stat-card .stat-icon {
-        font-size: 2rem;
-      }
-
+      .profile-grid > .stat-card .stat-icon { font-size: 2rem; }
       .profile-grid > .stat-card .stat-label {
         font-size: 0.95rem;
         margin-top: 0.5rem;
         opacity: 0.95;
       }
-
       .profile-grid > .stat-card .stat-value {
         font-size: 1.15rem;
         font-weight: bold;
@@ -218,37 +190,44 @@ const StudentProfileCSS: React.FC = () => {
         background: rgba(255,255,255,0.16);
         backdrop-filter: blur(10px);
         border-radius: 22px;
-        aspect-ratio: 1 / 1;
+
+        /* ✅ No fixed aspect-ratio — let height grow with content */
         width: 100%;
         max-width: 260px;
+        min-height: 160px;
         margin: 0 auto;
+
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
-        padding: 1.4rem;
+        padding: 1.4rem 1rem;
+        gap: 0.5rem;
+
         box-shadow: 0 6px 18px rgba(0,0,0,0.35);
         position: relative;
         z-index: 5;
       }
 
-      .pill-grid .stat-card .stat-icon {
-        font-size: 2.4rem;
-      }
+      .pill-grid .stat-card .stat-icon { font-size: 2.4rem; }
 
       .pill-grid .stat-card .stat-label {
-        margin-top: 0.8rem;
-        font-size: 1.1rem;
-        line-height: 1.3;
+        /* ✅ Fluid font: shrinks automatically when text is long */
+        font-size: clamp(0.55rem, 1.4vw, 0.95rem);
+        line-height: 1.5;
         opacity: 0.95;
         word-break: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+        max-width: 100%;
+        padding: 0 0.25rem;
       }
 
       .pill-grid .stat-card .stat-value {
-        margin-top: 0.6rem;
-        font-size: 1.35rem;
+        font-size: clamp(0.75rem, 1.6vw, 1.2rem);
         font-weight: bold;
+        white-space: nowrap;
       }
 
       /* ===== Profile Header Card ===== */
@@ -275,12 +254,7 @@ const StudentProfileCSS: React.FC = () => {
         position: relative;
         z-index: 5;
       }
-
-      .collapse-box.open {
-        max-height: 500px;
-        opacity: 1;
-      }
-
+      .collapse-box.open { max-height: 500px; opacity: 1; }
       .collapse-content {
         background: rgba(255,255,255,0.06);
         border-radius: 1rem;
@@ -292,7 +266,6 @@ const StudentProfileCSS: React.FC = () => {
         position: relative;
         z-index: 5;
       }
-
       .pill-section h4 {
         margin-bottom: 1.2rem;
         font-size: 1.15rem;
@@ -300,33 +273,69 @@ const StudentProfileCSS: React.FC = () => {
         letter-spacing: 0.5px;
       }
 
+      /* ===== Pill Grid ===== */
       .pill-grid {
         display: grid;
-        grid-template-columns: repeat(3, minmax(240px, 1fr));
-        gap: 1.6rem;
-        justify-content: center;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.4rem;
+        justify-items: center;
       }
 
       @media (max-width: 1024px) {
         .pill-grid {
-          grid-template-columns: repeat(2, minmax(200px, 1fr));
-          gap: 1.2rem;
-        }
-      }
-
-      @media (max-width: 600px) {
-        .pill-grid {
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(3, 1fr);
           gap: 1rem;
         }
         .pill-grid .stat-card {
           max-width: 100%;
+          min-height: 140px;
+        }
+        .pill-grid .stat-card .stat-label {
+          font-size: clamp(0.5rem, 1.2vw, 0.85rem);
+        }
+        .pill-grid .stat-card .stat-value {
+          font-size: clamp(0.65rem, 1.4vw, 1rem);
+        }
+      }
+
+      @media (max-width: 700px) {
+        .pill-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.9rem;
+        }
+        .pill-grid .stat-card {
+          max-width: 100%;
+          min-height: 120px;
+          padding: 1rem 0.75rem;
+        }
+        .pill-grid .stat-card .stat-label {
+          font-size: clamp(0.45rem, 2.5vw, 0.75rem);
+        }
+        .pill-grid .stat-card .stat-value {
+          font-size: clamp(0.6rem, 2.8vw, 0.9rem);
+        }
+        .pill-grid .stat-card .stat-icon {
+          font-size: 1.8rem;
         }
       }
 
       @media (max-width: 400px) {
         .pill-grid {
-          grid-template-columns: 1fr;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.7rem;
+        }
+        .pill-grid .stat-card {
+          min-height: 100px;
+          padding: 0.8rem 0.6rem;
+        }
+        .pill-grid .stat-card .stat-label {
+          font-size: clamp(0.4rem, 2.8vw, 0.65rem);
+        }
+        .pill-grid .stat-card .stat-value {
+          font-size: clamp(0.55rem, 3vw, 0.8rem);
+        }
+        .pill-grid .stat-card .stat-icon {
+          font-size: 1.5rem;
         }
       }
 
