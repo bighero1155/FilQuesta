@@ -293,7 +293,7 @@ const styles = `
   }
 
   .reports-header {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #667eea, #4a40d3);
     color: white;
     padding: 30px;
     text-align: center;
@@ -410,7 +410,7 @@ const styles = `
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #667eea, #4a40d3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -495,7 +495,7 @@ const styles = `
 
   .score-item.total .score-value {
     font-size: 1rem;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #667eea, #4a40d3);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -504,7 +504,7 @@ const styles = `
 
   .view-review-btn {
     padding: 8px 12px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #667eea, #4a40d3);
     color: white;
     border: none;
     border-radius: 8px;
