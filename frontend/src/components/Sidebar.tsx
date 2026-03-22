@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ProfileHeader from "../pages/ProfileHeader";
 import MyQuizzesWidget from "./Quizzes/MyQuizzesWidget";
 import QuestShop from "../modals/QuestShop";
@@ -41,6 +41,46 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [mobileOpen, setMobileOpen] = useState(false);
   const toggleMobile = () => setMobileOpen((prev) => !prev);
 
+  // Swipe-to-open/close logic
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (touchStartX.current === null || touchStartY.current === null) return;
+
+      const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+      const deltaY = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
+
+      // Only trigger if horizontal swipe is dominant
+      if (Math.abs(deltaX) < 40 || deltaY > Math.abs(deltaX)) return;
+
+      if (deltaX > 0 && touchStartX.current < 40 && !mobileOpen) {
+        // Swipe right from left edge → open
+        setMobileOpen(true);
+      } else if (deltaX < -40 && mobileOpen) {
+        // Swipe left → close
+        setMobileOpen(false);
+      }
+
+      touchStartX.current = null;
+      touchStartY.current = null;
+    };
+
+    document.addEventListener("touchstart", handleTouchStart, { passive: true });
+    document.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+    return () => {
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [mobileOpen]);
+
   return (
     <>
       {/* QUEST SHOP */}
@@ -51,13 +91,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         setUser={(u) => localStorage.setItem("user", JSON.stringify(u))}
       />
 
-      {/* MOBILE TOPBAR */}
+      {/* MOBILE / TABLET TOPBAR */}
       <div className="mobile-topbar">
         <button className="menu-icon-btn" onClick={toggleMobile}>
           {mobileOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
 
-        {/* ✅ Logo + Title in mobile topbar */}
         <div className="topbar-brand">
           <img
             src="/assets/logo.png"
@@ -76,12 +115,13 @@ const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </div>
 
-      {/* OVERLAY FOR MOBILE */}
-      {mobileOpen && <div className="sidebar-overlay" onClick={toggleMobile}></div>}
+      {/* OVERLAY */}
+      {mobileOpen && (
+        <div className="sidebar-overlay" onClick={toggleMobile}></div>
+      )}
 
       {/* SIDEBAR */}
       <div className={`sidebar ${mobileOpen ? "open" : ""}`}>
-        {/* ✅ Logo + Title in desktop sidebar header */}
         <div className="sidebar-header">
           <div className="sidebar-brand">
             <img
@@ -101,10 +141,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <li>
             <button
               className="nav-link"
-              onClick={() => {
-                onNavigate("/landing");
-                setMobileOpen(false);
-              }}
+              onClick={() => { onNavigate("/landing"); setMobileOpen(false); }}
               disabled={loading}
             >
               <Home size={18} />
@@ -115,10 +152,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <li>
             <button
               className="nav-link"
-              onClick={() => {
-                onProfile();
-                setMobileOpen(false);
-              }}
+              onClick={() => { onProfile(); setMobileOpen(false); }}
             >
               <User size={18} />
               <span>Profile</span>
@@ -128,10 +162,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <li>
             <button
               className="nav-link"
-              onClick={() => {
-                onLeaderboard();
-                setMobileOpen(false);
-              }}
+              onClick={() => { onLeaderboard(); setMobileOpen(false); }}
             >
               <Trophy size={18} />
               <span>Leaderboard</span>
@@ -141,10 +172,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <li>
             <button
               className="nav-link"
-              onClick={() => {
-                onProgress();
-                setMobileOpen(false);
-              }}
+              onClick={() => { onProgress(); setMobileOpen(false); }}
             >
               <BarChart2 size={18} />
               <span>Progress</span>
@@ -154,10 +182,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <li>
             <button
               className="nav-link"
-              onClick={() => {
-                onNavigate("/Classroom");
-                setMobileOpen(false);
-              }}
+              onClick={() => { onNavigate("/Classroom"); setMobileOpen(false); }}
             >
               <School size={18} />
               <span>Classroom</span>
@@ -167,10 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <li>
             <button
               className="nav-link"
-              onClick={() => {
-                setShowQuestShop(true);
-                setMobileOpen(false);
-              }}
+              onClick={() => { setShowQuestShop(true); setMobileOpen(false); }}
             >
               <ShoppingCart size={18} />
               <span>Quest Shop</span>
@@ -180,10 +202,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <li>
             <button
               className="nav-link danger"
-              onClick={() => {
-                onLogout();
-                setMobileOpen(false);
-              }}
+              onClick={() => { onLogout(); setMobileOpen(false); }}
             >
               <LogOut size={18} />
               <span>Quit</span>
@@ -198,9 +217,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
 
-      {/* STYLES */}
       <style>{`
-        /* ===== DESKTOP SIDEBAR ===== */
+        /* ===== DESKTOP SIDEBAR (1025px+) ===== */
         .sidebar {
           height: 100vh;
           width: 290px;
@@ -214,7 +232,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           flex-direction: column;
           z-index: 995;
           transition: transform 0.3s ease;
-          overflow: hidden;
+          overflow-y: auto;
+          overflow-x: hidden;
         }
 
         .sidebar-header {
@@ -224,7 +243,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           line-height: 1.4;
         }
 
-        /* ✅ Desktop sidebar brand wrapper */
         .sidebar-brand {
           display: flex;
           align-items: center;
@@ -296,7 +314,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           margin-bottom: 4px;
         }
 
-        /* ===== MOBILE TOPBAR ===== */
+        /* Hide topbar and overlay on desktop */
         .mobile-topbar {
           display: none;
         }
@@ -305,7 +323,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           display: none;
         }
 
-        /* ✅ Mobile topbar brand wrapper */
         .topbar-brand {
           display: flex;
           align-items: center;
@@ -319,12 +336,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
         }
 
-        /* ===== MOBILE SIDEBAR ===== */
-        @media (max-width: 768px) {
-          body {
-            padding-top: 0 !important;
-          }
-
+        /* ===== TABLET + MOBILE (max 1024px) ===== */
+        @media (max-width: 1024px) {
+          /* Show topbar */
           .mobile-topbar {
             display: flex;
             justify-content: space-between;
@@ -339,7 +353,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             color: white;
             font-family: 'Press Start 2P';
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            height: 60px;
+            height: 64px;
             box-sizing: border-box;
           }
 
@@ -359,19 +373,20 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           .menu-icon-btn:active,
           .shop-btn:active {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.15);
           }
 
           .topbar-title {
             margin: 0;
-            font-size: 0.9rem;
+            font-size: 1rem;
             line-height: 1.4;
           }
 
           .topbar-logo {
-            height: 28px;
+            height: 32px;
           }
 
+          /* Overlay */
           .sidebar-overlay {
             display: block;
             position: fixed;
@@ -381,21 +396,19 @@ const Sidebar: React.FC<SidebarProps> = ({
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
             z-index: 1998;
-            opacity: 1;
-            transition: opacity 0.3s ease;
           }
 
+          /* Sidebar slides in from left */
           .sidebar {
             transform: translateX(-100%);
             top: 0;
             left: 0;
-            width: 280px;
+            width: 300px;
             height: 100vh;
             position: fixed;
             z-index: 1999;
-            padding: 18px;
-            padding-top: 20px;
-            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
+            padding: 20px 18px;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.35);
           }
 
           .sidebar.open {
@@ -410,21 +423,17 @@ const Sidebar: React.FC<SidebarProps> = ({
           }
 
           .sidebar-logo {
-            height: 38px;
-          }
-
-          .profile-wrapper {
-            display: none;
+            height: 42px;
           }
 
           .sidebar-nav {
-            gap: 12px;
+            gap: 8px;
             margin-top: 10px;
           }
 
           .nav-link {
-            font-size: 0.75rem;
-            padding: 14px 12px;
+            font-size: 0.78rem;
+            padding: 12px 12px;
           }
 
           .my-quizzes-wrapper {
@@ -433,9 +442,42 @@ const Sidebar: React.FC<SidebarProps> = ({
           }
         }
 
+        /* ===== MOBILE ONLY (max 767px) ===== */
+        @media (max-width: 767px) {
+          .topbar-title {
+            font-size: 0.85rem;
+          }
+
+          .topbar-logo {
+            height: 28px;
+          }
+
+          .mobile-topbar {
+            height: 60px;
+          }
+
+          .sidebar {
+            width: 280px;
+          }
+
+          .sidebar-logo {
+            height: 38px;
+          }
+
+          .profile-wrapper {
+            display: none;
+          }
+
+          .nav-link {
+            font-size: 0.75rem;
+            padding: 13px 12px;
+          }
+        }
+
+        /* ===== SMALL MOBILE (max 480px) ===== */
         @media (max-width: 480px) {
           .topbar-title {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
           }
 
           .topbar-logo {
@@ -457,7 +499,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           }
 
           .nav-link {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             gap: 10px;
           }
 
