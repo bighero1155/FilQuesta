@@ -3,7 +3,7 @@ const NavbarCSS = () => (
     .nav-sidebar {
       height: 100vh;
       width: 280px;
-      background: linear-gradient(135deg, #667eea, #4a40d3 100%);
+      background: linear-gradient(135deg, #5871e2, #3755eb 100%);
       color: white;
       position: fixed;
       top: 0;
