@@ -1,11 +1,9 @@
 const NavbarCSS = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
     .nav-sidebar {
       height: 100vh;
       width: 280px;
-      background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+      background: linear-gradient(135deg, #667eea, #4a40d3 100%);
       color: white;
       position: fixed;
       top: 0;
@@ -16,6 +14,7 @@ const NavbarCSS = () => (
       flex-direction: column;
       z-index: 1000;
       overflow-y: auto;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
     .nav-sidebar::-webkit-scrollbar {
@@ -53,9 +52,10 @@ const NavbarCSS = () => (
     }
 
     .nav-brand-text {
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.9rem;
-      line-height: 1.5;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
       color: white;
     }
 
@@ -91,9 +91,11 @@ const NavbarCSS = () => (
       border: 2px solid transparent;
       width: 100%;
       text-align: left;
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.65rem;
-      line-height: 1.5;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      line-height: 1.4;
     }
 
     .nav-link:hover {
@@ -157,7 +159,7 @@ const NavbarCSS = () => (
       }
 
       .nav-brand-text {
-        font-size: 0.7rem;
+        font-size: 0.95rem;
       }
 
       .nav-profile-section {
@@ -173,7 +175,7 @@ const NavbarCSS = () => (
 
       .nav-link {
         padding: 10px 12px;
-        font-size: 0.6rem;
+        font-size: 0.75rem;
         border-radius: 8px;
         min-width: auto;
       }
@@ -210,21 +212,20 @@ const NavbarCSS = () => (
     }
 
     /* Hide mobile teacher button on desktop */
-.nav-teacher-mobile {
-  display: none;
-}
+    .nav-teacher-mobile {
+      display: none;
+    }
 
-/* Mobile behavior */
-@media (max-width: 768px) {
-  .nav-profile-section {
-    display: none; /* hide full profile */
-  }
+    /* Mobile behavior */
+    @media (max-width: 768px) {
+      .nav-profile-section {
+        display: none;
+      }
 
-  .nav-teacher-mobile {
-    display: block; /* show icon-only teacher button */
-  }
-}
-
+      .nav-teacher-mobile {
+        display: block;
+      }
+    }
   `}</style>
 );
 
